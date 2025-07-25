@@ -37,26 +37,26 @@ This document outlines the technical architecture, technology choices, and infra
 
 - **Provider:** Gemini API (primary for LLM-powered translation, explanation, and image generation)
 - **Image Generation:** Gemini API (primary); fallback to OpenAI DALL·E or Stability AI if quality or moderation needs are not met
-- **Image Moderation:** Use Gemini API’s built-in moderation where possible; supplement with OpenAI Moderation API, AWS Rekognition, or Google Cloud Vision SafeSearch for stricter requirements
-- **Audio/Video:** AWS Polly, Google Cloud Text-to-Speech, or ElevenLabs (for audio pronunciation)
+- **Image Moderation:** Use Gemini API’s built-in moderation where possible; supplement with OpenAI Moderation API, Google Cloud Vision SafeSearch, or AWS Rekognition for stricter requirements
+- **Audio/Video:** Google Cloud Text-to-Speech, AWS Polly, or ElevenLabs (for audio pronunciation)
 
 ### 2.4. Cloud & Infrastructure
 
-- **Cloud Provider:** AWS (preferred for scalability, managed services, and global reach)
+- **Cloud Provider:** Google Cloud Platform (GCP) (preferred for cost control, managed services, and Gemini integration)
 - **Core Services:**
-  - **Compute:** AWS ECS (Fargate) or AWS Lambda (for serverless workloads)
-  - **Database:** Amazon RDS (PostgreSQL)
-  - **Object Storage:** Amazon S3 (for images, audio, exports)
-  - **CDN:** Amazon CloudFront
-  - **Cache:** Amazon ElastiCache (Redis)
-  - **Authentication:** Amazon Cognito (optional, if not rolling custom JWT/OAuth)
-  - **Monitoring:** AWS CloudWatch, Sentry (for error tracking)
-  - **CI/CD:** GitHub Actions, AWS CodePipeline
+  - **Compute:** Cloud Run (for containerized FastAPI backend) or Cloud Functions (for serverless workloads)
+  - **Database:** Cloud SQL (PostgreSQL)
+  - **Object Storage:** Google Cloud Storage (GCS) (for images, audio, exports)
+  - **CDN:** Cloud CDN
+  - **Cache:** MemoryStore (Redis)
+  - **Authentication:** Firebase Authentication (optional, if not rolling custom JWT/OAuth)
+  - **Monitoring:** Cloud Monitoring, Error Reporting (for error tracking)
+  - **CI/CD:** GitHub Actions, Cloud Build
 
 ### 2.5. DevOps & Tooling
 
 - **Containerization:** Docker (for local development and deployment)
-- **Infrastructure as Code:** Terraform or AWS CloudFormation
+- **Infrastructure as Code:** Terraform or Google Cloud Deployment Manager
 - **Version Control:** Git (GitHub)
 - **Linting/Formatting:** ESLint, Prettier (frontend); Black, isort, flake8 (backend)
 - **Documentation:** Storybook (UI), Swagger (API), Markdown (internal docs)
@@ -78,7 +78,7 @@ This document outlines the technical architecture, technology choices, and infra
   - Docker Desktop  
   - PostgreSQL (local or Dockerized)  
   - Redis (local or Dockerized)  
-  - AWS CLI (for cloud integration)  
+  - GCloud CLI (for cloud integration)  
   - Yarn, npm, or pnpm (frontend)
 
 - **Recommended IDE:** VSCode (with recommended extensions for TypeScript, ESLint, Prettier, Python, Docker)
@@ -86,17 +86,20 @@ This document outlines the technical architecture, technology choices, and infra
 ### 3.2. Environments
 
 - **Development:** Local Docker Compose, feature branches
-- **Staging:** AWS (mirrors production, used for QA)
-- **Production:** AWS (multi-AZ, auto-scaling, managed services)
+- **Staging:** GCP (mirrors production, used for QA)
+- **Production:** GCP (multi-region, auto-scaling, managed services)
 
 ---
 
 ## 4. Rationale
 
 - **Suitability:** Vue.js and FastAPI are both modern, high-performance frameworks with strong community support and rapid development cycles. They are well-suited for building scalable, maintainable web applications and APIs.
-- **AWS Compatibility:** Both frameworks are easily containerized and deployable to AWS services such as ECS, Lambda, and RDS.
-- **Developer Experience:** Vue.js offers a gentle learning curve and robust tooling for frontend development. FastAPI provides automatic OpenAPI docs, async support, and easy integration with AI/ML APIs.
-- **Extensibility:** The architecture allows for easy addition of features such as user accounts, image generation, and history/bookmarks in future milestones.
+- **Cloud Provider Choice:**
+  - **GCP was chosen over AWS** for the following reasons:
+    - **Cost Control:** GCP provides a $300 free credit and always-free tier, with a hard spending limit before you upgrade to a paid account, making it safer for side projects and experimentation.
+    - **Gemini Integration:** Native and seamless integration with Gemini API and other Google AI/ML services.
+    - **Managed Services:** GCP offers robust managed services for compute, storage, database, and monitoring, all compatible with the project’s tech stack.
+    - **Developer Experience:** GCP’s developer tooling and documentation are well-suited for rapid prototyping and deployment.
 
 ---
 
@@ -201,23 +204,23 @@ sequenceDiagram
 ### 5.8. Domain Setup
 
 - **Domain Registration:**
-  - Register a primary domain (e.g., vocabloom.com) via AWS Route 53 (preferred) or another reputable registrar.
+  - Register a primary domain (e.g., vocabloom.com) via Google Domains (preferred) or another reputable registrar.
 
 - **DNS Management:**
-  - Use AWS Route 53 for DNS management, advanced features, and reliability.
+  - Use Google Cloud DNS for DNS management, advanced features, and reliability.
   - Set up DNS records:
-    - **A/AAAA Records:** Point to backend load balancer or API Gateway (if self-hosted or using AWS services).
-    - **CNAME Records:** Point to frontend hosting (e.g., CloudFront distribution).
+    - **A/AAAA Records:** Point to backend load balancer or Cloud Run/Cloud Functions endpoint.
+    - **CNAME Records:** Point to frontend hosting (e.g., Cloud CDN or Firebase Hosting).
     - **TXT Records:** For domain verification, email, and security (SPF, DKIM, DMARC if needed).
 
 - **Frontend Domain:**
-  - Configure the frontend (e.g., AWS Amplify or CloudFront) to use a custom domain (e.g., app.vocabloom.com or www.vocabloom.com).
-  - Set up automatic SSL/TLS certificates via AWS Certificate Manager (ACM).
+  - Configure the frontend (e.g., Firebase Hosting or Cloud CDN) to use a custom domain (e.g., app.vocabloom.com or www.vocabloom.com).
+  - Set up automatic SSL/TLS certificates via Google-managed certificates.
 
 - **Backend/API Domain:**
   - Assign a subdomain for the API (e.g., api.vocabloom.com).
-  - Configure DNS to point to the backend deployment (ECS Fargate, API Gateway, or ALB).
-  - Ensure SSL/TLS is enabled for secure API communication (via ACM).
+  - Configure DNS to point to the backend deployment (Cloud Run, Cloud Functions, or Load Balancer).
+  - Ensure SSL/TLS is enabled for secure API communication (via Google-managed certificates).
 
 - **Environment Configuration:**
   - Update environment variables in frontend and backend to use the correct API and frontend URLs.
