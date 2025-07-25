@@ -46,10 +46,9 @@
 7. [ ] Add basic authentication (JWT, optional for MVP)
 8. [ ] Add tests for API endpoints and error cases
 
-### 6. Database & Persistence
-1. [ ] Design and migrate initial database schema (users, logs, etc.)
-2. [ ] Set up SQLAlchemy migrations and seed scripts
-3. [ ] Test local and cloud database connections
+### 6. Frontend-Backend Integration
+2. [ ] Connect frontend to backend /api/translate endpoint
+3. [ ] Display response in frontend UI
 
 ### 7. Deployment & Domain
 1. [ ] Deploy frontend to AWS Amplify or S3 + CloudFront
