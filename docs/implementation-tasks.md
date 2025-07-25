@@ -47,8 +47,9 @@
 8. [ ] Add tests for API endpoints and error cases
 
 ### 6. Frontend-Backend Integration
-2. [ ] Connect frontend to backend /api/translate endpoint
-3. [ ] Display response in frontend UI
+1. [x] Scaffold /api/translate endpoint in backend
+2. [x] Connect frontend to backend /api/translate endpoint
+3. [x] Display response in frontend UI
 
 ### 7. Deployment & Domain
 1. [ ] Deploy frontend to AWS Amplify or S3 + CloudFront
