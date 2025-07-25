@@ -1,6 +1,5 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from pydantic import BaseModel
-from fastapi.responses import JSONResponse
 
 app = FastAPI()
 
@@ -13,5 +12,4 @@ class TranslateRequest(BaseModel):
 
 @app.post("/api/translate")
 async def translate(req: TranslateRequest):
-    # Dummy translation logic
-    return {"term": req.term, "translation": f"{req.term} (translated)"} 
+    return {"message": f"received translation request for {req.term}"} 
