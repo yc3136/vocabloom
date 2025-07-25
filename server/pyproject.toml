@@ -1,3 +1,24 @@
 [tool.black]
 line-length = 88
 skip-string-normalization = false 
+[project]
+name = "vocabloom-server"
+version = "0.1.0"
+description = "FastAPI backend for Vocabloom"
+authors = [
+    {name = "MuyBien"}
+]
+readme = "README.md"
+requires-python = "^3.9"
+dependencies = [
+    "fastapi (>=0.116.1,<0.117.0)",
+    "uvicorn (>=0.35.0,<0.36.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+start = "vocabloom_server.main:app"
