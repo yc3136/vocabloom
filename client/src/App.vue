@@ -26,28 +26,41 @@ async function lookup() {
 </script>
 
 <template>
-  <v-app theme="dark">
-    <v-main style="background: #181818; min-height: 100vh;">
-      <div style="text-align:center; margin-top:2rem; max-width: 400px; margin-left: auto; margin-right: auto; color: #fff;">
-        <h1>Vocabloom</h1>
-        <p>A simple tool to help you learn and understand new vocabulary with instant translations and explanations.</p>
-        <v-text-field
-          v-model="term"
-          label="Enter a word or phrase"
-          outlined
-          dense
-          style="margin-top: 2rem;"
-          color="primary"
-        />
-        <v-btn color="primary" @click="lookup" :loading="loading" style="margin-top: 1rem;">Look up</v-btn>
-        <div v-if="response" style="margin-top: 2rem;">
-          <p style="background: #232323; padding: 1rem; border-radius: 8px; color: #fff;">{{ response }}</p>
-        </div>
-      </div>
-    </v-main>
-  </v-app>
+  <nav>
+    <router-link to="/">Home</router-link> |
+    <router-link to="/about">About</router-link>
+  </nav>
+  <router-view />
 </template>
 
 <style scoped>
-/* Add any custom styles here if needed */
+nav {
+  margin-bottom: 1rem;
+}
+nav a {
+  margin: 0 0.5rem;
+  text-decoration: none;
+  color: #3b5bdb;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+nav a.router-link-exact-active {
+  font-weight: bold;
+  text-decoration: underline;
+  color: #2a3a5e;
+}
+nav a:hover {
+  color: #4254e7;
+}
+</style>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800&display=swap');
+
+body, #app {
+  font-family: 'Nunito', 'Segoe UI', Arial, sans-serif;
+  background: #f4f6fb;
+  margin: 0;
+  padding: 0;
+}
 </style>
