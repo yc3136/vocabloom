@@ -22,22 +22,23 @@
 8. [ ] Set up AWS Certificate Manager (ACM) for SSL/TLS
 
 ### 3. CI/CD Pipeline
-1. [ ] Configure GitHub Actions for automated build, test, and deploy
+1. [x] Configure GitHub Actions for automated build, test, and deploy
 2. [ ] Set up environment variables and secrets in CI/CD
 
 ### 4. Frontend Implementation
-1. [ ] Scaffold Vue.js app with TypeScript and Vuetify
-2. [ ] Set up routing and basic page structure
-3. [ ] Implement language selection and term input UI
-4. [ ] Implement form validation and error handling
-5. [ ] Integrate API calls to backend for translation/explanation
-6. [ ] Display translation/explanation results
-7. [ ] Add loading and error states
-8. [ ] Add basic tests for UI components and flows
+1. [x] Scaffold Vue.js app with TypeScript and Vuetify
+2. [x] Implement project branding and remove default Vite/Vue content
+3. [ ] Set up routing and basic page structure
+4. [ ] Implement language selection and term input UI
+5. [ ] Implement form validation and error handling
+6. [ ] Integrate API calls to backend for translation/explanation
+7. [ ] Display translation/explanation results
+8. [ ] Add loading and error states
+9. [ ] Add basic tests for UI components and flows
 
 ### 5. Backend Implementation
-1. [ ] Scaffold Python FastAPI app
-2. [ ] Set up SQLAlchemy ORM and connect to PostgreSQL (local/dev and AWS RDS)
+1. [x] Scaffold Python FastAPI app
+2. [x] Set up Poetry for dependency management
 3. [ ] Implement `/api/translate` endpoint
 4. [ ] Integrate Gemini API for translation/explanation
 5. [ ] Add input validation and error handling middleware
