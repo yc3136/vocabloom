@@ -5,11 +5,11 @@
 ## Implementation Checklist (MVP Scope)
 
 ### 1. Development Environment & Repository
-1. [ ] Set up monorepo (client + server) for project structure
-2. [ ] Configure GitHub repository with branch protection and code review rules
-3. [ ] Add .gitignore, README, and contribution guidelines
-4. [ ] Set up Prettier and ESLint for code formatting and linting (frontend); Black and flake8 for backend
-5. [ ] Configure basic testing frameworks (Jest, Vue Testing Library for frontend; Pytest for backend)
+1. [x] Set up monorepo (client + server) for project structure
+2. [x] Configure GitHub repository with branch protection and code review rules
+3. [x] Add .gitignore, README, and contribution guidelines
+4. [x] Set up Prettier and ESLint for code formatting and linting (frontend); Black and flake8 for backend
+5. [x] Configure basic testing frameworks (Jest, Vue Testing Library for frontend; Pytest for backend)
 
 ### 2. AWS & Cloud Setup
 1. [ ] Register AWS account and configure IAM users/roles
