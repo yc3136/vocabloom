@@ -184,49 +184,58 @@ sequenceDiagram
 ### 5.7. Deployment & Operations
 
 - **Frontend Deployment:**
-  - Deployed to AWS Amplify or S3 + CloudFront for global CDN, automatic builds, and preview deployments.
+  - Deployed to Firebase Hosting for global CDN, automatic builds, and preview deployments.
+  - Configured with automatic SSL/TLS certificates via Firebase.
+  - Set up for single-page application routing.
+
 - **Backend Deployment:**
-  - Deployed to AWS ECS (Fargate) for managed Python hosting and auto-scaling.
+  - Deployed to Cloud Run (Fargate) for managed Python hosting and auto-scaling.
   - Dockerized for consistency across environments.
-- **Database:**
-  - Amazon RDS (PostgreSQL) for production; SQLite or local Postgres for development.
+  - Configured with automatic SSL/TLS certificates via Cloud Run.
+
+- **Infrastructure Setup:**
+  - GCP project configured with appropriate services
+  - Primary region selected for optimal performance
+  - Service account configured with appropriate permissions for deployments
+  - Cloud Storage bucket configured for static assets
+  - Secret Manager configured for secure API key storage
+  - Cloud Monitoring enabled for logging and metrics
+  - Cloud Build enabled for container builds and deployments
+
 - **CI/CD:**
-  - GitHub Actions for automated testing, linting, and deployment on push/merge to main branch. Optionally, use AWS CodePipeline for deeper AWS integration.
+  - **CI (Continuous Integration):** GitHub Actions configured for automated testing and building
+    - Frontend: Node.js build and dependency installation
+    - Backend: Python/Poetry dependency installation, linting, and health checks
+    - Runs on push to master and pull requests
+  - **CD (Continuous Deployment):** Manual deployment currently
+    - Frontend: Manual deployment to Firebase Hosting via CLI
+    - Backend: Manual deployment to Cloud Run via CLI
+    - Future: Automated deployment can be configured with service account credentials
+  - Environment variables and secrets managed via GCP Secret Manager
+
 - **Environment Variables & Secrets:**
-  - Managed via AWS Secrets Manager or AWS Systems Manager Parameter Store.
-  - Includes Gemini API keys, database credentials, JWT secrets, etc.
+  - Managed via GCP Secret Manager for API keys, database credentials, JWT secrets, etc.
+  - Service account has appropriate access to secrets for runtime access.
+
 - **Monitoring & Logging:**
-  - AWS CloudWatch for logs and metrics
-  - Sentry or similar for error tracking (optional)
+  - Cloud Monitoring for logs and metrics
+  - Error reporting configured for production monitoring
+  - Health check endpoints available at /health
 
 ---
 
 ### 5.8. Domain Setup
 
-- **Domain Registration:**
-  - Register a primary domain (e.g., vocabloom.com) via Google Domains (preferred) or another reputable registrar.
+- **Current Status:** Using default GCP/Firebase URLs for MVP
+  - Frontend and backend deployed with automatic SSL/TLS certificates
+  - URLs are not publicly documented for security reasons
 
-- **DNS Management:**
-  - Use Google Cloud DNS for DNS management, advanced features, and reliability.
-  - Set up DNS records:
-    - **A/AAAA Records:** Point to backend load balancer or Cloud Run/Cloud Functions endpoint.
-    - **CNAME Records:** Point to frontend hosting (e.g., Cloud CDN or Firebase Hosting).
-    - **TXT Records:** For domain verification, email, and security (SPF, DKIM, DMARC if needed).
-
-- **Frontend Domain:**
-  - Configure the frontend (e.g., Firebase Hosting or Cloud CDN) to use a custom domain (e.g., app.vocabloom.com or www.vocabloom.com).
-  - Set up automatic SSL/TLS certificates via Google-managed certificates.
-
-- **Backend/API Domain:**
-  - Assign a subdomain for the API (e.g., api.vocabloom.com).
-  - Configure DNS to point to the backend deployment (Cloud Run, Cloud Functions, or Load Balancer).
-  - Ensure SSL/TLS is enabled for secure API communication (via Google-managed certificates).
-
-- **Environment Configuration:**
-  - Update environment variables in frontend and backend to use the correct API and frontend URLs.
-  - Use environment-specific domains for staging and production (e.g., staging.vocabloom.com).
+- **Future Domain Setup:**
+  - Custom domains (e.g., vocabloom-ai.com) will be configured later for showcasing
+  - Will use Cloudflare for DNS management and CDN
+  - SSL/TLS certificates will be managed automatically
 
 - **Security:**
-  - Enforce HTTPS everywhere (redirect HTTP to HTTPS).
-  - Use HSTS headers for additional security.
-  - Use AWS WAF and Shield for DDoS protection and web application firewall. 
+  - HTTPS enforced everywhere (automatic with Cloud Run and Firebase)
+  - CORS configured appropriately for frontend-backend communication
+  - Service account permissions follow principle of least privilege 

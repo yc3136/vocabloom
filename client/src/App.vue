@@ -1,28 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-
-const term = ref('')
-const response = ref('')
-const loading = ref(false)
-
-async function lookup() {
-  if (!term.value) return
-  loading.value = true
-  response.value = ''
-  try {
-    const res = await fetch('http://127.0.0.1:8000/api/translate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ term: term.value })
-    })
-    const data = await res.json()
-    response.value = data.message || JSON.stringify(data)
-  } catch (e) {
-    response.value = 'Error contacting backend.'
-  } finally {
-    loading.value = false
-  }
-}
+// TODO: Implement translation functionality
 </script>
 
 <template>

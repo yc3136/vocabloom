@@ -52,11 +52,13 @@
 3. [x] Display response in frontend UI
 
 ### 7. Deployment & Domain
-1. [ ] Deploy frontend to Firebase Hosting or GCS + Cloud CDN
-2. [ ] Deploy backend to Cloud Run
-3. [ ] Configure custom domains via Google Cloud DNS (e.g., www.vocabloom.com, api.vocabloom.com)
-4. [ ] Set up SSL/TLS certificates via Google-managed certificates
-5. [ ] Test HTTPS and domain routing
+1. [x] Deploy frontend to Firebase Hosting or GCS + Cloud CDN
+2. [x] Deploy backend to Cloud Run
+3. [ ] Configure custom domains via Google Cloud DNS (e.g., www.vocabloom.com, api.vocabloom.com) - **SKIPPED: Using default URLs for MVP**
+4. [x] Set up SSL/TLS certificates via Google-managed certificates
+5. [x] Test HTTPS and domain routing
+
+**Note:** Custom domains (vocabloom-ai.com) will be set up later for showcasing. Currently using default GCP/Firebase URLs (not publicly documented for security).
 
 ### 8. Public Launch Preparation
 1. [ ] Monitor logs and metrics in CloudWatch
