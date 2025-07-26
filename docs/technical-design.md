@@ -227,16 +227,26 @@ sequenceDiagram
 
 ### 5.8. Domain Setup
 
-- **Current Status:** Using default GCP/Firebase URLs for MVP
-  - Frontend and backend deployed with automatic SSL/TLS certificates
-  - URLs are not publicly documented for security reasons
+- **Custom Domain Configuration:**
+  - **Primary Domain:** vocabloom.app (registered via Namecheap)
+  - **DNS Management:** Namecheap Advanced DNS with CNAME records
+  - **Frontend:** vocabloom.app → Firebase Hosting ([PROJECT-ID].web.app)
+- **API Subdomain:** api.vocabloom.app → Cloud Run ([SERVICE-NAME]-[REGION].a.run.app)
+  - **WWW Redirect:** www.vocabloom.app → vocabloom.app
 
-- **Future Domain Setup:**
-  - Custom domains (e.g., vocabloom-ai.com) will be configured later for showcasing
-  - Will use Cloudflare for DNS management and CDN
-  - SSL/TLS certificates will be managed automatically
+- **SSL/TLS Certificates:**
+  - Firebase Hosting: Automatic SSL/TLS certificate provisioning (pending DNS verification)
+  - Cloud Run: Automatic SSL/TLS certificates via Google-managed certificates
+  - HTTPS enforced everywhere with automatic redirects
+
+- **Domain Verification:**
+  - Firebase domain verification in progress (DNS propagation)
+  - Verification records added: A record ([FIREBASE-IP]) and TXT record (hosting-site=[PROJECT-ID])
+  - Expected completion: 15 minutes to 24 hours for new domain propagation
 
 - **Security:**
   - HTTPS enforced everywhere (automatic with Cloud Run and Firebase)
   - CORS configured appropriately for frontend-backend communication
-  - Service account permissions follow principle of least privilege 
+  - Service account permissions follow principle of least privilege
+  - Domain ownership verified through DNS records
+  - **Security Note:** Project-specific identifiers (GCP project ID, service names, IPs) have been genericized in public documentation to prevent resource enumeration and maintain security best practices 

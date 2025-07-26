@@ -63,13 +63,29 @@ firebase deploy --only hosting
   - Firebase Hosting (Frontend)
   - Cloud Storage (Assets)
   - Secret Manager (API Keys)
+- **Domain:** vocabloom.app (with API subdomain)
+- **SSL/TLS:** Automatic certificates via Firebase and Cloud Run
 
 ## Features
 
-- [ ] AI-powered translation and explanation
-- [ ] Multi-language support
-- [ ] User-friendly interface
-- [ ] Responsive design
+- [x] AI-powered translation and explanation (MVP)
+- [x] Multi-language support
+- [x] User-friendly interface
+- [x] Responsive design
+- [x] Custom domain with SSL/TLS
+- [x] Automated deployment scripts
+- [x] CI/CD pipeline with GitHub Actions
+
+## Security
+
+This project follows security best practices:
+- Service account keys and credentials are excluded from version control
+- Project-specific identifiers are genericized in public documentation
+- HTTPS is enforced everywhere with automatic SSL/TLS certificates
+- Environment variables and secrets are managed via GCP Secret Manager
+- CORS is properly configured for frontend-backend communication
+
+**Note:** Configuration files (`.firebaserc`, deployment scripts) contain actual project IDs and service names as required for deployment functionality. These are not security risks as they only work with proper authentication and access controls.
 
 ## Contributing
 

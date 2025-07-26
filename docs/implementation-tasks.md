@@ -16,10 +16,9 @@
 2. [ ] Set up Google Cloud DNS for domain management
 3. [ ] Set up Google Cloud Storage (GCS) and Cloud CDN for static asset hosting (frontend)
 4. [ ] Set up Cloud Run for backend container hosting
-5. [ ] Set up Cloud SQL (PostgreSQL) for production database
-6. [ ] Set up Secret Manager for API keys, DB credentials, JWT secrets
-7. [ ] Set up Cloud Monitoring and Error Reporting for logging and monitoring
-8. [ ] Set up Google-managed SSL/TLS certificates
+5. [ ] Set up Secret Manager for API keys and JWT secrets
+6. [ ] Set up Cloud Monitoring and Error Reporting for logging and monitoring
+7. [ ] Set up Google-managed SSL/TLS certificates
 
 ### 3. CI/CD Pipeline
 1. [x] Configure GitHub Actions for automated build, test, and deploy
@@ -42,7 +41,7 @@
 3. [ ] Implement `/api/translate` endpoint
 4. [ ] Integrate Gemini API for translation/explanation
 5. [ ] Add input validation and error handling middleware
-6. [ ] Add logging (CloudWatch integration)
+6. [ ] Add logging (Cloud Monitoring integration)
 7. [ ] Add basic authentication (JWT, optional for MVP)
 8. [ ] Add tests for API endpoints and error cases
 
@@ -54,13 +53,14 @@
 ### 7. Deployment & Domain
 1. [x] Deploy frontend to Firebase Hosting or GCS + Cloud CDN
 2. [x] Deploy backend to Cloud Run
-3. [ ] Configure custom domains via Google Cloud DNS (e.g., www.vocabloom.com, api.vocabloom.com) - **SKIPPED: Using default URLs for MVP**
+3. [x] Configure custom domains via Namecheap DNS (vocabloom.app, api.vocabloom.app)
 4. [x] Set up SSL/TLS certificates via Google-managed certificates
 5. [x] Test HTTPS and domain routing
+6. [ ] Complete Firebase domain verification (DNS propagation in progress)
 
-**Note:** Custom domains (vocabloom-ai.com) will be set up later for showcasing. Currently using default GCP/Firebase URLs (not publicly documented for security).
+**Note:** Custom domain vocabloom.app is configured and DNS records are set up. Firebase domain verification is pending DNS propagation (15 minutes to 24 hours expected).
 
 ### 8. Public Launch Preparation
-1. [ ] Monitor logs and metrics in CloudWatch
+1. [ ] Monitor logs and metrics in Cloud Monitoring
 2. [ ] Ensure privacy policy and terms of service are available
 3. [ ] Open public access to the product

@@ -153,6 +153,10 @@ main() {
     
     print_success "🎉 Vocabloom Full Stack Deployment Complete!"
     print_status "Your application is now live!"
+    print_status "🌐 Custom Domain: https://vocabloom.app"
+    print_status "🔗 API Endpoint: https://api.vocabloom.app"
+    print_status "📊 Firebase Console: https://console.firebase.google.com/project/[PROJECT-ID]/hosting"
+    print_status "☁️  Cloud Run Console: https://console.cloud.google.com/run/detail/[REGION]/[SERVICE-NAME]"
 }
 
 # Run the main function

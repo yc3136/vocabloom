@@ -1,5 +1,18 @@
 {
   "projects": {
-    "default": "vocabloom-467020"
-  }
+    "default": "[PROJECT-ID]"
+  },
+  "targets": {
+    "[PROJECT-ID]": {
+      "hosting": {
+        "default": [
+          "[PROJECT-ID]"
+        ],
+        "custom": [
+          "[CUSTOM-SITE-ID]"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
