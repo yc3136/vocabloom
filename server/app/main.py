@@ -5,6 +5,10 @@ import os
 import httpx
 from google.cloud import secretmanager
 import json
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = FastAPI(title="Vocabloom API", version="1.0.0")
 
@@ -98,19 +102,66 @@ async def call_gemini_api(term: str, language: str) -> dict:
             if "candidates" in data and len(data["candidates"]) > 0:
                 response_text = data["candidates"][0]["content"]["parts"][0]["text"]
                 
-                # Try to parse as JSON, fallback to text processing
+                # Clean up the response text
+                cleaned_text = response_text.strip()
+                
+                # Remove markdown code blocks if present
+                if cleaned_text.startswith('```json'):
+                    cleaned_text = cleaned_text.replace('```json', '').replace('```', '').strip()
+                elif cleaned_text.startswith('```'):
+                    cleaned_text = cleaned_text.replace('```', '').strip()
+                
+                # Try to parse as JSON
                 try:
-                    result = json.loads(response_text)
+                    result = json.loads(cleaned_text)
+                    
+                    # Extract and clean up the fields
+                    translation = result.get("translation", f"Translation of '{term}'")
+                    explanation = result.get("explanation", f"Explanation of '{term}' in {language}")
+                    
+                    # Clean up formatting
+                    translation = translation.strip()
+                    explanation = explanation.strip()
+                    
+                    # Handle newlines properly
+                    translation = translation.replace('\\n', '\n').replace('\n\n\n', '\n\n')
+                    explanation = explanation.replace('\\n', '\n').replace('\n\n\n', '\n\n')
+                    
                     return {
-                        "translation": result.get("translation", f"Translation of '{term}'"),
-                        "explanation": result.get("explanation", f"Explanation of '{term}' in {language}")
+                        "translation": translation,
+                        "explanation": explanation
                     }
-                except json.JSONDecodeError:
-                    # If not JSON, split the response
-                    lines = response_text.strip().split('\n')
-                    translation = lines[0] if lines else f"Translation of '{term}'"
-                    explanation = '\n'.join(lines[1:]) if len(lines) > 1 else f"Explanation of '{term}' in {language}"
-                    return {"translation": translation, "explanation": explanation}
+                    
+                except json.JSONDecodeError as e:
+                    # If JSON parsing fails, try to extract content from the response
+                    print(f"JSON parsing failed: {e}")
+                    print(f"Response text: {cleaned_text}")
+                    
+                    # Fallback: try to find translation and explanation in the text
+                    lines = cleaned_text.split('\n')
+                    translation = f"Translation of '{term}'"
+                    explanation = f"Explanation of '{term}' in {language}"
+                    
+                    # Look for patterns that might indicate translation and explanation
+                    for i, line in enumerate(lines):
+                        line = line.strip()
+                        if '"translation"' in line or 'translation' in line.lower():
+                            # Try to extract translation from this line or next few lines
+                            if ':' in line:
+                                translation = line.split(':', 1)[1].strip().strip('"').strip(',')
+                            elif i + 1 < len(lines):
+                                translation = lines[i + 1].strip().strip('"').strip(',')
+                        elif '"explanation"' in line or 'explanation' in line.lower():
+                            # Try to extract explanation from this line or next few lines
+                            if ':' in line:
+                                explanation = line.split(':', 1)[1].strip().strip('"').strip(',')
+                            elif i + 1 < len(lines):
+                                explanation = lines[i + 1].strip().strip('"').strip(',')
+                    
+                    return {
+                        "translation": translation,
+                        "explanation": explanation
+                    }
             else:
                 raise HTTPException(status_code=500, detail="Invalid response from Gemini API")
                 

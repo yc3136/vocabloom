@@ -8,4 +8,4 @@ if [ -n "$PID" ]; then
 fi
 
 # Start the FastAPI server
-poetry run uvicorn vocabloom_server.main:app --reload --port $PORT 
+poetry run uvicorn app.main:app --reload --port $PORT 
