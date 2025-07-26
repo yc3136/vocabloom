@@ -61,7 +61,7 @@ npm run build
 
 # Deploy to Firebase
 print_status "Deploying to Firebase Hosting..."
-firebase deploy --only hosting --quiet
+firebase deploy --only hosting
 
 print_success "Frontend deployed successfully!"
 

@@ -1,15 +1,15 @@
 {
   "projects": {
-    "default": "[PROJECT-ID]"
+    "default": "vocabloom-467020"
   },
   "targets": {
-    "[PROJECT-ID]": {
+    "vocabloom-467020": {
       "hosting": {
         "default": [
-          "[PROJECT-ID]"
+          "vocabloom-467020"
         ],
         "custom": [
-          "[CUSTOM-SITE-ID]"
+          "vocabloom-467020"
         ]
       }
     }

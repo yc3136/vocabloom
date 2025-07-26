@@ -20,6 +20,7 @@ app.add_middleware(
         "http://localhost:3000",  # Alternative dev port
         "https://vocabloom-467020.web.app",  # Firebase Hosting
         "https://vocabloom-467020.firebaseapp.com",  # Firebase Hosting alternative
+        "https://vocabloom.app",  # Custom domain
     ],
     allow_credentials=True,
     allow_methods=["*"],
