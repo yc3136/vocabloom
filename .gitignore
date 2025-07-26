@@ -1,6 +1,9 @@
 # Sensitive files and directories
 ignore/
 
+# Test files with sensitive data
+test_local.py
+
 # Environment files
 .env
 .env.local
