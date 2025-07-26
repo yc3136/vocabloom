@@ -207,10 +207,11 @@ sequenceDiagram
     - Frontend: Node.js build and dependency installation
     - Backend: Python/Poetry dependency installation, linting, and health checks
     - Runs on push to master and pull requests
-  - **CD (Continuous Deployment):** Manual deployment currently
-    - Frontend: Manual deployment to Firebase Hosting via CLI
-    - Backend: Manual deployment to Cloud Run via CLI
-    - Future: Automated deployment can be configured with service account credentials
+  - **CD (Continuous Deployment):** Manual deployment with automation scripts
+    - Full stack deployment: `./deploy.sh` (deploys both frontend and backend)
+    - Individual deployments: `./deploy-backend.sh` and `./deploy-frontend.sh`
+    - Scripts include dependency checks, building, deployment, and health testing
+    - Avoids Cloud Build quota usage by using local builds
   - Environment variables and secrets managed via GCP Secret Manager
 
 - **Environment Variables & Secrets:**

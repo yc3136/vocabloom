@@ -1,38 +1,80 @@
 # Vocabloom
 
-Vocabloom is an AI-powered web platform designed for multilingual parents to effortlessly generate and save custom multilingual text and image content, simplifying the process of teaching complex terms to their children. 
+An AI-powered language learning platform that provides instant translations and explanations for multilingual families.
 
-## Local Development
+## Quick Start
 
 ### Prerequisites
-- Node.js 20+
-- Python 3.9+
-- Poetry (for backend)
+- Node.js 18+
+- Python 3.10+
+- Google Cloud CLI
+- Firebase CLI
 
-### Running the Full Stack
-From the project root:
+### Development
 ```bash
-./run_vocabloom.sh
-```
-- This will start the backend (FastAPI) and frontend (Vue + Vuetify) for local development.
-- Backend: http://127.0.0.1:8000
-- Frontend: http://localhost:5173
+# Start frontend development server
+cd client && npm run dev
 
-### Running Backend Only
-From the project root:
+# Start backend development server
+cd server && poetry run uvicorn app.main:app --reload
+```
+
+## Deployment
+
+### Full Stack Deployment
+Deploy both frontend and backend with one command:
+```bash
+./deploy.sh
+```
+
+### Individual Deployments
+Deploy only the backend:
+```bash
+./deploy-backend.sh
+```
+
+Deploy only the frontend:
+```bash
+./deploy-frontend.sh
+```
+
+### Manual Deployment
+If you prefer to deploy manually:
+
+**Backend:**
 ```bash
 cd server
-./run_server.sh
+gcloud run deploy vocabloom-api --source . --region=us-central1 --allow-unauthenticated
 ```
-- This will kill any previous backend instance on port 8000 and start a new one.
 
-### Running Frontend Only
-From the project root:
+**Frontend:**
 ```bash
 cd client
-npm run dev
+npm run build
+firebase deploy --only hosting
 ```
 
-### Testing the Integration
-- Open the frontend in your browser (http://localhost:5173)
-- Enter a term and click "Look up" to see the backend response displayed below the button.
+## Architecture
+
+- **Frontend:** Vue.js 3 + TypeScript + Vuetify
+- **Backend:** FastAPI + Python 3.11
+- **Infrastructure:** Google Cloud Platform
+  - Cloud Run (Backend)
+  - Firebase Hosting (Frontend)
+  - Cloud Storage (Assets)
+  - Secret Manager (API Keys)
+
+## Features
+
+- [ ] AI-powered translation and explanation
+- [ ] Multi-language support
+- [ ] User-friendly interface
+- [ ] Responsive design
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run tests
+5. Submit a pull request
