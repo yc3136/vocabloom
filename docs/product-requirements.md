@@ -1,7 +1,7 @@
 # Vocabloom
 
-**Document Version:** 1.1  
-**Last Updated:** July 25, 2025
+**Document Version:** 1.2  
+**Last Updated:** July 26, 2025
 
 ---
 
@@ -44,21 +44,31 @@ Vocabloom will support all major world languages, leveraging the capabilities of
 
 ---
 
-### Milestone 2: User Account Management
+### Milestone 2: User Account Management & Flashcards
 
 #### Functional Requirements (User Stories)
+
+**User Account Management:**
 - **FR-2.1:** As a new user, I can register for an account using email/password or OAuth, so I can access personalized features.
 - **FR-2.2:** As a returning user, I can log in securely to access my account and saved content.
 - **FR-2.3:** As an authenticated user, I can view a chronological history of my past translations.
 - **FR-2.4:** As an authenticated user, I can bookmark or save specific translations for future reference.
 - **FR-2.5:** As an authenticated user, I can update my account settings (change password, update email, delete account).
 - **FR-2.6:** As a user, I can log out and have my session expire after inactivity for security.
-- **FR-2.7:** As a user, I can provide feedback or report issues from within my account.
-- **FR-2.8:** As a user, I can export my translation history and saved content for privacy and transparency.
+
+**Flashcard System:**
+- **FR-2.7:** After each translation lookup, I can create a flashcard that includes the original word, translated word, and example sentences.
+- **FR-2.8:** As a user, I can view and manage all my created flashcards in a dedicated dashboard.
+- **FR-2.9:** As a user, I can select from multiple example sentences when creating flashcards.
+- **FR-2.10:** As a user, I can customize flashcard appearance (colors, fonts, layout) using predefined templates.
+- **FR-2.11:** As a user, I can organize flashcards into collections or categories.
+- **FR-2.12:** As a user, I can delete or edit existing flashcards.
 
 #### Non-Functional Requirements
 - **Security & Privacy:** User data is securely stored and managed, with encryption at rest and in transit. No personal data is shared with third parties.
-- **Analytics:** Track user activity (e.g., logins, translations generated, content saved) to inform product improvements.
+- **Performance:** Flashcard generation should complete within 5 seconds.
+- **Usability:** Flashcard interface should be intuitive for creation and management.
+- **Analytics:** Track user activity (e.g., logins, translations generated, flashcards created) to inform product improvements.
 - **Scalability:** System is improved to support a moderate increase in concurrent users and data volume.
 
 ---
@@ -78,18 +88,45 @@ Vocabloom will support all major world languages, leveraging the capabilities of
 
 ---
 
-### Milestone 4: Advanced Features
+### Milestone 4: Advanced Learning Features
 
 #### Functional Requirements (User Stories)
-- **FR-4.1:** As a user, I can generate and access additional media types (audio pronunciation, video clips) for terms.
-- **FR-4.2:** As a user, I can participate in community/forum discussions, ask questions, and share content.
-- **FR-4.3:** As a user, I can customize content generation with advanced prompts and style selections.
-- **FR-4.4:** As a user, I can organize and share my content (e.g., study lists, albums, shareable links).
-- **FR-4.5:** As a user, I can access premium features (higher limits, exclusive content) via a subscription.
-- **FR-4.6:** As a user, I am rewarded for consistent learning and engagement through gamification (streaks, points, badges, leaderboards).
-- **FR-4.7:** As a user, I can use the platform in multiple languages (multi-language UI and localization).
-- **FR-4.8:** As an admin, I can view advanced analytics and reporting on user engagement and content trends.
-- **FR-4.9:** As an admin, I can moderate user-generated content and manage user accounts.
+
+**Flashcard Export & Printing:**
+- **FR-4.1:** As a user, I can print my flashcards as PDF for offline use.
+- **FR-4.2:** As a user, I can export my flashcards in various formats (PDF, CSV).
+
+**Interactive Learning Modes:**
+- **FR-4.3:** As a user, I can study flashcards in slideshow mode with navigation controls.
+- **FR-4.4:** As a user, I can take quizzes based on my flashcards with multiple choice or fill-in-the-blank questions.
+- **FR-4.5:** As a user, I can track my study progress and performance on flashcards.
+
+**Community & Sharing:**
+- **FR-4.6:** As a user, I can participate in community/forum discussions, ask questions, and share content.
+- **FR-4.7:** As a user, I can organize and share my content (e.g., study lists, albums, shareable links).
+
+**Premium Features:**
+- **FR-4.8:** As a user, I can access premium features (higher limits, exclusive content) via a subscription.
+- **FR-4.9:** As a user, I am rewarded for consistent learning and engagement through gamification (streaks, points, badges, leaderboards).
+
+#### Non-Functional Requirements
+- **Performance:** PDF generation and export should complete within 10 seconds.
+- **Print Quality:** Generated PDFs should be print-ready with proper formatting and layout.
+- **Analytics:** Advanced analytics dashboards for user engagement, content trends, and system health.
+- **Scalability:** System is architected for high availability and global scale.
+- **Security & Privacy:** Ongoing improvements to meet evolving standards and regulations (e.g., GDPR, CCPA).
+- **Accessibility:** Full compliance with accessibility standards (WCAG 2.1 AA or higher).
+
+---
+
+### Milestone 5: Advanced Platform Features
+
+#### Functional Requirements (User Stories)
+- **FR-5.1:** As a user, I can generate and access additional media types (audio pronunciation, video clips) for terms.
+- **FR-5.2:** As a user, I can customize content generation with advanced prompts and style selections.
+- **FR-5.3:** As a user, I can use the platform in multiple languages (multi-language UI and localization).
+- **FR-5.4:** As an admin, I can view advanced analytics and reporting on user engagement and content trends.
+- **FR-5.5:** As an admin, I can moderate user-generated content and manage user accounts.
 
 #### Non-Functional Requirements
 - **Analytics:** Advanced analytics dashboards for user engagement, content trends, and system health.
