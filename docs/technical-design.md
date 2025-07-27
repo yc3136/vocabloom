@@ -1,14 +1,14 @@
 # Vocabloom Technical Design
 
-**Document Version:** 2.0
+**Document Version:** 2.1
 **Last Updated:** July 26, 2025
-**Status:** MVP Complete ✅
+**Status:** MVP Complete ✅ | Milestone 2 In Progress 🚧
 
 ---
 
 ## 1. Overview
 
-This document outlines the technical architecture, technology choices, and infrastructure for Vocabloom. The MVP has been successfully implemented and deployed to production.
+This document outlines the technical architecture, technology choices, and infrastructure for Vocabloom. The MVP has been successfully implemented and deployed to production. Milestone 2 focuses on user account management and flashcard features.
 
 **Production URLs:**
 - **Frontend**: https://vocabloom.app (custom domain) / https://vocabloom-467020.web.app (Firebase)
@@ -23,7 +23,7 @@ This document outlines the technical architecture, technology choices, and infra
 
 - **Framework:** Vue.js 3 (with TypeScript)
 - **UI Library:** Vuetify 3 (for accessibility and rapid prototyping)
-- **State Management:** Vue 3 Composition API (MVP)
+- **State Management:** Vue 3 Composition API (MVP) → Pinia (Milestone 2)
 - **Routing:** Vue Router 4
 - **Form Handling:** Vue 3 reactive forms
 - **Markdown Rendering:** marked.js
@@ -34,8 +34,9 @@ This document outlines the technical architecture, technology choices, and infra
 - **Language/Runtime:** Python 3.13
 - **Framework:** FastAPI (for high performance, async support, and OpenAPI docs)
 - **API:** REST (with OpenAPI/Swagger documentation)
-- **Authentication:** None (MVP - public API)
-- **Database:** None (MVP - stateless)
+- **Authentication:** Firebase Auth (Milestone 2)
+- **Database:** Cloud SQL (PostgreSQL) (Milestone 2) - Relational database
+- **ORM:** SQLAlchemy (for database operations)
 - **Dependency Management:** Poetry
 - **Testing:** Pytest (planned)
 
@@ -52,8 +53,10 @@ This document outlines the technical architecture, technology choices, and infra
 - **Core Services:**
   - **Compute:** Cloud Run (for containerized FastAPI backend)
   - **Frontend Hosting:** Firebase Hosting
+  - **Authentication:** Firebase Auth (user management, OAuth providers)
+  - **Database:** Cloud SQL (PostgreSQL) (relational database for user data and flashcards)
   - **Object Storage:** Google Cloud Storage (GCS) (for static assets)
-  - **Secrets Management:** Secret Manager (for API keys)
+  - **Secrets Management:** Secret Manager (for API keys and database credentials)
   - **Monitoring:** Cloud Monitoring, Error Reporting
   - **CI/CD:** GitHub Actions, manual deployment scripts
 
@@ -81,13 +84,15 @@ This document outlines the technical architecture, technology choices, and infra
   - Poetry (for Python dependency management)
   - GCloud CLI (for cloud integration)  
   - npm (frontend)
+  - Firebase CLI (for local development and deployment)
+  - PostgreSQL client (for local database development)
 
 - **Recommended IDE:** VSCode (with recommended extensions for TypeScript, ESLint, Prettier, Python, Docker)
 
 ### 3.2. Environments
 
 - **Development:** Local development with hot reload
-- **Production:** GCP (Cloud Run + Firebase Hosting)
+- **Production:** GCP (Cloud Run + Firebase Hosting + Cloud SQL)
 
 ---
 
@@ -100,6 +105,15 @@ This document outlines the technical architecture, technology choices, and infra
     - **Gemini Integration:** Native and seamless integration with Gemini API and other Google AI/ML services.
     - **Managed Services:** GCP offers robust managed services for compute, storage, database, and monitoring, all compatible with the project's tech stack.
     - **Developer Experience:** GCP's developer tooling and documentation are well-suited for rapid prototyping and deployment.
+- **Database Choice for Milestone 2:**
+  - **PostgreSQL on Cloud SQL:** Advanced relational database with excellent JSON support
+  - **Advanced Features:** JSONB support, complex queries, better indexing
+  - **GCP Integration:** Native Cloud SQL service with automatic backups and high availability
+- **Firebase Auth Choice:**
+  - **Rapid Development:** Ready-to-use authentication with multiple OAuth providers
+  - **Cost Effective:** Generous free tier for authentication services
+  - **Security:** Built-in security features and token management
+  - **Integration:** Seamless integration with GCP services and PostgreSQL
 
 ---
 
@@ -107,21 +121,12 @@ This document outlines the technical architecture, technology choices, and infra
 
 ### 5.1. User Journey
 
-1. **User Input:**
-   - The user enters an English term and selects a target language from a dropdown menu on the web app.
-   - The user submits the request.
-2. **Frontend Processing:**
-   - The Vue.js frontend validates the input (non-empty, valid selection).
-   - A POST request is sent to the backend API with the term and selected language.
-3. **Backend Processing:**
-   - The FastAPI backend receives the request and validates the payload.
-   - The backend calls the Gemini API to generate a translation or explanation for the term in the target language.
-   - The backend processes the AI response, applies formatting, and returns the result to the frontend.
-4. **Frontend Display:**
-   - The frontend receives the response and displays the translation/explanation to the user.
-   - If an error occurs, a user-friendly error message is shown.
+1. **User Input:** User enters an English term and selects a target language
+2. **Frontend Processing:** Vue.js validates input and sends POST request to backend
+3. **Backend Processing:** FastAPI validates payload and calls Gemini API
+4. **Frontend Display:** Results are displayed with markdown rendering
 
-### 5.2. Sequence Diagram
+### 5.2. Architecture
 
 ```mermaid
 sequenceDiagram
@@ -142,132 +147,352 @@ sequenceDiagram
     F->>U: Display results
 ```
 
-### 5.3. Frontend Implementation
+### 5.3. Key Components
 
-- **Framework:** Vue.js 3 with Composition API
-- **Structure:**
-  - Single-page application with Vue Router
-  - Home page with language selection and term input
-  - About page with project information
-  - Responsive design with Vuetify components
-- **Key Features:**
-  - Language selection dropdown with native language names
-  - Real-time form validation
-  - Markdown rendering for explanations
-  - Loading states and error handling
-  - Mobile-responsive design
+- **Frontend:** Single-page application with Vue Router, responsive design with Vuetify
+- **Backend:** Single endpoint `/api/translate` with input validation and error handling
+- **AI Integration:** Gemini 2.0 Flash API with structured JSON responses
+- **Deployment:** Firebase Hosting (frontend) + Cloud Run (backend)
 
-### 5.4. Backend Implementation
+### 5.4. Deployment & Operations
 
-- **Framework:** Python with FastAPI for REST API endpoints.
-- **Structure:**
-  - Single endpoint: `/api/translate`
-  - Middleware for input validation and error handling
-  - Environment-based API key management
-- **API Endpoint:**
-  - `POST /api/translate` — Receives `{ term, language }`, validates input, calls Gemini API, returns translation/explanation.
-- **Error Handling:**
-  - Centralized error handling for consistent API responses
-  - Logging of errors and failed requests for monitoring
-
-### 5.5. Gemini API Integration
-
-- **Library:** Gemini 2.0 Flash API accessed via httpx
-- **Authentication:** API key stored in GCP Secret Manager (production) or .env file (local)
-- **Request Flow:**
-  1. Backend constructs a prompt for Gemini API based on user input
-  2. Sends request to Gemini 2.0 Flash endpoint
-  3. Handles API response, including JSON parsing and formatting
-  4. Returns clean translation and explanation to frontend
-- **Response Format:**
-  ```json
-  {
-    "translation": "Translated term",
-    "explanation": "Markdown-formatted explanation"
-  }
-  ```
-- **Security:**
-  - API keys and secrets are never exposed to the frontend or client
-
-### 5.6. Deployment & Operations
-
-- **Frontend Deployment:**
-  - Deployed to Firebase Hosting for global CDN and automatic SSL/TLS certificates
-  - Custom domain: vocabloom.app
-  - Firebase domain: vocabloom-467020.web.app
-
-- **Backend Deployment:**
-  - Deployed to Cloud Run for managed Python hosting and auto-scaling
-  - Service URL: vocabloom-api-18560061448.us-central1.run.app
-  - Dockerized for consistency across environments
-  - Configured with automatic SSL/TLS certificates
-
-- **Infrastructure Setup:**
-  - GCP project: vocabloom-467020
-  - Primary region: us-central1
-  - Service account configured with appropriate permissions
-  - Secret Manager configured for secure API key storage
-  - Cloud Monitoring enabled for logging and metrics
-
-- **CI/CD:**
-  - **Deployment Scripts:** Manual deployment with automation scripts
-    - Full stack deployment: `./deploy.sh`
-    - Individual deployments: `./deploy-backend.sh` and `./deploy-frontend.sh`
-    - Scripts include dependency checks, building, deployment, and health testing
-  - Environment variables and secrets managed via GCP Secret Manager
-
-- **Environment Variables & Secrets:**
-  - Managed via GCP Secret Manager for API keys
-  - Local development uses .env file (gitignored)
-
-- **Monitoring & Logging:**
-  - Cloud Monitoring for logs and metrics
-  - Health check endpoint available at /health
-
-### 5.7. Domain Setup
-
-- **Custom Domain Configuration:**
-  - **Primary Domain:** vocabloom.app (registered via Namecheap)
-  - **DNS Management:** Namecheap Advanced DNS
-  - **Frontend:** vocabloom.app → Firebase Hosting (vocabloom-467020.web.app)
-  - **Backend:** vocabloom-api-18560061448.us-central1.run.app
-
-- **SSL/TLS Certificates:**
-  - Firebase Hosting: Automatic SSL/TLS certificate provisioning
-  - Cloud Run: Automatic SSL/TLS certificates via Google-managed certificates
-  - HTTPS enforced everywhere with automatic redirects
-
-- **Domain Verification:**
-  - Firebase domain verification completed
-  - Custom domain fully operational
-
-- **Security:**
-  - HTTPS enforced everywhere (automatic with Cloud Run and Firebase)
-  - CORS configured for vocabloom.app and Firebase domains
-  - Service account permissions follow principle of least privilege
-  - Domain ownership verified through DNS records
+- **Frontend:** Firebase Hosting with custom domain (vocabloom.app)
+- **Backend:** Cloud Run with automatic SSL/TLS certificates
+- **Infrastructure:** GCP project (vocabloom-467020) with Secret Manager for API keys
+- **CI/CD:** Manual deployment scripts with dependency checks and health testing
+- **Monitoring:** Cloud Monitoring for logs and metrics
 
 ---
 
-## 6. Future Enhancements
+## 6. Milestone 2: User Account Management & Flashcards
 
-### 6.1. Authentication & User Management
-- User registration and login functionality
-- User profiles and preferences
-- Role-based access control
+### 6.1. High-Level Architecture
 
-### 6.2. Database Integration
-- PostgreSQL database for user data and translation history
-- Redis for caching and session management
+```mermaid
+graph TB
+    subgraph "Frontend (Vue.js + Vuetify)"
+        A[User Interface]
+        B[Authentication UI]
+        C[Flashcard Management]
+        D[State Management - Pinia]
+    end
+    
+    subgraph "Backend (FastAPI)"
+        E[API Gateway]
+        F[Authentication Service]
+        G[Flashcard Service]
+        H[Translation Service]
+    end
+    
+    subgraph "Firebase Services"
+        I[Firebase Auth]
+        J[Firestore Database]
+        K[Firebase Hosting]
+    end
+    
+    subgraph "External Services"
+        L[Gemini API]
+    end
+    
+    A --> E
+    B --> I
+    C --> G
+    D --> E
+    E --> F
+    E --> G
+    E --> H
+    F --> I
+    G --> J
+    H --> L
+    K --> A
+```
 
-### 6.3. Advanced Features
-- Audio pronunciation using Google Cloud Text-to-Speech
-- Image generation for vocabulary learning
-- Translation history and favorites
-- Offline functionality
+### 6.2. Hybrid User Experience Design
 
-### 6.4. Testing & Quality Assurance
-- Comprehensive unit tests for frontend components
-- Integration tests for API endpoints
-- End-to-end tests for user flows
-- Performance testing and monitoring 
+#### 6.2.1. Public vs. Authenticated Features
+
+**Public Features (No Authentication Required):**
+- Basic translation lookup and display
+- Flashcard generation and preview
+- Template selection and customization
+- Real-time translation with Gemini API
+- Responsive design and accessibility features
+
+**Authenticated Features (Requires Sign-in):**
+- Save flashcards to personal collection
+- View and manage saved flashcards
+- View translation history
+- User preferences and settings
+
+#### 6.2.2. User Journey Flow
+
+**Anonymous User Journey:**
+1. User visits vocabloom.app
+2. User can immediately use translation feature
+3. User can generate and preview flashcards
+4. When user tries to save a flashcard → authentication prompt
+5. User can choose to sign in or continue without saving
+
+**Authenticated User Journey:**
+1. User signs in (optional for basic features)
+2. All public features available
+3. Additional personalized features unlocked
+4. Seamless save and management capabilities
+
+#### 6.2.3. Authentication Prompt Strategy
+
+**Trigger Points for Authentication:**
+- User clicks "Save Flashcard" button
+- User tries to access "My Flashcards" dashboard
+- User tries to view translation history
+
+**User Experience:**
+- Non-intrusive authentication prompts
+- Clear value proposition for signing up
+- Option to continue without authentication
+- Smooth transition from anonymous to authenticated state
+
+### 6.3. User Account Management
+
+#### 6.3.1. Authentication Architecture
+
+**Technology Stack:**
+- **Firebase Authentication:** Primary authentication service
+- **Supported Providers:** Email/Password, Google OAuth
+- **Frontend Integration:** Firebase Auth SDK for Vue.js
+- **Backend Integration:** Firebase Admin SDK for Python
+
+**Key Features:**
+- Optional authentication for basic features
+- Seamless sign-in flow when needed
+- User session management and logout functionality
+- Protected API endpoints with middleware authentication
+
+#### 6.2.2. Database Schema (PostgreSQL)
+
+**Tables Structure:**
+
+**Users Table (`users`):**
+```sql
+CREATE TABLE users (
+    id VARCHAR(128) PRIMARY KEY, -- Firebase UID
+    email VARCHAR(255) UNIQUE NOT NULL,
+    display_name VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_login_at TIMESTAMP,
+    preferences JSONB -- Store user preferences as JSON
+);
+```
+
+**Flashcards Table (`flashcards`):**
+```sql
+CREATE TABLE flashcards (
+    id SERIAL PRIMARY KEY,
+    user_id VARCHAR(128) NOT NULL,
+    original_word VARCHAR(255) NOT NULL,
+    translated_word VARCHAR(255) NOT NULL,
+    example_sentences JSONB, -- Array of example sentences
+    template VARCHAR(50) DEFAULT 'classic',
+    colors JSONB, -- Store color scheme as JSON
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+```
+
+**Translations Table (`translations`):**
+```sql
+CREATE TABLE translations (
+    id SERIAL PRIMARY KEY,
+    user_id VARCHAR(128) NOT NULL,
+    original_term VARCHAR(255) NOT NULL,
+    target_language VARCHAR(10) NOT NULL,
+    translation TEXT NOT NULL,
+    explanation TEXT,
+    bookmarked BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+```
+
+**Indexes for Performance:**
+```sql
+CREATE INDEX idx_flashcards_user_id ON flashcards(user_id);
+CREATE INDEX idx_translations_user_id ON translations(user_id);
+CREATE INDEX idx_translations_created_at ON translations(created_at);
+CREATE INDEX idx_flashcards_examples ON flashcards USING GIN (example_sentences);
+CREATE INDEX idx_users_preferences ON users USING GIN (preferences);
+```
+
+#### 6.2.3. Database Security
+
+**Connection Security:**
+- **Cloud SQL Proxy:** Secure connection to Cloud SQL instance
+- **SSL/TLS Encryption:** Automatic encryption for all database connections
+- **IAM Integration:** Service account-based authentication
+- **Network Security:** Private IP connections within GCP VPC
+
+**Data Security:**
+- **Row-Level Security:** Users can only access their own data
+- **Foreign Key Constraints:** Maintain data integrity
+- **Input Validation:** SQLAlchemy ORM validation and sanitization
+- **Backup Encryption:** Automatic encrypted backups
+
+### 6.4. Flashcard System
+
+#### 6.4.1. Flashcard Creation Flow
+
+**Anonymous User Journey:**
+1. User performs translation lookup (no authentication required)
+2. System displays "Create Flashcard" button
+3. User opens flashcard creation modal
+4. User selects example sentences and customizes appearance
+5. User can preview flashcard without saving
+6. When user clicks "Save" → authentication prompt appears
+7. User can sign in to save or continue without saving
+
+**Authenticated User Journey:**
+1. User performs translation lookup
+2. System displays "Create Flashcard" button
+3. User opens flashcard creation modal
+4. User selects example sentences and customizes appearance
+5. User saves flashcard directly to PostgreSQL
+
+**Key Features:**
+- Multiple example sentence selection
+- Template-based customization (Classic, Modern, Minimal)
+- Color and font customization
+- Category organization (authenticated users only)
+- Real-time preview without saving
+
+#### 6.4.2. Flashcard Management (Authenticated Only)
+
+**Dashboard Features:**
+- Grid and list view modes
+- Search and filter functionality
+- Sorting options (date, alphabetical, last modified)
+
+**Template System:**
+- 3 predefined templates (Classic, Modern, Minimal)
+- Customizable colors, fonts, and layouts
+- Responsive design for desktop and mobile
+- Professional appearance for printing
+
+### 6.5. API Endpoints
+
+#### 6.5.1. Public Endpoints (No Authentication)
+- `POST /api/translate` - Basic translation (existing MVP endpoint)
+- `POST /api/flashcards/preview` - Generate flashcard preview
+
+#### 6.5.2. Authentication Endpoints
+- `POST /api/auth/register` - User registration via Firebase Auth
+- `POST /api/auth/login` - User login via Firebase Auth
+- `POST /api/auth/logout` - User logout
+
+#### 6.5.3. Protected Endpoints (Requires Authentication)
+- `GET /api/flashcards` - Get user's flashcards (with filtering)
+- `POST /api/flashcards` - Save flashcard to user collection
+- `PUT /api/flashcards/{id}` - Update flashcard
+- `DELETE /api/flashcards/{id}` - Delete flashcard
+- `GET /api/translations/history` - Get user's translation history
+
+### 6.6. Database Operations
+
+#### 6.6.1. Database Connection
+- **Cloud SQL Proxy:** Secure connection to Cloud SQL instance
+- **SQLAlchemy ORM:** Object-relational mapping for database operations
+- **Connection Pooling:** Efficient database connection management
+- **Environment Configuration:** Database credentials via Secret Manager
+
+#### 6.6.2. Model Definitions
+- **User Model:** Firebase UID integration with PostgreSQL
+- **Flashcard Model:** Complete flashcard data with JSONB fields
+- **Translation Model:** User translation history tracking
+- **Relationships:** Proper foreign key relationships and cascading
+
+#### 6.6.3. Authentication Flow
+- **Firebase Auth Integration:** Token verification with PostgreSQL user sync
+- **Protected Endpoints:** Middleware authentication for user-specific data
+- **User Session Management:** Secure token handling and validation
+- **Anonymous vs. Authenticated:** Hybrid access control
+
+### 6.7. State Management
+
+**Pinia Stores:**
+- **Auth Store:** User authentication state and methods
+- **Flashcard Store:** Flashcard data and CRUD operations (authenticated)
+- **Translation Store:** Current translation state (public)
+
+**Anonymous User State:**
+- Current translation results
+- Flashcard preview data
+- UI state and preferences (local storage)
+
+**Authenticated User State:**
+- All anonymous user state
+- Saved flashcards collection
+- Translation history
+- User preferences
+
+### 6.8. Deployment Considerations
+
+#### 6.8.1. Cloud SQL Setup
+
+**Required Cloud SQL Configuration:**
+- **Instance Type:** PostgreSQL 14 or higher
+- **Machine Type:** db-f1-micro (free tier) or db-g1-small for production
+- **Storage:** 10GB minimum (SSD)
+- **Backup:** Automatic daily backups
+- **High Availability:** Optional for production
+- **Connections:** Cloud SQL Proxy for secure connections
+
+#### 6.8.2. Environment Variables
+
+**Backend Environment:**
+- Database connection string via Secret Manager
+- Firebase Admin SDK credentials
+- API keys and service account details
+- Environment-specific configurations
+
+**Frontend Environment:**
+- Firebase configuration for authentication
+- API endpoints and service URLs
+- Feature flags and environment indicators
+
+#### 6.8.3. Database Migration
+
+**Alembic for Database Migrations:**
+- Version-controlled schema changes
+- Automated migration scripts
+- Rollback capabilities
+- Environment-specific migrations
+
+### 6.9. Testing Strategy
+
+#### 6.9.1. Unit Tests
+
+**Frontend Testing:**
+- Component testing with Vue Test Utils
+- Store testing for Pinia state management
+- Authentication flow testing
+- UI interaction testing
+
+**Backend Testing:**
+- API endpoint testing with pytest
+- Database operation testing
+- Authentication middleware testing
+- Error handling validation
+
+#### 6.9.2. Integration Tests
+
+**Database Integration Tests:**
+- PostgreSQL connection and operations
+- Firebase Auth token verification
+- User data persistence and retrieval
+- Flashcard CRUD operations with database
+
+**Authentication Flow Tests:**
+- User registration and login
+- Protected endpoint access
+- Token validation and refresh
+- Anonymous vs. authenticated user flows 

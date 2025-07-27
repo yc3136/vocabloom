@@ -55,20 +55,27 @@ Vocabloom will support all major world languages, leveraging the capabilities of
 - **FR-2.4:** As an authenticated user, I can bookmark or save specific translations for future reference.
 - **FR-2.5:** As an authenticated user, I can update my account settings (change password, update email, delete account).
 - **FR-2.6:** As a user, I can log out and have my session expire after inactivity for security.
+- **FR-2.7:** When I try to save content without being signed in, I am prompted to create an account or sign in.
+- **FR-2.8:** I can continue using basic translation features even if I choose not to sign in.
+- **FR-2.9:** The authentication prompt clearly explains the benefits of creating an account (save work, organize content, access history).
 
 **Flashcard System:**
-- **FR-2.7:** After each translation lookup, I can create a flashcard that includes the original word, translated word, and example sentences.
-- **FR-2.8:** As a user, I can view and manage all my created flashcards in a dedicated dashboard.
-- **FR-2.9:** As a user, I can select from multiple example sentences when creating flashcards.
-- **FR-2.10:** As a user, I can customize flashcard appearance (colors, fonts, layout) using predefined templates.
-- **FR-2.11:** As a user, I can organize flashcards into collections or categories.
-- **FR-2.12:** As a user, I can delete or edit existing flashcards.
+- **FR-2.10:** As any user, I can perform translation lookups and view results without creating an account.
+- **FR-2.11:** As any user, I can generate and preview flashcards with the original word, translated word, and example sentences.
+- **FR-2.12:** As any user, I can select from multiple example sentences when creating flashcards.
+- **FR-2.13:** As any user, I can customize flashcard appearance (colors, fonts, layout) using predefined templates.
+- **FR-2.14:** As any user, I can preview flashcards before deciding to save them.
+- **FR-2.15:** As an authenticated user, I can save flashcards to my personal collection for future access.
+- **FR-2.16:** As an authenticated user, I can view and manage all my saved flashcards in a dedicated dashboard.
+- **FR-2.17:** As an authenticated user, I can organize flashcards into collections or categories.
+- **FR-2.18:** As an authenticated user, I can delete or edit existing flashcards.
 
 #### Non-Functional Requirements
 - **Security & Privacy:** User data is securely stored and managed, with encryption at rest and in transit. No personal data is shared with third parties.
-- **Performance:** Flashcard generation should complete within 5 seconds.
-- **Usability:** Flashcard interface should be intuitive for creation and management.
-- **Analytics:** Track user activity (e.g., logins, translations generated, flashcards created) to inform product improvements.
+- **Performance:** Translation and flashcard generation should complete within 5 seconds for both authenticated and anonymous users.
+- **Usability:** The interface should be intuitive for both anonymous and authenticated users, with clear value propositions for signing up.
+- **User Experience:** Authentication prompts should be non-intrusive and appear only when needed for personalized features.
+- **Analytics:** Track user activity (e.g., logins, translations generated, flashcards created, conversion from anonymous to authenticated) to inform product improvements.
 - **Scalability:** System is improved to support a moderate increase in concurrent users and data volume.
 
 ---
@@ -92,22 +99,30 @@ Vocabloom will support all major world languages, leveraging the capabilities of
 
 #### Functional Requirements (User Stories)
 
+**Content Management:**
+- **FR-4.1:** As a user, I can add hashtags to my flashcards for flexible organization and categorization.
+- **FR-4.2:** As a user, I can filter and search my flashcards by hashtags to find specific content quickly.
+- **FR-4.3:** As a user, I can see suggested hashtags based on my flashcard content and existing tags.
+- **FR-4.4:** As a user, I can perform bulk operations (select multiple flashcards) for efficient management.
+- **FR-4.5:** As a user, I can bulk delete multiple flashcards at once to clean up my collection.
+- **FR-4.6:** As a user, I can bulk edit hashtags across multiple flashcards for consistent organization.
+
 **Flashcard Export & Printing:**
-- **FR-4.1:** As a user, I can print my flashcards as PDF for offline use.
-- **FR-4.2:** As a user, I can export my flashcards in various formats (PDF, CSV).
+- **FR-4.7:** As a user, I can print my flashcards as PDF for offline use.
+- **FR-4.8:** As a user, I can export my flashcards in various formats (PDF, CSV).
 
 **Interactive Learning Modes:**
-- **FR-4.3:** As a user, I can study flashcards in slideshow mode with navigation controls.
-- **FR-4.4:** As a user, I can take quizzes based on my flashcards with multiple choice or fill-in-the-blank questions.
-- **FR-4.5:** As a user, I can track my study progress and performance on flashcards.
+- **FR-4.9:** As a user, I can study flashcards in slideshow mode with navigation controls.
+- **FR-4.10:** As a user, I can take quizzes based on my flashcards with multiple choice or fill-in-the-blank questions.
+- **FR-4.11:** As a user, I can track my study progress and performance on flashcards.
 
 **Community & Sharing:**
-- **FR-4.6:** As a user, I can participate in community/forum discussions, ask questions, and share content.
-- **FR-4.7:** As a user, I can organize and share my content (e.g., study lists, albums, shareable links).
+- **FR-4.12:** As a user, I can participate in community/forum discussions, ask questions, and share content.
+- **FR-4.13:** As a user, I can organize and share my content (e.g., study lists, albums, shareable links).
 
 **Premium Features:**
-- **FR-4.8:** As a user, I can access premium features (higher limits, exclusive content) via a subscription.
-- **FR-4.9:** As a user, I am rewarded for consistent learning and engagement through gamification (streaks, points, badges, leaderboards).
+- **FR-4.14:** As a user, I can access premium features (higher limits, exclusive content) via a subscription.
+- **FR-4.15:** As a user, I am rewarded for consistent learning and engagement through gamification (streaks, points, badges, leaderboards).
 
 #### Non-Functional Requirements
 - **Performance:** PDF generation and export should complete within 10 seconds.
