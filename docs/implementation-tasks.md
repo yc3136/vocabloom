@@ -2,7 +2,7 @@
 
 ---
 
-## 🎉 Current Status: MVP Complete ✅
+## 🎉 Current Status: MVP Complete ✅ | Milestone 2 In Progress 🚧
 
 **Production URLs:**
 - **Frontend**: https://vocabloom.app (custom domain) / https://vocabloom-467020.web.app (Firebase)
@@ -18,6 +18,139 @@
 - ✅ Custom domain with SSL/TLS
 - ✅ Automated deployment scripts
 - ✅ Local development environment setup
+
+---
+
+## Milestone 2: User Account Management & Flashcards
+
+### Overview
+Implement user authentication with Firebase Auth, PostgreSQL database integration, and flashcard management system with hybrid user experience (anonymous + authenticated features).
+
+### 1. Deployment & Infrastructure
+
+#### 1.1. Environment Configuration
+- [ ] Update environment variables for PostgreSQL
+- [ ] Configure Firebase credentials in production
+- [ ] Set up database connection strings in Secret Manager
+- [ ] Update deployment scripts for new dependencies
+
+#### 1.2. Security Setup
+- [ ] Configure database security rules
+- [ ] Set up Firebase Auth in production
+- [ ] Configure CORS for authenticated requests
+
+### 2. Database Setup & Migration
+
+#### 2.1. Cloud SQL (PostgreSQL) Setup
+- [ ] Create Cloud SQL PostgreSQL instance (db-f1-micro for free tier)
+- [ ] Configure database connection
+- [ ] Set up Cloud SQL Proxy for local development
+- [ ] Set up database user and permissions
+
+#### 2.2. Database Schema Implementation
+- [ ] Create users table with Firebase UID integration
+- [ ] Create flashcards table with JSONB fields
+- [ ] Create translations table for user history
+- [ ] Add basic indexes (user_id, created_at)
+
+#### 2.3. Database Migration System
+- [ ] Set up Alembic for database migrations
+- [ ] Create initial migration script
+- [ ] Test migration in development
+
+### 3. Backend Implementation
+
+#### 3.1. Database Integration
+- [ ] Install and configure SQLAlchemy ORM
+- [ ] Create SQLAlchemy models (User, Flashcard, Translation)
+- [ ] Implement database session management
+- [ ] Add basic error handling
+
+#### 3.2. Firebase Auth Integration
+- [ ] Install Firebase Admin SDK
+- [ ] Configure Firebase project credentials
+- [ ] Implement token verification middleware
+- [ ] Create authentication decorators for protected endpoints
+
+#### 3.3. API Endpoints Implementation
+- [ ] Implement `/api/auth/register` endpoint
+- [ ] Implement `/api/auth/login` endpoint
+- [ ] Implement `/api/flashcards` (GET, POST, PUT, DELETE)
+- [ ] Implement `/api/flashcards/preview` endpoint
+- [ ] Implement `/api/translations/history` endpoint
+- [ ] Add basic error handling and validation
+
+#### 3.4. Flashcard Service Logic
+- [ ] Implement flashcard creation with template support
+- [ ] Add basic flashcard validation
+- [ ] Implement flashcard search and filtering
+- [ ] Add flashcard update and deletion logic
+- [ ] Implement translation history tracking
+
+### 4. Frontend Implementation
+
+#### 4.1. Firebase Auth Setup
+- [ ] Install Firebase Auth SDK for Vue.js
+- [ ] Configure Firebase client credentials
+- [ ] Set up authentication state management
+- [ ] Add basic authentication error handling
+
+#### 4.2. State Management (Pinia)
+- [ ] Install and configure Pinia
+- [ ] Create Auth store for user authentication
+- [ ] Create Flashcard store for flashcard management
+- [ ] Create Translation store for current translation state
+
+#### 4.3. Authentication UI Components
+- [ ] Create login modal/component
+- [ ] Create registration modal/component
+- [ ] Implement authentication prompt for save actions
+- [ ] Add user profile dropdown/menu
+- [ ] Create logout functionality
+
+#### 4.4. Flashcard Management UI
+- [ ] Create flashcard creation modal
+- [ ] Implement template selection interface
+- [ ] Add color customization controls
+- [ ] Create flashcard preview component
+- [ ] Implement flashcard dashboard/grid view
+- [ ] Add flashcard edit/delete functionality
+- [ ] Create basic search interface
+
+#### 4.5. Hybrid User Experience
+- [ ] Implement anonymous user translation flow
+- [ ] Add "Create Flashcard" button for all users
+- [ ] Implement authentication prompts for save actions
+- [ ] Create seamless transition from anonymous to authenticated
+- [ ] Add basic value proposition messaging for sign-up
+
+### 5. Integration & Testing
+
+#### 5.1. Frontend-Backend Integration
+- [ ] Connect frontend authentication to backend
+- [ ] Implement API calls with authentication headers
+- [ ] Add basic error handling for API failures
+- [ ] Test authentication flow end-to-end
+
+#### 5.2. Simple Testing
+- [ ] Test user registration and login manually
+- [ ] Test flashcard creation and saving manually
+- [ ] Test anonymous user translation flow manually
+- [ ] Test authentication prompts work correctly
+- [ ] Verify basic responsive design on different screen sizes
+
+### 6. Documentation & Polish
+
+#### 6.1. Basic Documentation
+- [ ] Document new API endpoints
+- [ ] Update README with new setup instructions
+- [ ] Add basic code comments
+
+#### 6.2. UI Polish
+- [ ] Add basic loading states
+- [ ] Add success/error notifications
+- [ ] Ensure responsive design works
+- [ ] Add basic accessibility features
 
 ---
 
