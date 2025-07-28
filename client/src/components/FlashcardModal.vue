@@ -102,7 +102,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, watch } from 'vue';
 import { useFlashcardStore } from '../stores/flashcards';
 import { useAuthStore } from '../stores/auth';
 

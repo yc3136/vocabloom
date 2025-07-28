@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue'
 import { marked } from 'marked'
 import { useAuthStore } from '../stores/auth'
-import { useFlashcardStore } from '../stores/flashcards'
+
 import FlashcardModal from './FlashcardModal.vue'
 
 const term = ref('')
@@ -14,7 +14,7 @@ const error = ref('')
 const showFlashcardModal = ref(false)
 
 const authStore = useAuthStore()
-const flashcardStore = useFlashcardStore()
+// const flashcardStore = useFlashcardStore()
 
 // Popular languages for the dropdown
 const languages = [

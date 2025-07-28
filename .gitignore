@@ -36,3 +36,6 @@ dist/
 build/
 *.pyc
 __pycache__/
+
+# Firebase cache
+.firebase/

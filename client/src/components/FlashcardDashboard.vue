@@ -81,7 +81,7 @@ import FlashcardModal from './FlashcardModal.vue';
 const flashcardStore = useFlashcardStore();
 const showCreateModal = ref(false);
 const showEditModal = ref(false);
-const editingFlashcard = ref(null);
+const editingFlashcard = ref<any>(null);
 
 onMounted(() => {
   loadFlashcards();
