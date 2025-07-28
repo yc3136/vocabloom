@@ -61,31 +61,31 @@ Implement user authentication with Firebase Auth, PostgreSQL database integratio
 ### 3. Backend Implementation
 
 #### 3.1. Database Integration
-- [ ] Install and configure SQLAlchemy ORM
-- [ ] Create SQLAlchemy models (User, Flashcard, Translation)
-- [ ] Implement database session management
-- [ ] Add basic error handling
+- [x] Install and configure SQLAlchemy ORM
+- [x] Create SQLAlchemy models (User, Flashcard, Translation)
+- [x] Implement database session management
+- [x] Add basic error handling
 
 #### 3.2. Firebase Auth Integration
-- [ ] Install Firebase Admin SDK
-- [ ] Configure Firebase project credentials
-- [ ] Implement token verification middleware
-- [ ] Create authentication decorators for protected endpoints
+- [x] Install Firebase Admin SDK
+- [x] Configure Firebase project credentials
+- [x] Implement token verification middleware
+- [x] Create authentication decorators for protected endpoints
 
 #### 3.3. API Endpoints Implementation
-- [ ] Implement `/api/auth/register` endpoint
-- [ ] Implement `/api/auth/login` endpoint
-- [ ] Implement `/api/flashcards` (GET, POST, PUT, DELETE)
-- [ ] Implement `/api/flashcards/preview` endpoint
-- [ ] Implement `/api/translations/history` endpoint
-- [ ] Add basic error handling and validation
+- [x] Implement `/api/auth/register` endpoint
+- [x] Implement `/api/auth/login` endpoint
+- [x] Implement `/api/flashcards` (GET, POST, PUT, DELETE)
+- [x] Implement `/api/flashcards/preview` endpoint
+- [x] Implement `/api/translations/history` endpoint
+- [x] Add basic error handling and validation
 
 #### 3.4. Flashcard Service Logic
-- [ ] Implement flashcard creation with template support
-- [ ] Add basic flashcard validation
-- [ ] Implement flashcard search and filtering
-- [ ] Add flashcard update and deletion logic
-- [ ] Implement translation history tracking
+- [x] Implement flashcard creation with template support
+- [x] Add basic flashcard validation
+- [x] Implement flashcard search and filtering
+- [x] Add flashcard update and deletion logic
+- [x] Implement translation history tracking
 
 ### 4. Frontend Implementation
 

@@ -7,8 +7,24 @@ from google.cloud import secretmanager
 import json
 from dotenv import load_dotenv
 
+# Import our new modules
+from .database import engine, Base
+from .auth import initialize_firebase
+from .routes import auth, flashcards, translations
+
 # Load environment variables from .env file
 load_dotenv()
+
+# Initialize Firebase Admin SDK
+initialize_firebase()
+
+# Create database tables (only if database is available)
+try:
+    Base.metadata.create_all(bind=engine)
+    print("Database tables created successfully")
+except Exception as e:
+    print(f"Warning: Could not create database tables: {e}")
+    print("This is normal for local development without PostgreSQL")
 
 app = FastAPI(title="Vocabloom API", version="1.0.0")
 
@@ -26,6 +42,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include routers
+app.include_router(auth.router, prefix="/api")
+app.include_router(flashcards.router, prefix="/api")
+app.include_router(translations.router, prefix="/api")
 
 class TranslationRequest(BaseModel):
     term: str
