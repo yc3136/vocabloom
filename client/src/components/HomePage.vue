@@ -113,7 +113,6 @@ function handleFlashcardSuccess() {
 
 <template>
   <div class="home-container">
-    <h1>Vocabloom</h1>
     <p class="subtitle">A simple tool to help you learn and understand new vocabulary with instant translations and explanations.</p>
     
     <div class="input-group">
@@ -179,12 +178,7 @@ function handleFlashcardSuccess() {
   padding: 2rem 2rem 2.5rem 2rem;
 }
 
-h1 {
-  color: #2a3a5e;
-  font-weight: 800;
-  letter-spacing: 1px;
-  margin-bottom: 0.5rem;
-}
+
 
 .subtitle {
   color: #5a6270;

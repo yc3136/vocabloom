@@ -32,7 +32,7 @@ const handleAuthSuccess = () => {
       <div class="header-content">
         <div class="logo">
           <router-link to="/" class="logo-link">
-            <h1>Vocabloom</h1>
+            <img src="/assets/vocabloom-logo-light.png" alt="Vocabloom" class="logo-image" />
           </router-link>
         </div>
         
@@ -99,11 +99,10 @@ const handleAuthSuccess = () => {
   color: inherit;
 }
 
-.logo-link h1 {
-  margin: 0;
-  font-size: 24px;
-  font-weight: 700;
-  color: #2a3a5e;
+.logo-image {
+  height: 64px;
+  width: auto;
+  display: block;
 }
 
 .nav-links {
