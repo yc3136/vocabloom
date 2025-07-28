@@ -55,13 +55,59 @@ cd client
 print_status "Installing frontend dependencies..."
 npm install
 
-# Build the app
-print_status "Building frontend..."
+# Set production environment variables
+print_status "Setting production environment variables..."
+export VITE_API_BASE_URL=https://vocabloom-api-18560061448.us-central1.run.app
+export VITE_ENVIRONMENT=production
+
+# Create production .env file for build
+print_status "Creating production environment file..."
+# Source existing .env file if it exists, otherwise use defaults
+if [ -f ".env" ]; then
+    source .env
+    cat > .env.production << EOF
+# API Configuration
+VITE_API_BASE_URL=https://vocabloom-api-18560061448.us-central1.run.app
+
+# Firebase Configuration
+VITE_FIREBASE_API_KEY=${VITE_FIREBASE_API_KEY:-your_firebase_api_key_here}
+VITE_FIREBASE_AUTH_DOMAIN=${VITE_FIREBASE_AUTH_DOMAIN:-vocabloom-467020.firebaseapp.com}
+VITE_FIREBASE_PROJECT_ID=${VITE_FIREBASE_PROJECT_ID:-vocabloom-467020}
+VITE_FIREBASE_STORAGE_BUCKET=${VITE_FIREBASE_STORAGE_BUCKET:-vocabloom-467020.appspot.com}
+VITE_FIREBASE_MESSAGING_SENDER_ID=${VITE_FIREBASE_MESSAGING_SENDER_ID:-your_sender_id_here}
+VITE_FIREBASE_APP_ID=${VITE_FIREBASE_APP_ID:-your_app_id_here}
+
+# Environment
+VITE_ENVIRONMENT=production
+EOF
+else
+    cat > .env.production << EOF
+# API Configuration
+VITE_API_BASE_URL=https://vocabloom-api-18560061448.us-central1.run.app
+
+# Firebase Configuration
+VITE_FIREBASE_API_KEY=your_firebase_api_key_here
+VITE_FIREBASE_AUTH_DOMAIN=vocabloom-467020.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=vocabloom-467020
+VITE_FIREBASE_STORAGE_BUCKET=vocabloom-467020.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id_here
+VITE_FIREBASE_APP_ID=your_app_id_here
+
+# Environment
+VITE_ENVIRONMENT=production
+EOF
+fi
+
+# Build the app with production environment
+print_status "Building frontend with production environment..."
 npm run build
 
 # Deploy to Firebase
 print_status "Deploying to Firebase Hosting..."
 firebase deploy --only hosting
+
+# Clean up production env file
+rm -f .env.production
 
 print_success "Frontend deployed successfully!"
 

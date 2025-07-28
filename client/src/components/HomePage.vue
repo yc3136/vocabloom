@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { marked } from 'marked'
+import { useAuthStore } from '../stores/auth'
+import { useFlashcardStore } from '../stores/flashcards'
+import FlashcardModal from './FlashcardModal.vue'
 
 const term = ref('')
 const selectedLanguage = ref('Spanish')
@@ -8,6 +11,10 @@ const translation = ref('')
 const explanation = ref('')
 const loading = ref(false)
 const error = ref('')
+const showFlashcardModal = ref(false)
+
+const authStore = useAuthStore()
+const flashcardStore = useFlashcardStore()
 
 // Popular languages for the dropdown
 const languages = [
@@ -63,8 +70,10 @@ async function lookup() {
   explanation.value = ''
   error.value = ''
   
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+  
   try {
-    const res = await fetch('https://vocabloom-api-18560061448.us-central1.run.app/api/translate', {
+    const res = await fetch(`${API_BASE}/api/translate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
@@ -86,6 +95,19 @@ async function lookup() {
   } finally {
     loading.value = false
   }
+}
+
+function createFlashcard() {
+  if (!authStore.isAuthenticated) {
+    // Show authentication prompt
+    alert('Please sign in to create flashcards!')
+    return
+  }
+  showFlashcardModal.value = true
+}
+
+function handleFlashcardSuccess() {
+  showFlashcardModal.value = false
 }
 </script>
 
@@ -122,6 +144,24 @@ async function lookup() {
     </div>
     
     <div v-if="renderedResponse" class="response-box" v-html="renderedResponse"></div>
+    
+    <div v-if="renderedResponse" class="flashcard-actions">
+      <button @click="createFlashcard" class="create-flashcard-btn">
+        📚 Create Flashcard
+      </button>
+    </div>
+
+    <!-- Flashcard Modal -->
+    <FlashcardModal 
+      :show="showFlashcardModal"
+      :initial-data="{
+        original_word: term,
+        translated_word: translation,
+        example_sentences: explanation ? [explanation] : []
+      }"
+      @close="showFlashcardModal = false"
+      @success="handleFlashcardSuccess"
+    />
   </div>
 </template>
 
@@ -289,6 +329,29 @@ h1 {
   padding-left: 1rem;
   font-style: italic;
   color: #5a6270;
+}
+
+.flashcard-actions {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.create-flashcard-btn {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.2);
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.create-flashcard-btn:hover {
+  background: linear-gradient(90deg, #218838 0%, #1ea085 100%);
+  box-shadow: 0 4px 16px rgba(40, 167, 69, 0.3);
 }
 
 @media (max-width: 768px) {

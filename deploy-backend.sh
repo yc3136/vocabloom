@@ -47,13 +47,24 @@ if [ ! -f "Dockerfile" ]; then
     exit 1
 fi
 
-# Deploy to Cloud Run
+# Set production environment variables
+print_status "Setting production environment variables..."
+export GOOGLE_CLOUD_PROJECT=vocabloom-467020
+export ENVIRONMENT=production
+
+# Source existing .env file if it exists for additional variables
+if [ -f "server/.env" ]; then
+    source server/.env
+fi
+
+# Deploy to Cloud Run with environment variables
 print_status "Building and deploying backend..."
 gcloud run deploy vocabloom-api \
     --source . \
     --region=us-central1 \
     --allow-unauthenticated \
     --platform=managed \
+    --set-env-vars="GOOGLE_CLOUD_PROJECT=vocabloom-467020,ENVIRONMENT=production" \
     --quiet
 
 print_success "Backend deployed successfully!"
