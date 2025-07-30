@@ -1,16 +1,29 @@
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-import os
 from dotenv import load_dotenv
+from .secrets import get_secret
+from urllib.parse import quote_plus
 
 load_dotenv()
 
-# Database URL - will be set from environment variables
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "postgresql://user:password@localhost/vocabloom"  # Default for local development
-)
+# Get database configuration from environment variables and secrets
+DB_USER = os.getenv("DB_USER", "user")
+DB_PASSWORD = get_secret("database-password", os.getenv("DB_PASSWORD", "password"))
+DB_NAME = os.getenv("DB_NAME", "vocabloom")
+DB_HOST = os.getenv("DB_HOST", "localhost")
+
+# URL-encode the password to handle special characters
+ENCODED_PASSWORD = quote_plus(DB_PASSWORD)
+
+# Construct DATABASE_URL securely
+if os.getenv("ENVIRONMENT") == "production":
+    # Production: Use Cloud SQL Auth Proxy
+    DATABASE_URL = f"postgresql+psycopg2://{DB_USER}:{ENCODED_PASSWORD}@/{DB_NAME}?host={DB_HOST}"
+else:
+    # Local development
+    DATABASE_URL = f"postgresql://{DB_USER}:{ENCODED_PASSWORD}@{DB_HOST}/{DB_NAME}"
 
 # Create SQLAlchemy engine
 engine = create_engine(

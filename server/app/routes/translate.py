@@ -5,6 +5,7 @@ import os
 import json
 import re
 from dotenv import load_dotenv
+from ..secrets import get_gemini_api_key
 
 load_dotenv()
 
@@ -22,8 +23,8 @@ class TranslateResponse(BaseModel):
 async def translate(request: TranslateRequest):
     """Translate a term using Gemini API"""
     try:
-        # Get Gemini API key from environment
-        api_key = os.getenv("GEMINI_API_KEY")
+        # Get Gemini API key from Secret Manager or environment
+        api_key = get_gemini_api_key()
         environment = os.getenv("ENVIRONMENT", "local")
         
         # Check if we have a valid API key
@@ -31,7 +32,7 @@ async def translate(request: TranslateRequest):
             # For local development without API key, return mock response
             return TranslateResponse(
                 translation=f"[{request.language}] {request.term}",
-                explanation=f"This is a mock translation for '{request.term}' to {request.language}. To use real translations, set GEMINI_API_KEY in your environment."
+                explanation=f"This is a mock translation for '{request.term}' to {request.language}. To use real translations, set GEMINI_API_KEY in your environment or add the secret to Secret Manager."
             )
         
         # Prepare the prompt for Gemini

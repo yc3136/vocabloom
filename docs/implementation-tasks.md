@@ -6,7 +6,8 @@
 
 **Production URLs:**
 - **Frontend**: https://vocabloom.app (custom domain) / https://vocabloom-467020.web.app (Firebase)
-- **Backend**: https://vocabloom-api-18560061448.us-central1.run.app
+- **Backend**: Cloud Run (URL dynamically determined during deployment)
+- **Database**: Cloud SQL PostgreSQL (vocabloom-db instance)
 - **GitHub**: https://github.com/yc3136/vocabloom
 
 **Key Features Implemented:**

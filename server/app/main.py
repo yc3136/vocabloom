@@ -34,13 +34,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize Firebase based on environment
-environment = os.getenv("ENVIRONMENT", "local")
-if environment == "production" or (os.getenv("GOOGLE_CLOUD_PROJECT") and os.getenv("GOOGLE_CLOUD_PROJECT") != "local"):
-    print(f"Initializing Firebase for {environment} environment")
-    initialize_firebase()
-else:
-    print("Local development mode - skipping Firebase initialization")
+# Initialize Firebase (always uses Secret Manager)
+print("Initializing Firebase using Secret Manager")
+initialize_firebase()
 
 # Create database tables on startup
 @app.on_event("startup")
@@ -65,7 +61,7 @@ async def health_check():
     return {
         "status": "healthy",
         "service": "vocabloom-api",
-        "environment": environment
+        "environment": os.getenv("ENVIRONMENT", "local")
     }
 
 # Root endpoint

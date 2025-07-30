@@ -13,25 +13,21 @@ load_dotenv()
 # Initialize Firebase Admin SDK
 def initialize_firebase():
     try:
-        # Check environment
-        environment = os.getenv("ENVIRONMENT", "local")
-        
-        if environment == "local":
-            print("Local development mode - skipping Firebase initialization")
-            return
-            
-        # Try to get Firebase credentials from Secret Manager
+        # Always use Secret Manager for Firebase credentials
         from google.cloud import secretmanager
+        import json
         client = secretmanager.SecretManagerServiceClient()
         name = f"projects/vocabloom-467020/secrets/firebase-admin-key/versions/latest"
         response = client.access_secret_version(request={"name": name})
-        cred = credentials.Certificate(response.payload.data.decode("UTF-8"))
+        # Parse the JSON string into a dictionary
+        service_account_info = json.loads(response.payload.data.decode("UTF-8"))
+        cred = credentials.Certificate(service_account_info)
         firebase_admin.initialize_app(cred)
-        print(f"Firebase initialized for {environment} environment")
+        print("Firebase initialized using Secret Manager")
     except Exception as e:
-        # Fallback to local development
+        # Fallback to default app if Secret Manager fails
         print(f"Warning: Could not load Firebase credentials from Secret Manager: {e}")
-        print("Using default Firebase app for local development")
+        print("Using default Firebase app")
         try:
             firebase_admin.get_app()
         except ValueError:
@@ -84,9 +80,12 @@ async def get_current_user(
         
         return user
     except Exception as e:
+        print(f"[AUTH ERROR] Exception in get_current_user: {e}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
+            detail=f"Invalid authentication credentials: {e}",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
