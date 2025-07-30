@@ -132,17 +132,17 @@ const flashcard = ref({
   translated_word: '',
   example_sentences: [] as string[],
   template: 'classic',
-  colors: { primary: '#007bff', secondary: '#6c757d' }
+  colors: { primary: '#6690ff', secondary: '#64748b' }
 });
 
 const exampleSentencesText = ref('');
 
 const colorSchemes = [
-  { name: 'Blue', primary: '#007bff', secondary: '#6c757d' },
-  { name: 'Green', primary: '#28a745', secondary: '#6c757d' },
-  { name: 'Purple', primary: '#6f42c1', secondary: '#6c757d' },
-  { name: 'Orange', primary: '#fd7e14', secondary: '#6c757d' },
-  { name: 'Red', primary: '#dc3545', secondary: '#6c757d' }
+  { name: 'Blue', primary: '#6690ff', secondary: '#64748b' },
+  { name: 'Green', primary: '#4ade80', secondary: '#64748b' },
+  { name: 'Purple', primary: '#a78bfa', secondary: '#64748b' },
+  { name: 'Orange', primary: '#e19f5d', secondary: '#64748b' },
+  { name: 'Red', primary: '#f87171', secondary: '#64748b' }
 ];
 
 // Watch for changes in example sentences text
@@ -177,7 +177,7 @@ const closeModal = () => {
     translated_word: '',
     example_sentences: [],
     template: 'classic',
-    colors: { primary: '#007bff', secondary: '#6c757d' }
+    colors: { primary: '#6690ff', secondary: '#64748b' }
   };
   exampleSentencesText.value = '';
   flashcardStore.error = null;
@@ -215,7 +215,7 @@ const handleSubmit = async () => {
 }
 
 .flashcard-modal {
-  background: white;
+  background: var(--bg-surface);
   border-radius: 8px;
   padding: 24px;
   width: 100%;
@@ -234,7 +234,7 @@ const handleSubmit = async () => {
 
 .modal-header h2 {
   margin: 0;
-  color: #333;
+  color: var(--text-primary, #1e293b);
   font-size: 24px;
 }
 
@@ -243,7 +243,7 @@ const handleSubmit = async () => {
   border: none;
   font-size: 24px;
   cursor: pointer;
-  color: #666;
+  color: var(--text-secondary, #64748b);
   padding: 0;
   width: 30px;
   height: 30px;
@@ -253,7 +253,7 @@ const handleSubmit = async () => {
 }
 
 .close-btn:hover {
-  color: #333;
+  color: var(--text-primary, #1e293b);
 }
 
 .flashcard-form {
@@ -276,7 +276,7 @@ const handleSubmit = async () => {
 
 .form-group label {
   font-weight: 500;
-  color: #333;
+  color: var(--text-primary, #1e293b);
   font-size: 14px;
 }
 
@@ -284,17 +284,19 @@ const handleSubmit = async () => {
 .form-group select,
 .form-group textarea {
   padding: 12px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color, #e2e8f0);
   border-radius: 4px;
   font-size: 16px;
   transition: border-color 0.2s;
+  background: var(--bg-surface, #ffffff);
+  color: var(--text-primary, #1e293b);
 }
 
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #007bff;
+  border-color: var(--primary-blue, #6690ff);
 }
 
 .color-options {
@@ -320,28 +322,28 @@ const handleSubmit = async () => {
 }
 
 .color-option.active {
-  border-color: #333;
+  border-color: var(--text-primary, #1e293b);
   transform: translateY(-1px);
 }
 
 .preview-section {
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color, #e2e8f0);
   border-radius: 8px;
   padding: 16px;
-  background: #f8f9fa;
+  background: var(--bg-primary, #f8fafc);
 }
 
 .preview-section h3 {
   margin: 0 0 16px 0;
-  color: #333;
+  color: var(--text-primary, #1e293b);
   font-size: 16px;
 }
 
 .flashcard-preview {
-  border: 2px solid #ddd;
+  border: 2px solid var(--border-color, #e2e8f0);
   border-radius: 8px;
   padding: 20px;
-  background: white;
+  background: var(--bg-surface, #ffffff);
   min-height: 120px;
   display: flex;
   align-items: center;
@@ -349,16 +351,16 @@ const handleSubmit = async () => {
 }
 
 .flashcard-preview.classic {
-  border-color: #007bff;
+  border-color: var(--primary-blue, #6690ff);
 }
 
 .flashcard-preview.modern {
-  border-color: #28a745;
+  border-color: var(--success-green, #4ade80);
   border-radius: 12px;
 }
 
 .flashcard-preview.minimal {
-  border-color: #6c757d;
+  border-color: var(--text-secondary, #64748b);
   border-width: 1px;
 }
 
@@ -370,19 +372,19 @@ const handleSubmit = async () => {
 .preview-original {
   font-size: 24px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary, #1e293b);
   margin-bottom: 8px;
 }
 
 .preview-translation {
   font-size: 20px;
-  color: #666;
+  color: var(--text-secondary, #64748b);
   margin-bottom: 12px;
 }
 
 .preview-examples {
   font-size: 14px;
-  color: #888;
+  color: var(--text-secondary, #64748b);
 }
 
 .preview-sentence {
@@ -391,7 +393,7 @@ const handleSubmit = async () => {
 }
 
 .error-message {
-  color: #dc3545;
+  color: var(--error-red, #f87171);
   font-size: 14px;
   margin-top: 8px;
 }
@@ -415,25 +417,25 @@ const handleSubmit = async () => {
 }
 
 .btn-primary {
-  background: #007bff;
+  background: var(--primary-blue, #6690ff);
   color: white;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #0056b3;
+  background: var(--blue-hover, #4a7aff);
 }
 
 .btn-primary:disabled {
-  background: #ccc;
+  background: var(--text-secondary, #64748b);
   cursor: not-allowed;
 }
 
 .btn-secondary {
-  background: #6c757d;
+  background: var(--text-secondary, #64748b);
   color: white;
 }
 
 .btn-secondary:hover {
-  background: #545b62;
+  background: var(--text-primary, #1e293b);
 }
 </style> 

@@ -19,27 +19,27 @@
 .about-container {
   max-width: 500px;
   margin: 2rem auto;
-  background: #f8fafd;
+  background: var(--bg-surface);
   border-radius: 16px;
   box-shadow: 0 2px 16px rgba(30, 34, 90, 0.07);
   padding: 2rem 2rem 2.5rem 2rem;
-  color: #222;
+  color: var(--text-primary);
   text-align: center;
 }
 h1 {
-  color: #2a3a5e;
+  color: var(--text-primary);
   font-weight: 800;
   letter-spacing: 1px;
   margin-bottom: 0.5rem;
 }
 a {
-  color: #3b5bdb;
+  color: var(--primary-blue);
   text-decoration: none;
   font-weight: 500;
   transition: color 0.2s;
 }
 a:hover {
-  color: #4254e7;
+  color: var(--blue-hover);
   text-decoration: underline;
 }
 </style> 

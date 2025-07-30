@@ -136,7 +136,7 @@ const handleSubmit = async () => {
 }
 
 .auth-modal {
-  background: white;
+  background: var(--bg-surface);
   border-radius: 8px;
   padding: 24px;
   width: 100%;
@@ -153,7 +153,7 @@ const handleSubmit = async () => {
 
 .auth-modal-header h2 {
   margin: 0;
-  color: #333;
+  color: var(--text-primary);
   font-size: 24px;
 }
 
@@ -162,7 +162,7 @@ const handleSubmit = async () => {
   border: none;
   font-size: 24px;
   cursor: pointer;
-  color: #666;
+  color: var(--text-secondary);
   padding: 0;
   width: 30px;
   height: 30px;
@@ -172,7 +172,7 @@ const handleSubmit = async () => {
 }
 
 .close-btn:hover {
-  color: #333;
+  color: var(--text-primary);
 }
 
 .auth-form {
@@ -189,13 +189,13 @@ const handleSubmit = async () => {
 
 .form-group label {
   font-weight: 500;
-  color: #333;
+  color: var(--text-primary);
   font-size: 14px;
 }
 
 .form-group input {
   padding: 12px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   font-size: 16px;
   transition: border-color 0.2s;
@@ -203,27 +203,27 @@ const handleSubmit = async () => {
 
 .form-group input:focus {
   outline: none;
-  border-color: #007bff;
+  border-color: var(--primary-blue);
 }
 
 .error-message {
-  color: #dc3545;
+  color: var(--error-red);
   font-size: 14px;
   margin-top: 8px;
 }
 
 .warning-message {
-  color: #ffc107; /* Yellow color for warning */
+  color: var(--warning-amber);
   font-size: 14px;
   margin-top: 8px;
   padding: 8px;
-  background-color: #fffbeb; /* Light yellow background */
-  border: 1px solid #ffeeba; /* Light border */
+  background-color: rgba(251, 191, 36, 0.1);
+  border: 1px solid var(--warning-amber);
   border-radius: 4px;
 }
 
 .submit-btn {
-  background: #007bff;
+  background: var(--primary-blue);
   color: white;
   border: none;
   padding: 12px;
@@ -235,11 +235,11 @@ const handleSubmit = async () => {
 }
 
 .submit-btn:hover:not(:disabled) {
-  background: #0056b3;
+  background: var(--blue-hover);
 }
 
 .submit-btn:disabled {
-  background: #ccc;
+  background: var(--text-secondary);
   cursor: not-allowed;
 }
 
@@ -250,14 +250,14 @@ const handleSubmit = async () => {
 
 .auth-switch p {
   margin: 0;
-  color: #666;
+  color: var(--text-secondary);
   font-size: 14px;
 }
 
 .switch-btn {
   background: none;
   border: none;
-  color: #007bff;
+  color: var(--primary-blue);
   cursor: pointer;
   font-size: 14px;
   text-decoration: underline;
@@ -266,6 +266,6 @@ const handleSubmit = async () => {
 }
 
 .switch-btn:hover {
-  color: #0056b3;
+  color: var(--blue-hover);
 }
 </style> 

@@ -154,7 +154,7 @@ const formatDate = (dateString: string) => {
 
 .dashboard-header h2 {
   margin: 0;
-  color: #333;
+  color: var(--text-primary);
   font-size: 28px;
   font-weight: 700;
 }
@@ -164,7 +164,7 @@ const formatDate = (dateString: string) => {
   align-items: center;
   gap: 8px;
   padding: 12px 20px;
-  background: #007bff;
+  background: var(--primary-blue);
   color: white;
   border: none;
   border-radius: 8px;
@@ -175,7 +175,7 @@ const formatDate = (dateString: string) => {
 }
 
 .create-btn:hover {
-  background: #0056b3;
+  background: var(--blue-hover);
 }
 
 .loading-state,
@@ -188,8 +188,8 @@ const formatDate = (dateString: string) => {
 .spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #007bff;
+  border: 4px solid var(--border-color);
+  border-top: 4px solid var(--primary-blue);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 16px;
@@ -201,13 +201,13 @@ const formatDate = (dateString: string) => {
 }
 
 .error-state p {
-  color: #dc3545;
+  color: var(--error-red);
   margin-bottom: 16px;
 }
 
 .retry-btn {
   padding: 8px 16px;
-  background: #6c757d;
+  background: var(--text-secondary);
   color: white;
   border: none;
   border-radius: 4px;
@@ -221,11 +221,11 @@ const formatDate = (dateString: string) => {
 
 .empty-state h3 {
   margin: 0 0 8px 0;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .empty-state p {
-  color: #666;
+  color: var(--text-secondary);
   margin-bottom: 24px;
 }
 
@@ -236,8 +236,8 @@ const formatDate = (dateString: string) => {
 }
 
 .flashcard-item {
-  background: white;
-  border: 1px solid #e9ecef;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 20px;
   cursor: pointer;
@@ -259,7 +259,7 @@ const formatDate = (dateString: string) => {
 
 .flashcard-header h3 {
   margin: 0;
-  color: #333;
+  color: var(--text-primary);
   font-size: 20px;
   font-weight: 600;
 }
@@ -280,16 +280,16 @@ const formatDate = (dateString: string) => {
 }
 
 .edit-btn:hover {
-  background: #e3f2fd;
+  background: rgba(102, 144, 255, 0.1);
 }
 
 .delete-btn:hover {
-  background: #ffebee;
+  background: rgba(248, 113, 113, 0.1);
 }
 
 .flashcard-translation {
   font-size: 18px;
-  color: #666;
+  color: var(--text-secondary);
   margin-bottom: 12px;
   font-weight: 500;
 }
@@ -300,7 +300,7 @@ const formatDate = (dateString: string) => {
 
 .example-sentence {
   font-size: 14px;
-  color: #888;
+  color: var(--text-secondary);
   font-style: italic;
   margin-bottom: 4px;
   line-height: 1.4;
@@ -308,7 +308,7 @@ const formatDate = (dateString: string) => {
 
 .more-examples {
   font-size: 12px;
-  color: #999;
+  color: var(--text-secondary);
   font-style: italic;
 }
 
@@ -320,8 +320,8 @@ const formatDate = (dateString: string) => {
 }
 
 .template-badge {
-  background: #e3f2fd;
-  color: #1976d2;
+  background: rgba(102, 144, 255, 0.1);
+  color: var(--primary-blue);
   padding: 4px 8px;
   border-radius: 12px;
   font-weight: 500;
@@ -329,6 +329,6 @@ const formatDate = (dateString: string) => {
 }
 
 .date {
-  color: #999;
+  color: var(--text-secondary);
 }
 </style> 

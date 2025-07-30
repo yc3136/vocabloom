@@ -1,0 +1,60 @@
+/* Design Tokens - Global CSS Variables */
+:root {
+  /* Primary Colors */
+  --primary-blue: #6690ff;
+  --primary-orange: #e19f5d;
+  --primary-yellow: #f2cd4a;
+  
+  /* Semantic Colors */
+  --success-green: #4ade80;
+  --warning-amber: #fbbf24;
+  --error-red: #f87171;
+  --info-cyan: #38bdf8;
+  
+  /* Accent Colors */
+  --premium-purple: #a78bfa;
+  --accent-pink: #f472b6;
+  
+  /* Background Colors */
+  --bg-primary: #f8fafc;
+  --bg-surface: #ffffff;
+  
+  /* Text Colors */
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  
+  /* Border Colors */
+  --border-color: #e2e8f0;
+  
+  /* Interactive States */
+  --blue-hover: #4a7aff;
+}
+
+/* Dark Mode Overrides */
+[data-theme="dark"] {
+  --bg-primary: #0f172a;
+  --bg-surface: #1e293b;
+  --text-primary: #e2e8f0;
+  --text-secondary: #cbd5e1;
+  --border-color: #334155;
+  --blue-hover: #6366f1;
+}
+
+/* Ensure variables are available to all elements */
+html, body, #app, * {
+  --primary-blue: #6690ff;
+  --primary-orange: #e19f5d;
+  --primary-yellow: #f2cd4a;
+  --success-green: #4ade80;
+  --warning-amber: #fbbf24;
+  --error-red: #f87171;
+  --premium-purple: #a78bfa;
+  --info-cyan: #38bdf8;
+  --accent-pink: #f472b6;
+  --bg-primary: #f8fafc;
+  --bg-surface: #ffffff;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --border-color: #e2e8f0;
+  --blue-hover: #4a7aff;
+} 

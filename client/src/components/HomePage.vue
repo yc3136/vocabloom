@@ -171,8 +171,8 @@ function handleFlashcardSuccess() {
   max-width: 600px;
   margin-left: auto;
   margin-right: auto;
-  color: #222;
-  background: #f8fafd;
+  color: var(--text-primary);
+  background: var(--bg-surface);
   border-radius: 16px;
   box-shadow: 0 2px 16px rgba(30, 34, 90, 0.07);
   padding: 2rem 2rem 2.5rem 2rem;
@@ -181,7 +181,7 @@ function handleFlashcardSuccess() {
 
 
 .subtitle {
-  color: #5a6270;
+  color: var(--text-secondary);
   font-size: 1rem;
   margin-bottom: 2rem;
 }
@@ -197,15 +197,15 @@ function handleFlashcardSuccess() {
   flex: 2;
   padding: 0.75rem;
   border-radius: 8px;
-  border: 1px solid #cfd8dc;
+  border: 1px solid var(--border-color);
   font-size: 1rem;
-  background: #fff;
-  color: #222;
+  background: var(--bg-surface);
+  color: var(--text-primary);
   transition: border 0.2s;
 }
 
 .term-input:focus {
-  border: 1.5px solid #3b5bdb;
+  border: 1.5px solid var(--primary-blue);
   outline: none;
 }
 
@@ -213,23 +213,23 @@ function handleFlashcardSuccess() {
   flex: 1;
   padding: 0.75rem;
   border-radius: 8px;
-  border: 1px solid #cfd8dc;
+  border: 1px solid var(--border-color, #e2e8f0);
   font-size: 1rem;
-  background: #fff;
-  color: #222;
+  background: var(--bg-surface, #ffffff);
+  color: var(--text-primary, #1e293b);
   cursor: pointer;
   transition: border 0.2s;
 }
 
 .language-select:focus {
-  border: 1.5px solid #3b5bdb;
+  border: 1.5px solid var(--primary-blue, #6690ff);
   outline: none;
 }
 
 .lookup-btn {
   margin-top: 1.5rem;
   padding: 0.75rem 2rem;
-  background: linear-gradient(90deg, #3b5bdb 0%, #5f6eed 100%);
+  background: linear-gradient(90deg, var(--primary-blue, #6690ff) 0%, var(--blue-hover, #4a7aff) 100%);
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -246,27 +246,27 @@ function handleFlashcardSuccess() {
 }
 
 .lookup-btn:hover:not(:disabled) {
-  background: linear-gradient(90deg, #4254e7 0%, #7b8cff 100%);
+  background: linear-gradient(90deg, var(--blue-hover, #4a7aff) 0%, var(--primary-blue, #6690ff) 100%);
   box-shadow: 0 4px 16px rgba(30, 34, 90, 0.12);
 }
 
 .error-box {
   margin-top: 2rem;
-  background: #fee;
-  border: 1px solid #fcc;
+  background: rgba(248, 113, 113, 0.1);
+  border: 1px solid var(--error-red, #f87171);
   padding: 1rem;
   border-radius: 8px;
-  color: #c33;
+  color: var(--error-red, #f87171);
   font-size: 1rem;
 }
 
 .response-box {
   margin-top: 2rem;
   padding: 2rem;
-  background: #e9ecf8;
+  background: rgba(102, 144, 255, 0.05);
   border-radius: 12px;
   box-shadow: 0 1px 6px rgba(30, 34, 90, 0.06);
-  color: #2a3a5e;
+  color: var(--text-primary, #1e293b);
   font-size: 1.05rem;
   line-height: 1.6;
   text-align: left;
@@ -274,16 +274,16 @@ function handleFlashcardSuccess() {
 
 /* Markdown styling */
 .response-box :deep(h2) {
-  color: #2a3a5e;
+  color: var(--text-primary, #1e293b);
   margin: 0 0 1rem 0;
   font-size: 1.3rem;
   font-weight: 600;
-  border-bottom: 2px solid #3b5bdb;
+  border-bottom: 2px solid var(--primary-blue, #6690ff);
   padding-bottom: 0.5rem;
 }
 
 .response-box :deep(h3) {
-  color: #2a3a5e;
+  color: var(--text-primary, #1e293b);
   margin: 1.5rem 0 0.5rem 0;
   font-size: 1.1rem;
   font-weight: 600;
@@ -306,11 +306,11 @@ function handleFlashcardSuccess() {
 
 .response-box :deep(strong) {
   font-weight: 600;
-  color: #1a2a4e;
+  color: var(--text-primary, #1e293b);
 }
 
 .response-box :deep(code) {
-  background: #f1f3f4;
+  background: var(--border-color, #e2e8f0);
   padding: 0.2rem 0.4rem;
   border-radius: 4px;
   font-family: 'Courier New', monospace;
@@ -318,11 +318,11 @@ function handleFlashcardSuccess() {
 }
 
 .response-box :deep(blockquote) {
-  border-left: 4px solid #3b5bdb;
+  border-left: 4px solid var(--primary-blue, #6690ff);
   margin: 1rem 0;
   padding-left: 1rem;
   font-style: italic;
-  color: #5a6270;
+  color: var(--text-secondary, #64748b);
 }
 
 .flashcard-actions {
@@ -332,20 +332,20 @@ function handleFlashcardSuccess() {
 
 .create-flashcard-btn {
   padding: 0.75rem 1.5rem;
-  background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+  background: linear-gradient(90deg, var(--success-green, #4ade80) 0%, var(--info-cyan, #38bdf8) 100%);
   color: #fff;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
   font-size: 1rem;
-  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.2);
+  box-shadow: 0 2px 8px rgba(74, 222, 128, 0.2);
   transition: background 0.2s, box-shadow 0.2s;
 }
 
 .create-flashcard-btn:hover {
-  background: linear-gradient(90deg, #218838 0%, #1ea085 100%);
-  box-shadow: 0 4px 16px rgba(40, 167, 69, 0.3);
+  background: linear-gradient(90deg, var(--success-green, #4ade80) 0%, var(--info-cyan, #38bdf8) 100%);
+  box-shadow: 0 4px 16px rgba(74, 222, 128, 0.3);
 }
 
 @media (max-width: 768px) {

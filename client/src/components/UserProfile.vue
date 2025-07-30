@@ -89,20 +89,20 @@ onUnmounted(() => {
   gap: 8px;
   padding: 8px 12px;
   border-radius: 20px;
-  background: #f8f9fa;
+  background: var(--bg-primary);
   cursor: pointer;
   transition: background-color 0.2s;
 }
 
 .user-info:hover {
-  background: #e9ecef;
+  background: var(--border-color);
 }
 
 .user-avatar {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: #007bff;
+  background: var(--primary-blue);
   color: white;
   display: flex;
   align-items: center;
@@ -113,13 +113,13 @@ onUnmounted(() => {
 
 .user-name {
   font-weight: 500;
-  color: #333;
+  color: var(--text-primary);
   font-size: 14px;
 }
 
 .dropdown-arrow {
   font-size: 10px;
-  color: #666;
+  color: var(--text-secondary);
   transition: transform 0.2s;
 }
 
@@ -132,8 +132,8 @@ onUnmounted(() => {
   top: 100%;
   right: 0;
   margin-top: 4px;
-  background: white;
-  border: 1px solid #ddd;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   min-width: 150px;
@@ -148,11 +148,11 @@ onUnmounted(() => {
   cursor: pointer;
   transition: background-color 0.2s;
   font-size: 14px;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .dropdown-item:hover {
-  background: #f8f9fa;
+  background: var(--bg-primary);
 }
 
 .dropdown-item .icon {

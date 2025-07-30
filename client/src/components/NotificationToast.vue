@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, watch, ref } from 'vue';
 
 interface Props {
   show: boolean;
@@ -28,6 +28,8 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>();
 
+const timeoutId = ref<number | null>(null);
+
 const icon = computed(() => {
   switch (props.type) {
     case 'success': return '✅';
@@ -38,23 +40,35 @@ const icon = computed(() => {
 });
 
 const close = () => {
+  // Clear any existing timeout
+  if (timeoutId.value) {
+    clearTimeout(timeoutId.value);
+    timeoutId.value = null;
+  }
   emit('close');
 };
 
-// Auto-close after duration
-if (props.duration > 0) {
-  setTimeout(() => {
-    if (props.show) {
+// Watch for changes in show prop and set up auto-dismiss
+watch(() => props.show, (newShow) => {
+  // Clear any existing timeout
+  if (timeoutId.value) {
+    clearTimeout(timeoutId.value);
+    timeoutId.value = null;
+  }
+  
+  // Set up new timeout when toast becomes visible
+  if (newShow && props.duration > 0) {
+    timeoutId.value = setTimeout(() => {
       close();
-    }
-  }, props.duration);
-}
+    }, props.duration);
+  }
+}, { immediate: true });
 </script>
 
 <style scoped>
 .notification-toast {
   position: fixed;
-  top: 20px;
+  bottom: 20px;
   right: 20px;
   z-index: 1000;
   display: flex;
@@ -69,21 +83,21 @@ if (props.duration > 0) {
 }
 
 .notification-toast.success {
-  background: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
+  background: color-mix(in srgb, var(--success-green) 15%, transparent);
+  color: var(--success-green);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--success-green) 25%, transparent);
 }
 
 .notification-toast.error {
-  background: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
+  background: color-mix(in srgb, var(--error-red) 15%, transparent);
+  color: var(--error-red);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--error-red) 25%, transparent);
 }
 
 .notification-toast.info {
-  background: #d1ecf1;
-  color: #0c5460;
-  border: 1px solid #bee5eb;
+  background: color-mix(in srgb, var(--info-cyan) 15%, transparent);
+  color: var(--info-cyan);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--info-cyan) 25%, transparent);
 }
 
 .notification-content {
@@ -119,18 +133,18 @@ if (props.duration > 0) {
 
 @keyframes slideIn {
   from {
-    transform: translateX(100%);
+    transform: translateY(100%);
     opacity: 0;
   }
   to {
-    transform: translateX(0);
+    transform: translateY(0);
     opacity: 1;
   }
 }
 
 @media (max-width: 768px) {
   .notification-toast {
-    top: 10px;
+    bottom: 10px;
     right: 10px;
     left: 10px;
     min-width: auto;
