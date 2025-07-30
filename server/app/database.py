@@ -9,8 +9,8 @@ from urllib.parse import quote_plus
 load_dotenv()
 
 # Get database configuration from environment variables and secrets
-DB_USER = os.getenv("DB_USER", "user")
-DB_PASSWORD = get_secret("database-password", os.getenv("DB_PASSWORD", "password"))
+DB_USER = os.getenv("DB_USER", "vocabloom")
+DB_PASSWORD = get_secret("database-password", os.getenv("DB_PASSWORD", "vocabloom123"))
 DB_NAME = os.getenv("DB_NAME", "vocabloom")
 DB_HOST = os.getenv("DB_HOST", "localhost")
 

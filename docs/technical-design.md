@@ -94,6 +94,125 @@ This document outlines the technical architecture, technology choices, and infra
 - **Development:** Local development with hot reload
 - **Production:** GCP (Cloud Run + Firebase Hosting + Cloud SQL)
 
+### 3.3. Environment Separation Strategy
+
+The application uses a complete environment separation strategy to ensure local development and production environments never interfere with each other.
+
+#### 3.3.1. Environment Detection
+
+**Backend Environment Detection:**
+```python
+ENVIRONMENT = os.getenv("ENVIRONMENT", "local")
+if ENVIRONMENT == "production":
+    # Production logic
+else:
+    # Local development logic
+```
+
+**Frontend Environment Detection:**
+```typescript
+const isProduction = import.meta.env.PROD;
+const isLocal = import.meta.env.DEV;
+```
+
+#### 3.3.2. Database Configuration
+
+**Local Development:**
+- **Database:** Local PostgreSQL instance
+- **Connection:** Direct TCP connection to localhost
+- **Credentials:** Environment variables in `.env` files
+- **Migration:** Alembic with local database
+
+**Production:**
+- **Database:** Cloud SQL PostgreSQL instance
+- **Connection:** Cloud SQL Auth Proxy
+- **Credentials:** Google Cloud Secret Manager
+- **Migration:** Alembic with production database
+
+#### 3.3.3. Secret Management
+
+**Local Development:**
+- **Source:** Environment variables in `.env` files
+- **Storage:** Local files (gitignored)
+- **Access:** Direct environment variable access
+
+**Production:**
+- **Source:** Google Cloud Secret Manager
+- **Storage:** Encrypted cloud storage
+- **Access:** Service account with Secret Manager permissions
+
+#### 3.3.4. Frontend-Backend Communication
+
+**Local Development:**
+- **Frontend → Backend:** `http://localhost:8000`
+- **Backend → Database:** Local PostgreSQL
+- **Authentication:** Firebase Auth (same project as production)
+
+**Production:**
+- **Frontend → Backend:** Cloud Run URL (dynamic)
+- **Backend → Database:** Cloud SQL
+- **Authentication:** Firebase Auth (same project as local)
+
+#### 3.3.5. Configuration Files
+
+**Backend Configuration:**
+```
+server/
+├── .env (local development - gitignored)
+├── .env.production (production template)
+└── env.example (template for local setup)
+```
+
+**Frontend Configuration:**
+```
+client/
+├── .env (local development - gitignored)
+├── .env.production (production build)
+└── env.example (template for local setup)
+```
+
+#### 3.3.6. Environment-Specific Features
+
+**Local Development Benefits:**
+- **Offline Development:** Works without internet connection
+- **Fast Iteration:** Hot reload for both frontend and backend
+- **Debugging:** Full access to logs and error messages
+- **Database Control:** Direct access to local database
+
+**Production Benefits:**
+- **Scalability:** Cloud Run auto-scaling
+- **Security:** Managed secrets and credentials
+- **Reliability:** High availability and backups
+- **Monitoring:** Cloud Monitoring and Error Reporting
+
+#### 3.3.7. Migration Strategy
+
+**Local Migrations:**
+```bash
+cd server
+poetry run alembic upgrade head  # Uses local database
+```
+
+**Note:** Migration files in `server/alembic/versions/` are generated code and should not be committed to version control. They are automatically created based on model changes and applied to the appropriate environment database.
+
+**Production Migrations:**
+```bash
+# Handled by deployment pipeline
+# Uses production database via Cloud SQL
+```
+
+#### 3.3.8. Security Considerations
+
+**Local Development:**
+- Environment files are gitignored to prevent credential leakage
+- Uses same Firebase project as production for authentication testing
+- No production secrets are accessible locally
+
+**Production:**
+- All secrets stored in Google Cloud Secret Manager
+- Service accounts with minimal required permissions
+- CORS configured for production domains only
+
 ---
 
 ## 4. Rationale

@@ -37,5 +37,8 @@ build/
 *.pyc
 __pycache__/
 
+# Database migrations (generated files)
+server/alembic/versions/*.py
+
 # Firebase cache
 .firebase/
