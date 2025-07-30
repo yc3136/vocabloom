@@ -9,6 +9,10 @@
     </div>
     
     <div class="dropdown-menu" v-if="showDropdown">
+      <div class="dropdown-item" @click="navigateToFlashcards">
+        <span class="icon">📚</span>
+        My Flashcards
+      </div>
       <div class="dropdown-item" @click="handleLogout">
         <span class="icon">🚪</span>
         Sign Out
@@ -19,9 +23,11 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 
 const authStore = useAuthStore();
+const router = useRouter();
 const showDropdown = ref(false);
 
 const displayName = computed(() => {
@@ -35,6 +41,11 @@ const userInitial = computed(() => {
 
 const toggleDropdown = () => {
   showDropdown.value = !showDropdown.value;
+};
+
+const navigateToFlashcards = () => {
+  router.push('/flashcards');
+  showDropdown.value = false;
 };
 
 const handleLogout = async () => {
