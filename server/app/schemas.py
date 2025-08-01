@@ -28,9 +28,8 @@ class FlashcardBase(BaseModel):
     original_word: str
     translated_word: str
     target_language: str
-    example_sentences: Optional[List[str]] = None
-    template: str = "classic"
-    colors: Optional[Dict[str, str]] = None
+    example_sentences: List[str] = []
+    colors: Dict[str, str] = {"primary": "#6690ff", "secondary": "#64748b"}
 
 
 class FlashcardCreate(FlashcardBase):
@@ -42,7 +41,6 @@ class FlashcardUpdate(BaseModel):
     translated_word: Optional[str] = None
     target_language: Optional[str] = None
     example_sentences: Optional[List[str]] = None
-    template: Optional[str] = None
     colors: Optional[Dict[str, str]] = None
 
 
@@ -95,5 +93,4 @@ class FlashcardPreview(BaseModel):
     original_word: str
     translated_word: str
     example_sentences: Optional[List[str]] = None
-    template: str = "classic"
     colors: Optional[Dict[str, str]] = None 

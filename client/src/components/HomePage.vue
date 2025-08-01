@@ -124,7 +124,8 @@ function createContent(type: string) {
       break
     // Add more content types here in the future
     default:
-      console.warn('Unknown content type:', type)
+      // Unknown content type
+      break
   }
 }
 
@@ -143,16 +144,11 @@ async function createFlashcard() {
       translated_word: translation.value,
       target_language: selectedLanguage.value,
       example_sentences: examples.value,
-      template: 'classic',
       colors: { primary: '#6690ff', secondary: '#64748b' }
     }
 
-    const newFlashcard = await flashcardStore.createFlashcard(flashcardData)
-    console.log('Flashcard created successfully:', newFlashcard)
-    console.log('Current flashcards in store:', flashcardStore.flashcards.length)
-    
-    // The store already adds the new flashcard to the list, no need to fetch again
-    // flashcardStore.fetchFlashcards()
+    await flashcardStore.createFlashcard(flashcardData)
+    // Flashcard created successfully
   } catch (e) {
     error.value = 'Error creating flashcard. Please try again.'
     console.error('Flashcard creation error:', e)

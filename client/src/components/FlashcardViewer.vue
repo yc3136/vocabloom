@@ -30,7 +30,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import FlipCard from './FlipCard.vue';
 
 interface Props {
@@ -40,7 +39,6 @@ interface Props {
     original_word: string;
     translated_word: string;
     example_sentences?: string[];
-    template?: string;
     created_at: string;
     target_language?: string;
   };
@@ -50,7 +48,7 @@ interface Emits {
   (e: 'close'): void;
 }
 
-const props = defineProps<Props>();
+defineProps<Props>();
 const emit = defineEmits<Emits>();
 
 const closeViewer = () => {

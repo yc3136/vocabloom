@@ -78,13 +78,15 @@ const viewingFlashcard = ref<any>(null);
 
 // Computed property to ensure reactivity
 const flashcards = computed(() => {
-  console.log('Flashcards computed - store length:', flashcardStore.flashcards.length);
-  console.log('Flashcards data:', flashcardStore.flashcards);
   return flashcardStore.flashcards;
 });
 
-// Define loadFlashcards function before watchers
+// Simple function to load flashcards
 const loadFlashcards = async () => {
+  if (!authStore.isAuthenticated) {
+    return;
+  }
+  
   try {
     await flashcardStore.fetchFlashcards();
   } catch (error) {
@@ -92,51 +94,31 @@ const loadFlashcards = async () => {
   }
 };
 
-// Watch for route changes to load flashcards when accessing the dashboard
+// Always load flashcards when entering the page
 watch(() => route.path, (newPath) => {
   if (newPath === '/flashcards' && authStore.isAuthenticated) {
-    console.log('Route changed to flashcards - loading flashcards...');
     loadFlashcards();
   }
 }, { immediate: true });
 
+// Watch for authentication state changes
+watch(() => authStore.isAuthenticated, (isAuthenticated) => {
+  if (isAuthenticated && route.path === '/flashcards') {
+    loadFlashcards();
+  }
+}, { immediate: true });
+
+// Also load on mount as backup
 onMounted(() => {
-  // Only load if not already loaded by route watcher
-  if (authStore.isAuthenticated && flashcardStore.flashcards.length === 0) {
-    console.log('Component mounted - loading flashcards...');
+  if (authStore.isAuthenticated && route.path === '/flashcards') {
     loadFlashcards();
   }
 });
 
-// Watch for changes in the store and refresh if needed
-watch(() => flashcardStore.flashcards, (newFlashcards) => {
-  console.log('Flashcards updated:', newFlashcards.length);
+// Watch for changes in the store
+watch(() => flashcardStore.flashcards, () => {
+  // Flashcards updated
 }, { deep: true });
-
-// Watch for store loading state and fetch flashcards if store is empty
-watch(() => flashcardStore.loading, (isLoading) => {
-  if (!isLoading && flashcardStore.flashcards.length === 0) {
-    console.log('Store is not loading and empty, fetching flashcards...');
-    loadFlashcards();
-  }
-}, { immediate: true });
-
-// Also watch for authentication state changes
-watch(() => authStore.isAuthenticated, (isAuth) => {
-  if (isAuth && flashcardStore.flashcards.length === 0) {
-    console.log('User authenticated and store empty, fetching flashcards...');
-    loadFlashcards();
-  }
-}, { immediate: true });
-
-// Additional safety check - if we're authenticated but have no flashcards, fetch them
-// This handles cases where the store gets reset during hot reloads
-watch(() => [authStore.isAuthenticated, flashcardStore.flashcards.length], ([isAuth, count]) => {
-  if (isAuth && count === 0 && !flashcardStore.loading) {
-    console.log('Safety check: authenticated, no flashcards, not loading - fetching...');
-    loadFlashcards();
-  }
-}, { immediate: true });
 
 const selectFlashcard = (flashcard: any) => {
   viewingFlashcard.value = flashcard;

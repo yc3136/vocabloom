@@ -3,6 +3,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from .database import Base
+from datetime import datetime
 
 
 class User(Base):
@@ -28,11 +29,10 @@ class Flashcard(Base):
     original_word = Column(String(255), nullable=False)
     translated_word = Column(String(255), nullable=False)
     target_language = Column(String(50), nullable=False)  # e.g., "Spanish", "Chinese Simplified"
-    example_sentences = Column(JSONB)  # Array of example sentences
-    template = Column(String(50), default="classic")
-    colors = Column(JSONB)  # Store color scheme as JSON
+    example_sentences = Column(JSONB, nullable=False, server_default='[]')
+    colors = Column(JSONB, nullable=False, server_default='{"primary": "#6690ff", "secondary": "#64748b"}')
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now)
     
     # Relationships
     user = relationship("User", back_populates="flashcards")

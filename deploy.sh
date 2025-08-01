@@ -118,18 +118,39 @@ setup_production_database() {
     print_status "Creating vocabloom database..."
     gcloud sql databases create vocabloom --instance=vocabloom-db --quiet 2>/dev/null || echo "Database vocabloom already exists"
     
-    # Create user if it doesn't exist
-    print_status "Creating database user..."
-    gcloud sql users create vocabloom-app --instance=vocabloom-db --password=vocabloom-prod-2024 --quiet 2>/dev/null || echo "User vocabloom-app already exists"
+    # Get the password from Secret Manager
+    print_status "Getting database password from Secret Manager..."
+    DB_PASSWORD=$(gcloud secrets versions access latest --secret="database-password")
+    
+    if [ -z "$DB_PASSWORD" ]; then
+        print_error "Could not retrieve database password from Secret Manager"
+        exit 1
+    fi
+    
+    # Create user if it doesn't exist, or update password if it does
+    print_status "Creating/updating database user..."
+    gcloud sql users create vocabloom-app --instance=vocabloom-db --password="$DB_PASSWORD" --quiet 2>/dev/null || \
+    gcloud sql users set-password vocabloom-app --instance=vocabloom-db --password="$DB_PASSWORD" --quiet
     
     # Get the database connection info
     DB_HOST=$(gcloud sql instances describe vocabloom-db --format="value(connectionName)")
-    PROD_DATABASE_URL="postgresql://vocabloom-app:vocabloom-prod-2024@/$DB_HOST/vocabloom?sslmode=require"
-    
-    print_status "Production database URL: $PROD_DATABASE_URL"
-    export DATABASE_URL=$PROD_DATABASE_URL
+    PROD_DATABASE_URL="postgresql://vocabloom-app:$DB_PASSWORD@/$DB_HOST/vocabloom"
     
     print_success "Database setup completed!"
+    print_status "Database URL: $PROD_DATABASE_URL"
+}
+
+# Run production database migrations
+run_production_migrations() {
+    print_status "Running production database migrations..."
+    
+    if [ -f "migrate_production_db.sh" ]; then
+        ./migrate_production_db.sh
+        print_success "Database migrations completed!"
+    else
+        print_warning "Migration script not found, skipping migration"
+        print_status "Database schema will be updated when application starts"
+    fi
 }
 
 # Deploy backend
@@ -267,11 +288,7 @@ main() {
     # Setup database if requested
     if [ "$SETUP_DATABASE" = true ]; then
         setup_production_database
-    fi
-    
-    # Setup database if requested
-    if [ "$SETUP_DATABASE" = true ]; then
-        setup_production_database
+        run_production_migrations
     fi
     
     # Always deploy backend and frontend
@@ -291,6 +308,7 @@ main() {
     
     if [ "$SETUP_DATABASE" = true ]; then
         print_status "🗄️  Database: Cloud SQL PostgreSQL (vocabloom-db)"
+        print_status "🔐 Schema: Auto-migrated during deployment"
     fi
     
     print_status "📊 Firebase Console: https://console.firebase.google.com/project/vocabloom-467020/hosting"

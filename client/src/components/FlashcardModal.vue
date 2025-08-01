@@ -81,7 +81,8 @@ const flashcard = ref({
   original_word: '',
   translated_word: '',
   target_language: '',
-  example_sentences: [] as string[]
+  example_sentences: [] as string[],
+  colors: { primary: '#6690ff', secondary: '#64748b' }
 });
 
 // Validation computed property
@@ -117,7 +118,8 @@ watch(() => props.initialData, (newData) => {
       original_word: '',
       translated_word: '',
       target_language: '',
-      example_sentences: []
+      example_sentences: [],
+      colors: { primary: '#6690ff', secondary: '#64748b' }
     };
   }
 }, { immediate: true });
@@ -129,7 +131,8 @@ const closeModal = () => {
     original_word: '',
     translated_word: '',
     target_language: '',
-    example_sentences: []
+    example_sentences: [],
+    colors: { primary: '#6690ff', secondary: '#64748b' }
   };
   flashcardStore.error = null;
 };

@@ -29,9 +29,8 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     if (!isFirebaseConfigured.value) {
-      console.warn('Firebase not configured, using mock authentication');
-      loading.value = false;
-      return;
+      // Firebase not configured, using mock authentication
+      return
     }
 
     onAuthStateChanged(auth as any, (firebaseUser) => {
