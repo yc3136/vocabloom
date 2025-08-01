@@ -12,6 +12,7 @@ const explanation = ref('')
 const loading = ref(false)
 const error = ref('')
 const showFlashcardModal = ref(false)
+const showCreateDropdown = ref(false)
 
 const authStore = useAuthStore()
 // const flashcardStore = useFlashcardStore()
@@ -38,6 +39,11 @@ const languages = [
   { value: 'Turkish', label: 'Turkish (Türkçe)' },
   { value: 'Greek', label: 'Greek (Ελληνικά)' },
   { value: 'Hebrew', label: 'Hebrew (עברית)' }
+]
+
+// Content creation options
+const contentTypes = [
+  { id: 'flashcard', label: 'Flashcard', icon: '📚' }
 ]
 
 // Combine translation and explanation into a single markdown response
@@ -97,22 +103,44 @@ async function lookup() {
   }
 }
 
-function createFlashcard() {
+function toggleCreateDropdown() {
+  showCreateDropdown.value = !showCreateDropdown.value
+}
+
+function createContent(type: string) {
   if (!authStore.isAuthenticated) {
     // Show authentication prompt
-    alert('Please sign in to create flashcards!')
+    alert('Please sign in to create content!')
     return
   }
-  showFlashcardModal.value = true
+  
+  showCreateDropdown.value = false
+  
+  switch (type) {
+    case 'flashcard':
+      showFlashcardModal.value = true
+      break
+    // Add more content types here in the future
+    default:
+      console.warn('Unknown content type:', type)
+  }
 }
 
 function handleFlashcardSuccess() {
   showFlashcardModal.value = false
 }
+
+// Close dropdown when clicking outside
+function handleClickOutside(event: Event) {
+  const target = event.target as HTMLElement
+  if (!target.closest('.create-dropdown-container')) {
+    showCreateDropdown.value = false
+  }
+}
 </script>
 
 <template>
-  <div class="home-container">
+  <div class="home-container" @click="handleClickOutside">
     <p class="subtitle">A simple tool to help you learn and understand new vocabulary with instant translations and explanations.</p>
     
     <div class="input-group">
@@ -142,12 +170,28 @@ function handleFlashcardSuccess() {
       <p>{{ error }}</p>
     </div>
     
-    <div v-if="renderedResponse" class="response-box" v-html="renderedResponse"></div>
-    
-    <div v-if="renderedResponse" class="flashcard-actions">
-      <button @click="createFlashcard" class="create-flashcard-btn">
-        📚 Create Flashcard
-      </button>
+    <div v-if="renderedResponse" class="response-container">
+      <div class="response-box" v-html="renderedResponse"></div>
+      
+      <!-- Create Content Dropdown -->
+      <div class="create-dropdown-container">
+        <button @click="toggleCreateDropdown" class="create-content-btn">
+          <span class="plus-icon">+</span>
+          <span class="create-text">Create</span>
+        </button>
+        
+        <div v-if="showCreateDropdown" class="create-dropdown">
+          <div 
+            v-for="contentType in contentTypes" 
+            :key="contentType.id"
+            @click="createContent(contentType.id)"
+            class="dropdown-item"
+          >
+            <span class="item-icon">{{ contentType.icon }}</span>
+            <span class="item-label">{{ contentType.label }}</span>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Flashcard Modal -->
@@ -177,8 +221,6 @@ function handleFlashcardSuccess() {
   box-shadow: 0 2px 16px rgba(30, 34, 90, 0.07);
   padding: 2rem 2rem 2.5rem 2rem;
 }
-
-
 
 .subtitle {
   color: var(--text-secondary);
@@ -218,26 +260,25 @@ function handleFlashcardSuccess() {
   background: var(--bg-surface, #ffffff);
   color: var(--text-primary, #1e293b);
   cursor: pointer;
-  transition: border 0.2s;
-}
-
-.language-select:focus {
-  border: 1.5px solid var(--primary-blue, #6690ff);
-  outline: none;
 }
 
 .lookup-btn {
   margin-top: 1.5rem;
   padding: 0.75rem 2rem;
-  background: linear-gradient(90deg, var(--primary-blue, #6690ff) 0%, var(--blue-hover, #4a7aff) 100%);
+  background: linear-gradient(90deg, var(--primary-blue, #6690ff) 0%, var(--primary-orange, #e19f5d) 100%);
   color: #fff;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
   font-size: 1rem;
-  box-shadow: 0 2px 8px rgba(30, 34, 90, 0.08);
+  box-shadow: 0 2px 8px rgba(102, 144, 255, 0.2);
   transition: background 0.2s, box-shadow 0.2s;
+}
+
+.lookup-btn:hover:not(:disabled) {
+  background: linear-gradient(90deg, var(--primary-blue, #6690ff) 0%, var(--primary-orange, #e19f5d) 100%);
+  box-shadow: 0 4px 16px rgba(102, 144, 255, 0.3);
 }
 
 .lookup-btn:disabled {
@@ -245,31 +286,108 @@ function handleFlashcardSuccess() {
   cursor: not-allowed;
 }
 
-.lookup-btn:hover:not(:disabled) {
-  background: linear-gradient(90deg, var(--blue-hover, #4a7aff) 0%, var(--primary-blue, #6690ff) 100%);
-  box-shadow: 0 4px 16px rgba(30, 34, 90, 0.12);
+.error-box {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: var(--error-red, #f87171);
+  color: #fff;
+  border-radius: 8px;
+  text-align: left;
 }
 
-.error-box {
-  margin-top: 2rem;
-  background: rgba(248, 113, 113, 0.1);
-  border: 1px solid var(--error-red, #f87171);
-  padding: 1rem;
-  border-radius: 8px;
-  color: var(--error-red, #f87171);
-  font-size: 1rem;
+.response-container {
+  position: relative;
+  margin-top: 1.5rem;
 }
 
 .response-box {
-  margin-top: 2rem;
-  padding: 2rem;
-  background: rgba(102, 144, 255, 0.05);
+  background: var(--bg-primary, #f8fafc);
+  border: 1px solid var(--border-color, #e2e8f0);
   border-radius: 12px;
-  box-shadow: 0 1px 6px rgba(30, 34, 90, 0.06);
-  color: var(--text-primary, #1e293b);
-  font-size: 1.05rem;
+  padding: 1.5rem;
+  text-align: left;
   line-height: 1.6;
   text-align: left;
+}
+
+/* Create Content Dropdown Styles */
+.create-dropdown-container {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 10;
+}
+
+.create-content-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--primary-blue, #6690ff);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background-color 0.2s, transform 0.1s;
+  box-shadow: 0 2px 4px rgba(102, 144, 255, 0.2);
+}
+
+.create-content-btn:hover {
+  background: var(--blue-hover, #4a7aff);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(102, 144, 255, 0.3);
+}
+
+.plus-icon {
+  font-size: 1rem;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.create-text {
+  font-size: 0.875rem;
+}
+
+.create-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.25rem;
+  background: white;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  min-width: 140px;
+  overflow: hidden;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+}
+
+.dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.dropdown-item:hover {
+  background: var(--bg-primary, #f8fafc);
+}
+
+.item-icon {
+  font-size: 1rem;
+}
+
+.item-label {
+  font-size: 0.875rem;
+  color: var(--text-primary, #1e293b);
 }
 
 /* Markdown styling */
@@ -325,29 +443,6 @@ function handleFlashcardSuccess() {
   color: var(--text-secondary, #64748b);
 }
 
-.flashcard-actions {
-  margin-top: 1.5rem;
-  text-align: center;
-}
-
-.create-flashcard-btn {
-  padding: 0.75rem 1.5rem;
-  background: linear-gradient(90deg, var(--success-green, #4ade80) 0%, var(--info-cyan, #38bdf8) 100%);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 1rem;
-  box-shadow: 0 2px 8px rgba(74, 222, 128, 0.2);
-  transition: background 0.2s, box-shadow 0.2s;
-}
-
-.create-flashcard-btn:hover {
-  background: linear-gradient(90deg, var(--success-green, #4ade80) 0%, var(--info-cyan, #38bdf8) 100%);
-  box-shadow: 0 4px 16px rgba(74, 222, 128, 0.3);
-}
-
 @media (max-width: 768px) {
   .input-group {
     flex-direction: column;
@@ -361,6 +456,20 @@ function handleFlashcardSuccess() {
   .home-container {
     margin: 1rem;
     padding: 1.5rem;
+  }
+  
+  .create-dropdown-container {
+    top: 0.5rem;
+    right: 0.5rem;
+  }
+  
+  .create-content-btn {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.8rem;
+  }
+  
+  .create-text {
+    display: none;
   }
 }
 </style> 
