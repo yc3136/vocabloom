@@ -265,7 +265,7 @@ function handleClickOutside(event: Event) {
 .lookup-btn {
   margin-top: 1.5rem;
   padding: 0.75rem 2rem;
-  background: linear-gradient(90deg, var(--primary-blue, #6690ff) 0%, var(--primary-orange, #e19f5d) 100%);
+  background: var(--primary-blue, #6690ff);
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -277,7 +277,7 @@ function handleClickOutside(event: Event) {
 }
 
 .lookup-btn:hover:not(:disabled) {
-  background: linear-gradient(90deg, var(--primary-blue, #6690ff) 0%, var(--primary-orange, #e19f5d) 100%);
+  background: var(--blue-hover, #4a7aff);
   box-shadow: 0 4px 16px rgba(102, 144, 255, 0.3);
 }
 
@@ -323,7 +323,7 @@ function handleClickOutside(event: Event) {
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 0.75rem;
-  background: var(--primary-blue, #6690ff);
+  background: var(--primary-orange, #e19f5d);
   color: white;
   border: none;
   border-radius: 6px;
@@ -331,13 +331,13 @@ function handleClickOutside(event: Event) {
   font-size: 0.875rem;
   font-weight: 500;
   transition: background-color 0.2s, transform 0.1s;
-  box-shadow: 0 2px 4px rgba(102, 144, 255, 0.2);
+  box-shadow: 0 2px 4px rgba(225, 159, 93, 0.2);
 }
 
 .create-content-btn:hover {
-  background: var(--blue-hover, #4a7aff);
+  background: #d18f4d;
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(102, 144, 255, 0.3);
+  box-shadow: 0 4px 8px rgba(225, 159, 93, 0.3);
 }
 
 .plus-icon {
