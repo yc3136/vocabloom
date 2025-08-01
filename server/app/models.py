@@ -27,6 +27,7 @@ class Flashcard(Base):
     user_id = Column(String(128), ForeignKey("users.id"), nullable=False)
     original_word = Column(String(255), nullable=False)
     translated_word = Column(String(255), nullable=False)
+    target_language = Column(String(50), nullable=False)  # e.g., "Spanish", "Chinese Simplified"
     example_sentences = Column(JSONB)  # Array of example sentences
     template = Column(String(50), default="classic")
     colors = Column(JSONB)  # Store color scheme as JSON

@@ -10,6 +10,7 @@ export interface Flashcard {
   user_id: string;
   original_word: string;
   translated_word: string;
+  target_language: string;
   example_sentences?: string[];
   template: string;
   colors?: Record<string, string>;
@@ -20,6 +21,7 @@ export interface Flashcard {
 export interface FlashcardCreate {
   original_word: string;
   translated_word: string;
+  target_language: string;
   example_sentences?: string[];
   template: string;
   colors?: Record<string, string>;
@@ -90,7 +92,11 @@ export const useFlashcardStore = defineStore('flashcards', () => {
       
       const newFlashcard = await response.json();
       flashcards.value.unshift(newFlashcard);
-      notificationStore.success('Flashcard created successfully!');
+      console.log('Showing notification with HTML support');
+      notificationStore.success('Flashcard created successfully! <a href="/flashcards">View in My Flashcards →</a>', {
+        allowHtml: true,
+        duration: 6000
+      });
       return newFlashcard;
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to create flashcard';

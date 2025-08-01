@@ -2,10 +2,6 @@
   <div class="flashcard-dashboard">
     <div class="dashboard-header">
       <h2>My Flashcards</h2>
-      <button @click="showCreateModal = true" class="create-btn">
-        <span class="icon">➕</span>
-        Create Flashcard
-      </button>
     </div>
 
     <div v-if="flashcardStore.loading" class="loading-state">
@@ -18,18 +14,15 @@
       <button @click="loadFlashcards" class="retry-btn">Retry</button>
     </div>
 
-    <div v-else-if="flashcardStore.flashcards.length === 0" class="empty-state">
+    <div v-else-if="flashcards.length === 0" class="empty-state">
       <div class="empty-icon">📚</div>
       <h3>No flashcards yet</h3>
-      <p>Create your first flashcard to start learning!</p>
-      <button @click="showCreateModal = true" class="create-btn">
-        Create Your First Flashcard
-      </button>
+      <p>Create your first flashcard from the homepage!</p>
     </div>
 
     <div v-else class="flashcards-grid">
       <div 
-        v-for="flashcard in flashcardStore.flashcards" 
+        v-for="flashcard in flashcards" 
         :key="flashcard.id" 
         class="flashcard-item"
         @click="selectFlashcard(flashcard)"
@@ -38,9 +31,6 @@
           <div class="flashcard-header">
             <h3>{{ flashcard.original_word }}</h3>
             <div class="flashcard-actions">
-              <button @click.stop="editFlashcard(flashcard)" class="action-btn edit-btn">
-                ✏️
-              </button>
               <button @click.stop="deleteFlashcard(flashcard.id)" class="action-btn delete-btn">
                 🗑️
               </button>
@@ -56,37 +46,44 @@
             </div>
           </div>
           <div class="flashcard-meta">
-            <span class="template-badge">{{ flashcard.template }}</span>
+            <span class="template-badge">{{ flashcard.target_language || 'Language' }}</span>
             <span class="date">{{ formatDate(flashcard.created_at) }}</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Create/Edit Modal -->
-    <FlashcardModal 
-      :show="showCreateModal || showEditModal"
-      :initial-data="editingFlashcard"
+    <!-- Flashcard Viewer -->
+    <FlashcardViewer
+      v-if="showViewer"
+      :show="showViewer"
+      :flashcard="viewingFlashcard"
       @close="closeModal"
-      @success="handleFlashcardSuccess"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import { useFlashcardStore } from '../stores/flashcards';
-import FlashcardModal from './FlashcardModal.vue';
+import { useAuthStore } from '../stores/auth';
+import FlashcardViewer from './FlashcardViewer.vue';
 
+const route = useRoute();
 const flashcardStore = useFlashcardStore();
-const showCreateModal = ref(false);
-const showEditModal = ref(false);
-const editingFlashcard = ref<any>(null);
+const authStore = useAuthStore();
+const showViewer = ref(false);
+const viewingFlashcard = ref<any>(null);
 
-onMounted(() => {
-  loadFlashcards();
+// Computed property to ensure reactivity
+const flashcards = computed(() => {
+  console.log('Flashcards computed - store length:', flashcardStore.flashcards.length);
+  console.log('Flashcards data:', flashcardStore.flashcards);
+  return flashcardStore.flashcards;
 });
 
+// Define loadFlashcards function before watchers
 const loadFlashcards = async () => {
   try {
     await flashcardStore.fetchFlashcards();
@@ -95,21 +92,55 @@ const loadFlashcards = async () => {
   }
 };
 
-const selectFlashcard = (flashcard: any) => {
-  // For now, just log the selection. Could be used for preview/study mode later
-  console.log('Selected flashcard:', flashcard);
-};
+// Watch for route changes to load flashcards when accessing the dashboard
+watch(() => route.path, (newPath) => {
+  if (newPath === '/flashcards' && authStore.isAuthenticated) {
+    console.log('Route changed to flashcards - loading flashcards...');
+    loadFlashcards();
+  }
+}, { immediate: true });
 
-const editFlashcard = (flashcard: any) => {
-  editingFlashcard.value = {
-    id: flashcard.id,
-    original_word: flashcard.original_word,
-    translated_word: flashcard.translated_word,
-    example_sentences: flashcard.example_sentences,
-    template: flashcard.template,
-    colors: flashcard.colors
-  };
-  showEditModal.value = true;
+onMounted(() => {
+  // Only load if not already loaded by route watcher
+  if (authStore.isAuthenticated && flashcardStore.flashcards.length === 0) {
+    console.log('Component mounted - loading flashcards...');
+    loadFlashcards();
+  }
+});
+
+// Watch for changes in the store and refresh if needed
+watch(() => flashcardStore.flashcards, (newFlashcards) => {
+  console.log('Flashcards updated:', newFlashcards.length);
+}, { deep: true });
+
+// Watch for store loading state and fetch flashcards if store is empty
+watch(() => flashcardStore.loading, (isLoading) => {
+  if (!isLoading && flashcardStore.flashcards.length === 0) {
+    console.log('Store is not loading and empty, fetching flashcards...');
+    loadFlashcards();
+  }
+}, { immediate: true });
+
+// Also watch for authentication state changes
+watch(() => authStore.isAuthenticated, (isAuth) => {
+  if (isAuth && flashcardStore.flashcards.length === 0) {
+    console.log('User authenticated and store empty, fetching flashcards...');
+    loadFlashcards();
+  }
+}, { immediate: true });
+
+// Additional safety check - if we're authenticated but have no flashcards, fetch them
+// This handles cases where the store gets reset during hot reloads
+watch(() => [authStore.isAuthenticated, flashcardStore.flashcards.length], ([isAuth, count]) => {
+  if (isAuth && count === 0 && !flashcardStore.loading) {
+    console.log('Safety check: authenticated, no flashcards, not loading - fetching...');
+    loadFlashcards();
+  }
+}, { immediate: true });
+
+const selectFlashcard = (flashcard: any) => {
+  viewingFlashcard.value = flashcard;
+  showViewer.value = true;
 };
 
 const deleteFlashcard = async (id: number) => {
@@ -123,14 +154,8 @@ const deleteFlashcard = async (id: number) => {
 };
 
 const closeModal = () => {
-  showCreateModal.value = false;
-  showEditModal.value = false;
-  editingFlashcard.value = null;
-};
-
-const handleFlashcardSuccess = () => {
-  closeModal();
-  // The store will automatically update the flashcards list
+  showViewer.value = false;
+  viewingFlashcard.value = null;
 };
 
 const formatDate = (dateString: string) => {
@@ -157,25 +182,6 @@ const formatDate = (dateString: string) => {
   color: var(--text-primary);
   font-size: 28px;
   font-weight: 700;
-}
-
-.create-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 20px;
-  background: var(--primary-blue);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.create-btn:hover {
-  background: var(--blue-hover);
 }
 
 .loading-state,

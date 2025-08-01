@@ -18,6 +18,7 @@ class TranslateRequest(BaseModel):
 class TranslateResponse(BaseModel):
     translation: str
     explanation: str
+    examples: list[str]
 
 @router.post("/translate", response_model=TranslateResponse)
 async def translate(request: TranslateRequest):
@@ -32,7 +33,12 @@ async def translate(request: TranslateRequest):
             # For local development without API key, return mock response
             return TranslateResponse(
                 translation=f"[{request.language}] {request.term}",
-                explanation=f"This is a mock translation for '{request.term}' to {request.language}. To use real translations, set GEMINI_API_KEY in your environment or add the secret to Secret Manager."
+                explanation=f"This is a mock translation for '{request.term}' to {request.language}. To use real translations, set GEMINI_API_KEY in your environment or add the secret to Secret Manager.",
+                examples=[
+                    f"Example 1: I learned the word '{request.term}' in {request.language} class.",
+                    f"Example 2: Can you say '{request.term}' in {request.language}?",
+                    f"Example 3: The word '{request.term}' means something special in {request.language}."
+                ]
             )
         
         # Prepare the prompt for Gemini
@@ -42,7 +48,12 @@ async def translate(request: TranslateRequest):
         Please provide your response in the following JSON format:
         {{
             "translation": "the translated word or phrase",
-            "explanation": "a brief explanation of the translation, including any cultural context, usage notes, or grammar explanations"
+            "explanation": "a brief explanation of the translation, including any cultural context, usage notes, or grammar explanations",
+            "examples": [
+                "example sentence 1 using the word/phrase",
+                "example sentence 2 using the word/phrase",
+                "example sentence 3 using the word/phrase"
+            ]
         }}
         
         Make sure the explanation is helpful for language learners and includes:
@@ -50,6 +61,8 @@ async def translate(request: TranslateRequest):
         - Common usage examples
         - Any cultural context
         - Grammar notes if applicable
+        
+        For the examples, generate 3 simple example sentences that a kid would understand. Make them engaging and educational.
         
         Respond only with valid JSON, no additional text.
         """
@@ -72,7 +85,12 @@ async def translate(request: TranslateRequest):
                 # Fallback to mock response on API error
                 return TranslateResponse(
                     translation=f"[{request.language}] {request.term}",
-                    explanation=f"Translation service temporarily unavailable. This is a fallback response for '{request.term}' to {request.language}."
+                    explanation=f"Translation service temporarily unavailable. This is a fallback response for '{request.term}' to {request.language}.",
+                    examples=[
+                        f"Example 1: I learned the word '{request.term}' in {request.language} class.",
+                        f"Example 2: Can you say '{request.term}' in {request.language}?",
+                        f"Example 3: The word '{request.term}' means something special in {request.language}."
+                    ]
                 )
             
             data = response.json()
@@ -96,7 +114,8 @@ async def translate(request: TranslateRequest):
                         
                         return TranslateResponse(
                             translation=parsed.get("translation", "Translation not available"),
-                            explanation=parsed.get("explanation", "Explanation not available")
+                            explanation=parsed.get("explanation", "Explanation not available"),
+                            examples=parsed.get("examples", [])
                         )
                     except json.JSONDecodeError:
                         # If JSON parsing fails, try to extract translation from text
@@ -114,25 +133,45 @@ async def translate(request: TranslateRequest):
                         
                         return TranslateResponse(
                             translation=translation,
-                            explanation=explanation
+                            explanation=explanation,
+                            examples=[
+                                f"Example 1: I learned the word '{request.term}' in {request.language} class.",
+                                f"Example 2: Can you say '{request.term}' in {request.language}?",
+                                f"Example 3: The word '{request.term}' means something special in {request.language}."
+                            ]
                         )
             
             # Fallback if response format is unexpected
             print(f"Unexpected Gemini response format: {data}")
             return TranslateResponse(
                 translation=f"[{request.language}] {request.term}",
-                explanation=f"Unexpected response format from translation service. This is a fallback for '{request.term}' to {request.language}."
+                explanation=f"Unexpected response format from translation service. This is a fallback for '{request.term}' to {request.language}.",
+                examples=[
+                    f"Example 1: I learned the word '{request.term}' in {request.language} class.",
+                    f"Example 2: Can you say '{request.term}' in {request.language}?",
+                    f"Example 3: The word '{request.term}' means something special in {request.language}."
+                ]
             )
             
     except httpx.TimeoutException:
         print("Gemini API request timed out")
         return TranslateResponse(
             translation=f"[{request.language}] {request.term}",
-            explanation=f"Translation request timed out. This is a fallback response for '{request.term}' to {request.language}."
+            explanation=f"Translation request timed out. This is a fallback response for '{request.term}' to {request.language}.",
+            examples=[
+                f"Example 1: I learned the word '{request.term}' in {request.language} class.",
+                f"Example 2: Can you say '{request.term}' in {request.language}?",
+                f"Example 3: The word '{request.term}' means something special in {request.language}."
+            ]
         )
     except Exception as e:
         print(f"Translation error: {str(e)}")
         return TranslateResponse(
             translation=f"[{request.language}] {request.term}",
-            explanation=f"Translation service error: {str(e)}. This is a fallback response for '{request.term}' to {request.language}."
+            explanation=f"Translation service error: {str(e)}. This is a fallback response for '{request.term}' to {request.language}.",
+            examples=[
+                f"Example 1: I learned the word '{request.term}' in {request.language} class.",
+                f"Example 2: Can you say '{request.term}' in {request.language}?",
+                f"Example 3: The word '{request.term}' means something special in {request.language}."
+            ]
         ) 

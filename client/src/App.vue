@@ -68,6 +68,7 @@ const handleAuthSuccess = () => {
       :show="notificationStore.show"
       :message="notificationStore.message"
       :type="notificationStore.type"
+      :allow-html="notificationStore.allowHtml"
       @close="notificationStore.hide"
     />
   </div>

@@ -38,7 +38,7 @@ def update_user_last_login(db: Session, user_id: str):
 def get_flashcards(db: Session, user_id: str, skip: int = 0, limit: int = 100):
     return db.query(models.Flashcard).filter(
         models.Flashcard.user_id == user_id
-    ).offset(skip).limit(limit).all()
+    ).order_by(models.Flashcard.created_at.desc()).offset(skip).limit(limit).all()
 
 
 def get_flashcard(db: Session, flashcard_id: int, user_id: str):

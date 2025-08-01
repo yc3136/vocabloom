@@ -27,6 +27,7 @@ class User(UserBase):
 class FlashcardBase(BaseModel):
     original_word: str
     translated_word: str
+    target_language: str
     example_sentences: Optional[List[str]] = None
     template: str = "classic"
     colors: Optional[Dict[str, str]] = None
@@ -39,6 +40,7 @@ class FlashcardCreate(FlashcardBase):
 class FlashcardUpdate(BaseModel):
     original_word: Optional[str] = None
     translated_word: Optional[str] = None
+    target_language: Optional[str] = None
     example_sentences: Optional[List[str]] = None
     template: Optional[str] = None
     colors: Optional[Dict[str, str]] = None

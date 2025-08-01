@@ -2,20 +2,19 @@
 import { ref, computed } from 'vue'
 import { marked } from 'marked'
 import { useAuthStore } from '../stores/auth'
-
-import FlashcardModal from './FlashcardModal.vue'
+import { useFlashcardStore } from '../stores/flashcards'
 
 const term = ref('')
 const selectedLanguage = ref('Spanish')
 const translation = ref('')
 const explanation = ref('')
+const examples = ref<string[]>([])
 const loading = ref(false)
 const error = ref('')
-const showFlashcardModal = ref(false)
 const showCreateDropdown = ref(false)
 
 const authStore = useAuthStore()
-// const flashcardStore = useFlashcardStore()
+const flashcardStore = useFlashcardStore()
 
 // Popular languages for the dropdown
 const languages = [
@@ -74,6 +73,7 @@ async function lookup() {
   loading.value = true
   translation.value = ''
   explanation.value = ''
+  examples.value = []
   error.value = ''
   
   const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
@@ -95,6 +95,8 @@ async function lookup() {
     const data = await res.json()
     translation.value = data.translation || 'No translation available'
     explanation.value = data.explanation || 'No explanation available'
+    // Store examples for flashcard creation
+    examples.value = data.examples || []
   } catch (e) {
     error.value = 'Error contacting backend. Please try again.'
     console.error('Translation error:', e)
@@ -118,7 +120,7 @@ function createContent(type: string) {
   
   switch (type) {
     case 'flashcard':
-      showFlashcardModal.value = true
+      createFlashcard()
       break
     // Add more content types here in the future
     default:
@@ -126,8 +128,37 @@ function createContent(type: string) {
   }
 }
 
-function handleFlashcardSuccess() {
-  showFlashcardModal.value = false
+async function createFlashcard() {
+  if (!authStore.isAuthenticated) {
+    alert('Please sign in to create flashcards!')
+    return
+  }
+
+  loading.value = true
+  error.value = ''
+
+  try {
+    const flashcardData = {
+      original_word: term.value,
+      translated_word: translation.value,
+      target_language: selectedLanguage.value,
+      example_sentences: examples.value,
+      template: 'classic',
+      colors: { primary: '#6690ff', secondary: '#64748b' }
+    }
+
+    const newFlashcard = await flashcardStore.createFlashcard(flashcardData)
+    console.log('Flashcard created successfully:', newFlashcard)
+    console.log('Current flashcards in store:', flashcardStore.flashcards.length)
+    
+    // The store already adds the new flashcard to the list, no need to fetch again
+    // flashcardStore.fetchFlashcards()
+  } catch (e) {
+    error.value = 'Error creating flashcard. Please try again.'
+    console.error('Flashcard creation error:', e)
+  } finally {
+    loading.value = false
+  }
 }
 
 // Close dropdown when clicking outside
@@ -194,17 +225,8 @@ function handleClickOutside(event: Event) {
       </div>
     </div>
 
-    <!-- Flashcard Modal -->
-    <FlashcardModal 
-      :show="showFlashcardModal"
-      :initial-data="{
-        original_word: term,
-        translated_word: translation,
-        example_sentences: explanation ? [explanation] : []
-      }"
-      @close="showFlashcardModal = false"
-      @success="handleFlashcardSuccess"
-    />
+    <!-- Success Message -->
+    <!-- Removed as per edit hint -->
   </div>
 </template>
 
