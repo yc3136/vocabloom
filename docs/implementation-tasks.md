@@ -22,10 +22,10 @@
 
 ---
 
-## Milestone 2: User Account Management & Flashcards
+## Milestone 2: User Account Management, Content Organization & Flashcards
 
 ### Overview
-Implement user authentication with Firebase Auth, PostgreSQL database integration, and flashcard management system with hybrid user experience (anonymous + authenticated features).
+Implement user authentication with Firebase Auth, PostgreSQL database integration, content organization by original word, and flashcard management system with hybrid user experience (anonymous + authenticated features).
 
 ### 1. Deployment & Infrastructure
 
@@ -54,10 +54,10 @@ Implement user authentication with Firebase Auth, PostgreSQL database integratio
 - [ ] Set up database user and permissions
 
 #### 2.2. Database Schema Implementation
-- [ ] Create users table with Firebase UID integration
-- [ ] Create flashcards table with JSONB fields
-- [ ] Create translations table for user history
-- [ ] Add basic indexes (user_id, created_at)
+- [ ] Create users table with Firebase UID integration and preferences JSONB
+- [ ] Create content table for organizing content by original word
+- [ ] Create flashcards table with JSONB fields and content_id foreign key
+- [ ] Add comprehensive indexes for performance optimization
 
 #### 2.3. Database Migration System
 - [ ] Set up Alembic for database migrations
@@ -68,7 +68,7 @@ Implement user authentication with Firebase Auth, PostgreSQL database integratio
 
 #### 3.1. Database Integration
 - [x] Install and configure SQLAlchemy ORM
-- [x] Create SQLAlchemy models (User, Flashcard, Translation)
+- [ ] Create SQLAlchemy models (User, Content, Flashcard)
 - [x] Implement database session management
 - [x] Add basic error handling
 
@@ -77,21 +77,32 @@ Implement user authentication with Firebase Auth, PostgreSQL database integratio
 - [x] Configure Firebase project credentials
 - [x] Implement token verification middleware
 - [x] Create authentication decorators for protected endpoints
+- [ ] Add password change and reset functionality
 
 #### 3.3. API Endpoints Implementation
 - [x] Implement `/api/auth/register` endpoint
 - [x] Implement `/api/auth/login` endpoint
+- [ ] Implement `/api/auth/change-password` endpoint
+- [ ] Implement `/api/auth/reset-password` endpoint
+- [ ] Implement `/api/content` (GET, POST, PUT, DELETE)
 - [x] Implement `/api/flashcards` (GET, POST, PUT, DELETE)
 - [x] Implement `/api/flashcards/preview` endpoint
-- [x] Implement `/api/translations/history` endpoint
+- [ ] Implement `/api/user/preferences` (GET, PUT)
 - [x] Add basic error handling and validation
 
-#### 3.4. Flashcard Service Logic
+#### 3.4. Content Management Service
+- [ ] Implement content creation with original word organization
+- [ ] Add content privacy controls (public/private)
+- [ ] Implement content search and filtering by original word
+- [ ] Add content update and deletion logic
+- [ ] Implement user preferences management
+
+#### 3.5. Flashcard Service Logic
 - [x] Implement flashcard creation with template support
 - [x] Add basic flashcard validation
 - [x] Implement flashcard search and filtering
 - [x] Add flashcard update and deletion logic
-- [x] Implement translation history tracking
+- [ ] Link flashcards to content records
 
 ### 4. Frontend Implementation
 
@@ -104,24 +115,41 @@ Implement user authentication with Firebase Auth, PostgreSQL database integratio
 #### 4.2. State Management (Pinia)
 - [x] Install and configure Pinia
 - [x] Create Auth store for user authentication
+- [ ] Create Content store for content management
 - [x] Create Flashcard store for flashcard management
 - [x] Create Translation store for current translation state
+- [ ] Create User store for preferences management
 
 #### 4.3. Authentication UI Components
 - [x] Create login modal/component
 - [x] Create registration modal/component
+- [ ] Create password change modal/component
+- [ ] Create password reset modal/component
 - [x] Implement authentication prompt for save actions
 - [x] Add user profile dropdown/menu
 - [x] Create logout functionality
 
-#### 4.4. Flashcard Management UI
+#### 4.4. User Preferences UI
+- [ ] Create user preferences form (child name, age)
+- [ ] Implement preferences update functionality
+- [ ] Add preferences validation
+- [ ] Create preferences display in user profile
+
+#### 4.5. Content Organization UI
+- [ ] Create content management dashboard
+- [ ] Implement content organization by original word
+- [ ] Add content privacy controls (public/private toggle)
+- [ ] Create content search and filter interface
+- [ ] Add content creation and editing forms
+
+#### 4.6. Flashcard Management UI
 - [x] Create flashcard creation modal/form
 - [x] Implement flashcard preview functionality
 - [x] Add flashcard dashboard/grid view
 - [x] Add flashcard edit/delete functionality
 - [x] Create basic search interface
 
-#### 4.5. Hybrid User Experience
+#### 4.7. Hybrid User Experience
 - [x] Implement anonymous user translation flow
 - [x] Add "Create Flashcard" button for all users
 - [x] Implement authentication prompts for save actions
@@ -155,6 +183,294 @@ Implement user authentication with Firebase Auth, PostgreSQL database integratio
 - [x] Add success/error notifications
 - [x] Ensure responsive design works
 - [x] Add basic accessibility features
+
+---
+
+## Milestone 3: Public Content Discovery
+
+### Overview
+Implement public content discovery features allowing users to browse, search, and discover content created by other users, with comprehensive privacy controls.
+
+### 1. Backend Implementation
+
+#### 1.1. Discovery API
+- [ ] Implement `/api/discover` endpoint for public content feed
+- [ ] Implement `/api/discover/search` endpoint for content search
+- [ ] Implement `/api/discover/word/{word}` endpoint for word-specific content
+- [ ] Add pagination and filtering support
+- [ ] Implement content search optimization with full-text search
+
+#### 1.2. Privacy Management API
+- [ ] Implement `/api/content/{id}/privacy` endpoint for individual privacy updates
+- [ ] Implement `/api/content/bulk-privacy` endpoint for bulk privacy changes
+- [ ] Add privacy validation and security checks
+- [ ] Implement privacy change logging
+
+#### 1.3. Database Optimizations
+- [ ] Add content privacy indexes for performance
+- [ ] Implement full-text search indexes
+- [ ] Add content statistics tracking
+- [ ] Optimize queries for public content discovery
+
+### 2. Frontend Implementation
+
+#### 2.1. Discover Tab
+- [ ] Create discover tab in main navigation
+- [ ] Implement feed-like interface for public content
+- [ ] Add infinite scroll or pagination
+- [ ] Create content cards with rich display
+- [ ] Add loading states and error handling
+
+#### 2.2. Search & Filter Interface
+- [ ] Create search bar for content discovery
+- [ ] Implement filter options (language, topic, keywords)
+- [ ] Add search result highlighting
+- [ ] Create advanced search interface
+- [ ] Add search history and suggestions
+
+#### 2.3. Content Privacy Controls
+- [ ] Create privacy toggle component
+- [ ] Implement bulk privacy management interface
+- [ ] Add privacy indicators throughout the UI
+- [ ] Create privacy settings page
+- [ ] Add privacy change confirmations
+
+#### 2.4. Enhanced Content Discovery
+- [ ] Implement related content suggestions
+- [ ] Add content statistics display
+- [ ] Create alternative translations view
+- [ ] Implement content sharing features
+
+### 3. Integration & Testing
+
+#### 3.1. End-to-End Testing
+- [ ] Test public content discovery flow
+- [ ] Test content privacy controls
+- [ ] Test search and filter functionality
+- [ ] Test anonymous user access to discovery features
+
+#### 3.2. Performance Testing
+- [ ] Test content feed performance
+- [ ] Test search performance with large datasets
+- [ ] Optimize database queries for discovery
+
+---
+
+## Milestone 4: Image Generation & Visual Content
+
+### Overview
+Implement image generation capabilities using DALL-E 3 API and Stable Diffusion API, with comprehensive storage, safety, and quota management.
+
+### 1. Backend Implementation
+
+#### 1.1. Image Generation Service
+- [ ] Integrate DALL-E 3 API for primary image generation
+- [ ] Integrate Stable Diffusion API as fallback
+- [ ] Implement prompt engineering for educational content
+- [ ] Add content safety filtering
+- [ ] Implement retry logic and error handling
+
+#### 1.2. Image Storage Service
+- [ ] Set up Google Cloud Storage for image files
+- [ ] Implement image metadata storage in PostgreSQL
+- [ ] Add image optimization and compression
+- [ ] Implement CDN integration for fast delivery
+- [ ] Add image thumbnail generation
+
+#### 1.3. Quota Management
+- [ ] Implement user-specific image generation quotas
+- [ ] Add quota tracking and usage monitoring
+- [ ] Create quota reset mechanisms
+- [ ] Implement quota upgrade options
+
+#### 1.4. API Endpoints
+- [ ] Implement `/api/images/generate` endpoint
+- [ ] Implement `/api/images` endpoint for user's images
+- [ ] Implement `/api/images/{id}` DELETE endpoint
+- [ ] Implement `/api/images/quota` endpoint
+- [ ] Add image generation progress tracking
+
+### 2. Frontend Implementation
+
+#### 2.1. Image Generation UI
+- [ ] Create image generation button/interface
+- [ ] Implement generation progress indicators
+- [ ] Add image generation options and settings
+- [ ] Create image preview functionality
+- [ ] Add generation error handling and retry
+
+#### 2.2. Image Gallery
+- [ ] Create image gallery component
+- [ ] Implement image grid/list views
+- [ ] Add image search and filter
+- [ ] Create image detail view
+- [ ] Add image download functionality
+
+#### 2.3. Quota Management UI
+- [ ] Create quota display component
+- [ ] Implement quota usage indicators
+- [ ] Add quota upgrade prompts
+- [ ] Create quota history view
+
+### 3. Database Schema
+
+#### 3.1. Images Table
+- [ ] Create images table with metadata
+- [ ] Add user image quota columns
+- [ ] Implement proper indexes for performance
+- [ ] Add foreign key relationships
+
+### 4. Integration & Testing
+
+#### 4.1. API Integration Testing
+- [ ] Test DALL-E 3 API integration
+- [ ] Test Stable Diffusion API fallback
+- [ ] Test image storage and retrieval
+- [ ] Test quota management system
+
+#### 4.2. Performance Testing
+- [ ] Test image generation performance
+- [ ] Test image delivery via CDN
+- [ ] Optimize image loading and caching
+
+---
+
+## Milestone 5: Advanced Learning Features
+
+### Overview
+Implement bedtime story generation, advanced flashcard features, and interactive learning modes.
+
+### 1. Bedtime Story Generation
+
+#### 1.1. Backend Implementation
+- [ ] Implement story generation service with Gemini API
+- [ ] Create specialized prompts for educational storytelling
+- [ ] Add story personalization using user preferences
+- [ ] Implement story storage and retrieval
+- [ ] Add story sharing capabilities
+
+#### 1.2. Story Generation API
+- [ ] Implement `/api/stories/generate` endpoint
+- [ ] Implement `/api/stories` endpoint for user's stories
+- [ ] Implement `/api/stories/{id}` PUT/DELETE endpoints
+- [ ] Add story customization options
+
+#### 1.3. Frontend Implementation
+- [ ] Create story generation interface
+- [ ] Implement story customization controls
+- [ ] Add story display and reading interface
+- [ ] Create story sharing features
+- [ ] Add story library management
+
+### 2. Flashcard Enhancements
+
+#### 2.1. Advanced Organization
+- [ ] Implement hashtag system for flashcards
+- [ ] Add bulk operations for flashcard management
+- [ ] Create advanced search with hashtag filtering
+- [ ] Implement AI-powered tag suggestions
+
+#### 2.2. Export & Printing
+- [ ] Implement PDF generation for flashcards
+- [ ] Add CSV export functionality
+- [ ] Create professional printing templates
+- [ ] Implement batch export capabilities
+
+#### 2.3. Interactive Learning Modes
+- [ ] Create slideshow mode for studying
+- [ ] Implement quiz mode with multiple choice questions
+- [ ] Add progress tracking and statistics
+- [ ] Implement spaced repetition algorithm
+
+### 3. API Endpoints
+
+#### 3.1. Story Generation
+- [ ] Implement story generation endpoints
+- [ ] Add story management endpoints
+- [ ] Implement story sharing endpoints
+
+#### 3.2. Flashcard Enhancements
+- [ ] Implement bulk tag operations
+- [ ] Add export endpoints
+- [ ] Create quiz generation endpoints
+- [ ] Implement progress tracking endpoints
+
+### 4. Frontend Implementation
+
+#### 4.1. Story Features
+- [ ] Create story generation UI
+- [ ] Implement story customization interface
+- [ ] Add story library and management
+- [ ] Create story sharing interface
+
+#### 4.2. Enhanced Flashcard UI
+- [ ] Create hashtag management interface
+- [ ] Implement bulk operations UI
+- [ ] Add export and printing interface
+- [ ] Create interactive learning modes UI
+
+---
+
+## Milestone 6: Community Features & Advanced Platform
+
+### Overview
+Implement community features, premium functionality, and advanced platform capabilities.
+
+### 1. Community Features
+
+#### 1.1. Community Forums
+- [ ] Implement discussion board system
+- [ ] Create user profile enhancements
+- [ ] Add content sharing capabilities
+- [ ] Implement moderation tools
+
+#### 1.2. Gamification System
+- [ ] Create achievement system
+- [ ] Implement progress tracking
+- [ ] Add leaderboards
+- [ ] Create points system
+
+### 2. Premium Features
+
+#### 2.1. Subscription Management
+- [ ] Implement tiered subscription plans
+- [ ] Add feature gating system
+- [ ] Integrate payment processing
+- [ ] Create usage analytics
+
+#### 2.2. Advanced Content Generation
+- [ ] Implement audio generation
+- [ ] Add video clip generation
+- [ ] Create custom prompt system
+- [ ] Implement multi-language UI
+
+### 3. Administrative Features
+
+#### 3.1. Analytics Dashboard
+- [ ] Create user analytics dashboard
+- [ ] Implement content analytics
+- [ ] Add system health monitoring
+- [ ] Create business metrics tracking
+
+#### 3.2. Content Moderation
+- [ ] Implement automated content filtering
+- [ ] Create manual review queue
+- [ ] Add user reporting system
+- [ ] Implement policy enforcement
+
+### 4. Technical Implementation
+
+#### 4.1. Scalability Enhancements
+- [ ] Implement microservices architecture
+- [ ] Add Redis caching layer
+- [ ] Optimize CDN configuration
+- [ ] Implement database sharding
+
+#### 4.2. Security Enhancements
+- [ ] Add multi-factor authentication
+- [ ] Implement rate limiting
+- [ ] Enhance content security
+- [ ] Improve privacy controls
 
 ---
 
@@ -233,8 +549,8 @@ Implement user authentication with Firebase Auth, PostgreSQL database integratio
 ## Nice-to-Have Features
 
 ### Authentication & User Management
-- [ ] Implement user authentication system (JWT/OAuth)
-- [ ] Add user registration and login functionality
+- [x] Implement user authentication system (Firebase Auth)
+- [x] Add user registration and login functionality
 - [ ] Implement user profiles and preferences
 - [ ] Add role-based access control
 
@@ -256,7 +572,7 @@ Implement user authentication with Firebase Auth, PostgreSQL database integratio
 
 ## Future Enhancements
 
-- [ ] Add translation history and favorites
+- [x] Add translation history and favorites
 - [ ] Implement audio pronunciation features
 - [ ] Add image generation for vocabulary learning
 - [ ] Create mobile app version
