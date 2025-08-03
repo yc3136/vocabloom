@@ -91,10 +91,11 @@ Implement user authentication with Firebase Auth, PostgreSQL database integratio
 - [x] Add basic error handling and validation
 
 #### 3.4. Content Management Service
-- [ ] Implement content creation with original word organization
-- [ ] Add content privacy controls (public/private)
+- [ ] Implement word-based content organization (no separate words table)
+- [ ] Add `visibility` enum field to translations and flashcards tables
 - [ ] Implement content search and filtering by original word
 - [ ] Add content update and deletion logic
+- [ ] Create word list and word detail API endpoints
 - [ ] Implement user preferences management
 
 #### 3.5. Flashcard Service Logic
@@ -115,7 +116,7 @@ Implement user authentication with Firebase Auth, PostgreSQL database integratio
 #### 4.2. State Management (Pinia)
 - [x] Install and configure Pinia
 - [x] Create Auth store for user authentication
-- [ ] Create Content store for content management
+- [ ] Create Content store for word-based content management
 - [x] Create Flashcard store for flashcard management
 - [x] Create Translation store for current translation state
 - [ ] Create User store for preferences management
@@ -136,11 +137,12 @@ Implement user authentication with Firebase Auth, PostgreSQL database integratio
 - [ ] Create preferences display in user profile
 
 #### 4.5. Content Organization UI
-- [ ] Create content management dashboard
-- [ ] Implement content organization by original word
-- [ ] Add content privacy controls (public/private toggle)
-- [ ] Create content search and filter interface
+- [ ] Create word list page (organized by original word)
+- [ ] Create word detail page showing all content types
+- [ ] Add visibility controls (private, public, friends, classroom, unlisted per content type)
+- [ ] Create word search and filter interface
 - [ ] Add content creation and editing forms
+- [ ] Implement content type indicators (translation count, flashcard count)
 
 #### 4.6. Flashcard Management UI
 - [x] Create flashcard creation modal/form

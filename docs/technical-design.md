@@ -488,15 +488,113 @@ CREATE INDEX idx_users_preferences ON users USING GIN (preferences);
 #### 6.4.1. Content Management Architecture
 
 **Content Organization Strategy:**
-- All content is keyed by the original English word
-- Users can see all translations and content for each original word
-- Content can be public or private (private by default)
+- All content is organized by the original English word (no separate words table)
+- Each content type (translations, flashcards, images, audio) has `original_word` as a key field
+- Content visibility is controlled by a `visibility` enum ('private', 'public', 'friends', 'classroom', 'unlisted')
+- Each content type can have independent visibility settings
 - Support for multiple translations of the same word in different languages
+- Simple and scalable design without over-engineering
+
+**Database Schema:**
+```sql
+-- Visibility enum for content access control
+CREATE TYPE visibility_level AS ENUM ('private', 'public', 'friends', 'classroom', 'unlisted');
+
+-- Translations table (core content type)
+CREATE TABLE translations (
+    id SERIAL PRIMARY KEY,
+    user_id VARCHAR(128) NOT NULL REFERENCES users(id),
+    original_word VARCHAR(255) NOT NULL,
+    target_language VARCHAR(50) NOT NULL,
+    translation_text TEXT NOT NULL,
+    explanation TEXT,
+    bookmarked BOOLEAN DEFAULT FALSE,
+    visibility visibility_level DEFAULT 'private',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Flashcards table (existing, enhanced)
+CREATE TABLE flashcards (
+    id SERIAL PRIMARY KEY,
+    user_id VARCHAR(128) NOT NULL REFERENCES users(id),
+    original_word VARCHAR(255) NOT NULL,
+    target_language VARCHAR(50) NOT NULL,
+    translated_word VARCHAR(255) NOT NULL,
+    example_sentences JSONB DEFAULT '[]',
+    colors JSONB DEFAULT '{"primary": "#6690ff", "secondary": "#64748b"}',
+    visibility visibility_level DEFAULT 'private',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Images table (future implementation)
+CREATE TABLE images (
+    id SERIAL PRIMARY KEY,
+    user_id VARCHAR(128) NOT NULL REFERENCES users(id),
+    original_word VARCHAR(255) NOT NULL,
+    target_language VARCHAR(50) NOT NULL,
+    image_url VARCHAR(500) NOT NULL,
+    alt_text VARCHAR(255),
+    generation_prompt TEXT,
+    visibility visibility_level DEFAULT 'private',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Audio table (future implementation)
+CREATE TABLE audio (
+    id SERIAL PRIMARY KEY,
+    user_id VARCHAR(128) NOT NULL REFERENCES users(id),
+    original_word VARCHAR(255) NOT NULL,
+    target_language VARCHAR(50) NOT NULL,
+    audio_url VARCHAR(500) NOT NULL,
+    audio_type VARCHAR(50) NOT NULL, -- 'pronunciation', 'example_sentence', 'story'
+    duration_seconds INTEGER,
+    visibility visibility_level DEFAULT 'private',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+**Performance Indexes:**
+```sql
+-- For organizing content by word
+CREATE INDEX idx_translations_word_lang ON translations(original_word, target_language);
+CREATE INDEX idx_flashcards_word_lang ON flashcards(original_word, target_language);
+CREATE INDEX idx_images_word_lang ON images(original_word, target_language);
+CREATE INDEX idx_audio_word_lang ON audio(original_word, target_language);
+
+-- For public discovery (visibility-based)
+CREATE INDEX idx_translations_public ON translations(visibility) WHERE visibility = 'public';
+CREATE INDEX idx_flashcards_public ON flashcards(visibility) WHERE visibility = 'public';
+CREATE INDEX idx_images_public ON images(visibility) WHERE visibility = 'public';
+CREATE INDEX idx_audio_public ON audio(visibility) WHERE visibility = 'public';
+
+-- For user's content
+CREATE INDEX idx_translations_user ON translations(user_id);
+CREATE INDEX idx_flashcards_user ON flashcards(user_id);
+CREATE INDEX idx_images_user ON images(user_id);
+CREATE INDEX idx_audio_user ON audio(user_id);
+
+-- For visibility-based queries
+CREATE INDEX idx_translations_visibility ON translations(visibility);
+CREATE INDEX idx_flashcards_visibility ON flashcards(visibility);
+CREATE INDEX idx_images_visibility ON images(visibility);
+CREATE INDEX idx_audio_visibility ON audio(visibility);
+```
 
 **Content Discovery Features:**
 - Users can browse their content organized by original word
 - Search and filter capabilities within user's content
+- Public content discovery by word and language
 - Integration with public content discovery (Milestone 3)
+
+**Implementation Benefits:**
+- **Simple Design:** No unnecessary `words` table - `original_word` acts as natural key
+- **Scalable:** Easy to add new content types (images, audio, stories)
+- **Flexible:** Each content type can have independent visibility settings
+- **Future-Ready:** Visibility enum supports social features (friends, classroom sharing)
+- **Performance:** Proper indexes for fast queries and discovery
+- **Resume-Friendly:** Clean, professional database design with proper enum usage
+- **Extensible:** Structure supports advanced features like image generation and audio
 
 ### 6.5. Flashcard System
 
@@ -552,21 +650,66 @@ CREATE INDEX idx_users_preferences ON users USING GIN (preferences);
 - `POST /api/auth/reset-password` - Reset password
 
 #### 6.6.3. Protected Endpoints (Requires Authentication)
-- `GET /api/content` - Get user's content organized by original word
-- `POST /api/content` - Save new content
-- `PUT /api/content/{id}` - Update content
-- `DELETE /api/content/{id}` - Delete content
-- `GET /api/flashcards` - Get user's flashcards (with filtering)
-- `POST /api/flashcards` - Save flashcard to user collection
+
+**Content Management (by Original Word):**
+- `GET /api/words` - List unique words for user (grouped by original_word)
+- `GET /api/words/{original_word}` - Get all content for a specific word
+- `PUT /api/words/{original_word}/visibility` - Update visibility for word content
+
+**Translations:**
+- `GET /api/words/{original_word}/translations` - List translations for word
+- `POST /api/words/{original_word}/translations` - Add translation
+- `PUT /api/translations/{id}` - Update translation
+- `DELETE /api/translations/{id}` - Delete translation
+- `GET /api/translations/history` - Get user's translation history
+
+**Flashcards:**
+- `GET /api/words/{original_word}/flashcards` - List flashcards for word
+- `POST /api/words/{original_word}/flashcards` - Add flashcard
 - `PUT /api/flashcards/{id}` - Update flashcard
 - `DELETE /api/flashcards/{id}` - Delete flashcard
+- `GET /api/flashcards` - Get all user's flashcards (with filtering)
+
+**User Management:**
 - `GET /api/user/preferences` - Get user preferences
 - `PUT /api/user/preferences` - Update user preferences
+
+**Public Discovery (Future):**
+- `GET /api/words/public` - List public words for discovery
+- `GET /api/words/{original_word}/public` - Get public content for word
+- `GET /api/words/friends` - List friends' content (future social features)
+- `GET /api/words/classroom` - List classroom content (future educational features)
 
 ### 6.7. State Management
 
 **Pinia Stores:**
 - **Auth Store:** User authentication state and methods
+- **Content Store:** Word-based content organization and management
+- **Flashcard Store:** Flashcard-specific operations and state
+- **Translation Store:** Translation history and current translation state
+- **User Store:** User preferences and profile management
+
+**Frontend Organization:**
+```
+/words
+├── /list - Word list (organized by original word)
+├── /{original_word} - Word detail page showing all content types
+├── /{original_word}/translations - Translation management
+├── /{original_word}/flashcards - Flashcard management
+└── /{original_word}/images - Image gallery (future)
+
+/discover (future)
+├── / - Public content discovery
+├── /search - Search public content
+└── /{original_word} - Public word detail page
+```
+
+**Content Organization UI:**
+- Word list with content type indicators (translation count, flashcard count)
+- Word detail page showing all content types in tabs/sections
+- Content type-specific management interfaces
+- Visibility selector for each content type (private, public, friends, classroom, unlisted)
+- Search and filter capabilities
 - **Content Store:** Content data and CRUD operations (authenticated)
 - **Flashcard Store:** Flashcard data and CRUD operations (authenticated)
 - **Translation Store:** Current translation state (public)
