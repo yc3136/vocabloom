@@ -20,12 +20,22 @@
 - ✅ Automated deployment scripts
 - ✅ Local development environment setup
 
+**New Features in Milestone 2:**
+- 🚧 My Words Page (personal word dashboard)
+- 🚧 LLM response caching system (cost optimization)
+- 🚧 User preferences management
+
 ---
 
-## Milestone 2: User Account Management, Content Organization & Flashcards
+## Milestone 2: My Words Dashboard & Content Discovery
+
+### 🎯 **Implementation Priority**
+1. **My Words Page** - Personal word dashboard showing user's looked-up words
+2. **LLM Caching** - Cost optimization and performance
+3. **User Preferences** - Personalization features
 
 ### Overview
-Implement user authentication with Firebase Auth, PostgreSQL database integration, content organization by original word, and flashcard management system with hybrid user experience (anonymous + authenticated features).
+Implement personal word dashboard (My Words page), LLM response caching for cost optimization, and user preferences management. Focus on personal content organization and performance optimization.
 
 ### 1. Deployment & Infrastructure
 
@@ -57,6 +67,7 @@ Implement user authentication with Firebase Auth, PostgreSQL database integratio
 - [ ] Create users table with Firebase UID integration and preferences JSONB
 - [ ] Create content table for organizing content by original word
 - [ ] Create flashcards table with JSONB fields and content_id foreign key
+- [ ] Create cached_translations table for LLM response caching
 - [ ] Add comprehensive indexes for performance optimization
 
 #### 2.3. Database Migration System
@@ -90,13 +101,22 @@ Implement user authentication with Firebase Auth, PostgreSQL database integratio
 - [ ] Implement `/api/user/preferences` (GET, PUT)
 - [x] Add basic error handling and validation
 
-#### 3.4. Content Management Service
-- [ ] Implement word-based content organization (no separate words table)
-- [ ] Add `visibility` enum field to translations and flashcards tables
-- [ ] Implement content search and filtering by original word
-- [ ] Add content update and deletion logic
-- [ ] Create word list and word detail API endpoints
-- [ ] Implement user preferences management
+#### 3.4. My Words API (Priority 1)
+- [ ] Create `/api/words/my` endpoint to get user's unique words
+- [ ] Implement word aggregation by original_word and target_language
+- [ ] Add translation and flashcard counts per word
+- [ ] Create `/api/words/{word}` endpoint for word detail view
+- [ ] Add search and filtering for user's words
+
+# Discovery API moved to Milestone 3: Public Content Discovery
+
+#### 3.6. LLM Response Caching System
+- [ ] Create cached_translations table with prompt hash indexing
+- [ ] Implement prompt hashing function (word + language + user preferences)
+- [ ] Update translation endpoint to check cache before calling Gemini API
+- [ ] Add cache statistics endpoint for monitoring
+- [ ] Implement cache invalidation for prompt changes
+- [ ] Add cache hit/miss metrics and logging
 
 #### 3.5. Flashcard Service Logic
 - [x] Implement flashcard creation with template support
@@ -136,27 +156,34 @@ Implement user authentication with Firebase Auth, PostgreSQL database integratio
 - [ ] Add preferences validation
 - [ ] Create preferences display in user profile
 
-#### 4.5. Content Organization UI
-- [ ] Create word list page (organized by original word)
-- [ ] Create word detail page showing all content types
-- [ ] Add visibility controls (private, public, friends, classroom, unlisted per content type)
-- [ ] Create word search and filter interface
-- [ ] Add content creation and editing forms
-- [ ] Implement content type indicators (translation count, flashcard count)
+#### 4.5. My Words Page (Priority 1)
+- [ ] Create `/words/my` page showing user's unique words
+- [ ] Display word list with translation and flashcard counts
+- [ ] Add word search and filtering functionality
+- [ ] Create word detail view showing all content for a word
+- [ ] Add navigation to user profile and settings
 
-#### 4.6. Flashcard Management UI
+# Discovery Page moved to Milestone 3: Public Content Discovery
+
+#### 4.7. Flashcard Management UI
 - [x] Create flashcard creation modal/form
 - [x] Implement flashcard preview functionality
 - [x] Add flashcard dashboard/grid view
 - [x] Add flashcard edit/delete functionality
 - [x] Create basic search interface
 
-#### 4.7. Hybrid User Experience
+#### 4.8. Hybrid User Experience
 - [x] Implement anonymous user translation flow
 - [x] Add "Create Flashcard" button for all users
 - [x] Implement authentication prompts for save actions
 - [x] Create seamless transition from anonymous to authenticated
 - [x] Add basic value proposition messaging for sign-up
+
+#### 4.9. Caching Performance Indicators
+- [ ] Add cache hit/miss indicators in translation responses
+- [ ] Display cache statistics in admin/user dashboard
+- [ ] Show performance improvements (response time, cost savings)
+- [ ] Add cache status indicators in UI
 
 ### 5. Integration & Testing
 
@@ -582,3 +609,24 @@ Implement community features, premium functionality, and advanced platform capab
 - [ ] Implement social features (sharing, community)
 - [ ] Add gamification elements (points, badges, streaks)
 - [ ] Create teacher/student dashboard for educational use
+
+---
+
+## Milestone 3: Public Content Discovery (Future)
+
+### Overview
+Implement public content discovery features allowing users to browse, search, and discover content created by other users.
+
+### Key Features:
+- **Discovery Page** - Public flashcard browsing and search
+- **Content Sharing** - Public translation and flashcard discovery
+- **Community Features** - User-generated content discovery
+- **Search & Filtering** - Advanced content discovery tools
+
+### Implementation Tasks:
+- [ ] Create `/api/flashcards/discover` endpoint for public flashcard browsing
+- [ ] Create `/api/translations/discover` endpoint for public translation browsing
+- [ ] Implement `/discover` page with flashcard grid/list view
+- [ ] Add search and filter functionality for discovery
+- [ ] Create content aggregation and sorting features
+- [ ] Add "Save to My Words" functionality for discovered content

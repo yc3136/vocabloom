@@ -490,17 +490,54 @@ CREATE INDEX idx_users_preferences ON users USING GIN (preferences);
 **Content Organization Strategy:**
 - All content is organized by the original English word (no separate words table)
 - Each content type (translations, flashcards, images, audio) has `original_word` as a key field
-- Content visibility is controlled by a `visibility` enum ('private', 'public', 'friends', 'classroom', 'unlisted')
-- Each content type can have independent visibility settings
+- Translations and flashcards are always public for content discovery and caching benefits
+- Visibility controls reserved for future personalized content (images, audio, user-specific data)
 - Support for multiple translations of the same word in different languages
 - Simple and scalable design without over-engineering
 
+#### 6.4.2. LLM Response Caching System
+
+**Prompt Hashing Caching Strategy:**
+- Cache LLM responses using prompt hash for cost optimization and performance
+- Generate deterministic hash from word, language, and user preferences
+- Support personalized prompts while maintaining cache efficiency
+- Automatic cache invalidation when prompts change
+
+**Database Schema for Caching:**
+```sql
+CREATE TABLE cached_translations (
+    id SERIAL PRIMARY KEY,
+    prompt_hash VARCHAR(64) UNIQUE NOT NULL,
+    original_word VARCHAR(255) NOT NULL,
+    target_language VARCHAR(50) NOT NULL,
+    translation TEXT NOT NULL,
+    explanation TEXT,
+    usage_count INTEGER DEFAULT 1,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Indexes for performance
+CREATE INDEX idx_cached_translations_hash ON cached_translations(prompt_hash);
+CREATE INDEX idx_cached_translations_word_lang ON cached_translations(original_word, target_language);
+```
+
+**Caching Flow:**
+1. Generate prompt hash from word, language, and user preferences
+2. Check cache for existing response
+3. If found: return cached response and increment usage count
+4. If not found: call Gemini API, cache result, return response
+5. Support cache invalidation for prompt changes
+
+**Benefits:**
+- **Cost Reduction:** Eliminate duplicate API calls
+- **Performance:** Instant responses for cached queries
+- **Personalization:** Support user-specific prompts
+- **Scalability:** Handle any prompt structure changes
+
 **Database Schema:**
 ```sql
--- Visibility enum for content access control
-CREATE TYPE visibility_level AS ENUM ('private', 'public', 'friends', 'classroom', 'unlisted');
-
--- Translations table (core content type)
+-- Translations table (core content type - always public)
 CREATE TABLE translations (
     id SERIAL PRIMARY KEY,
     user_id VARCHAR(128) NOT NULL REFERENCES users(id),
@@ -509,11 +546,10 @@ CREATE TABLE translations (
     translation_text TEXT NOT NULL,
     explanation TEXT,
     bookmarked BOOLEAN DEFAULT FALSE,
-    visibility visibility_level DEFAULT 'private',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Flashcards table (existing, enhanced)
+-- Flashcards table (always public for discovery)
 CREATE TABLE flashcards (
     id SERIAL PRIMARY KEY,
     user_id VARCHAR(128) NOT NULL REFERENCES users(id),
@@ -522,12 +558,11 @@ CREATE TABLE flashcards (
     translated_word VARCHAR(255) NOT NULL,
     example_sentences JSONB DEFAULT '[]',
     colors JSONB DEFAULT '{"primary": "#6690ff", "secondary": "#64748b"}',
-    visibility visibility_level DEFAULT 'private',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Images table (future implementation)
+-- Images table (future implementation - with visibility)
 CREATE TABLE images (
     id SERIAL PRIMARY KEY,
     user_id VARCHAR(128) NOT NULL REFERENCES users(id),
@@ -536,11 +571,11 @@ CREATE TABLE images (
     image_url VARCHAR(500) NOT NULL,
     alt_text VARCHAR(255),
     generation_prompt TEXT,
-    visibility visibility_level DEFAULT 'private',
+    visibility VARCHAR(20) DEFAULT 'private', -- Simple visibility for future
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Audio table (future implementation)
+-- Audio table (future implementation - with visibility)
 CREATE TABLE audio (
     id SERIAL PRIMARY KEY,
     user_id VARCHAR(128) NOT NULL REFERENCES users(id),
@@ -549,7 +584,7 @@ CREATE TABLE audio (
     audio_url VARCHAR(500) NOT NULL,
     audio_type VARCHAR(50) NOT NULL, -- 'pronunciation', 'example_sentence', 'story'
     duration_seconds INTEGER,
-    visibility visibility_level DEFAULT 'private',
+    visibility VARCHAR(20) DEFAULT 'private', -- Simple visibility for future
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 ```
@@ -562,38 +597,34 @@ CREATE INDEX idx_flashcards_word_lang ON flashcards(original_word, target_langua
 CREATE INDEX idx_images_word_lang ON images(original_word, target_language);
 CREATE INDEX idx_audio_word_lang ON audio(original_word, target_language);
 
--- For public discovery (visibility-based)
-CREATE INDEX idx_translations_public ON translations(visibility) WHERE visibility = 'public';
-CREATE INDEX idx_flashcards_public ON flashcards(visibility) WHERE visibility = 'public';
-CREATE INDEX idx_images_public ON images(visibility) WHERE visibility = 'public';
-CREATE INDEX idx_audio_public ON audio(visibility) WHERE visibility = 'public';
-
 -- For user's content
 CREATE INDEX idx_translations_user ON translations(user_id);
 CREATE INDEX idx_flashcards_user ON flashcards(user_id);
 CREATE INDEX idx_images_user ON images(user_id);
 CREATE INDEX idx_audio_user ON audio(user_id);
 
--- For visibility-based queries
-CREATE INDEX idx_translations_visibility ON translations(visibility);
-CREATE INDEX idx_flashcards_visibility ON flashcards(visibility);
-CREATE INDEX idx_images_visibility ON images(visibility);
-CREATE INDEX idx_audio_visibility ON audio(visibility);
+-- For content discovery (all content is public)
+CREATE INDEX idx_translations_created ON translations(created_at);
+CREATE INDEX idx_flashcards_created ON flashcards(created_at);
+CREATE INDEX idx_images_created ON images(created_at);
+CREATE INDEX idx_audio_created ON audio(created_at);
 ```
 
 **Content Discovery Features:**
 - Users can browse their content organized by original word
 - Search and filter capabilities within user's content
-- Public content discovery by word and language
+- Public content discovery for all translations and flashcards
+- Quick flashcard discovery and sharing
 - Integration with public content discovery (Milestone 3)
 
 **Implementation Benefits:**
 - **Simple Design:** No unnecessary `words` table - `original_word` acts as natural key
 - **Scalable:** Easy to add new content types (images, audio, stories)
-- **Flexible:** Each content type can have independent visibility settings
-- **Future-Ready:** Visibility enum supports social features (friends, classroom sharing)
+- **Content Discovery:** All translations and flashcards are public for easy discovery
+- **Future-Ready:** Simple visibility controls for future personalized content
 - **Performance:** Proper indexes for fast queries and discovery
-- **Resume-Friendly:** Clean, professional database design with proper enum usage
+- **Cost Optimization:** LLM response caching reduces API costs and improves performance
+- **Resume-Friendly:** Clean, professional database design with caching and discovery features
 - **Extensible:** Structure supports advanced features like image generation and audio
 
 ### 6.5. Flashcard System
@@ -639,8 +670,9 @@ CREATE INDEX idx_audio_visibility ON audio(visibility);
 ### 6.6. API Endpoints
 
 #### 6.6.1. Public Endpoints (No Authentication)
-- `POST /api/translate` - Basic translation (existing MVP endpoint)
+- `POST /api/translate` - Basic translation with caching (existing MVP endpoint)
 - `POST /api/flashcards/preview` - Generate flashcard preview
+- `GET /api/cache/stats` - Get cache statistics (usage counts, hit rates)
 
 #### 6.6.2. Authentication Endpoints
 - `POST /api/auth/register` - User registration via Firebase Auth
@@ -654,7 +686,7 @@ CREATE INDEX idx_audio_visibility ON audio(visibility);
 **Content Management (by Original Word):**
 - `GET /api/words` - List unique words for user (grouped by original_word)
 - `GET /api/words/{original_word}` - Get all content for a specific word
-- `PUT /api/words/{original_word}/visibility` - Update visibility for word content
+- `GET /api/words/discover` - Discover public content by word and language
 
 **Translations:**
 - `GET /api/words/{original_word}/translations` - List translations for word
@@ -674,11 +706,11 @@ CREATE INDEX idx_audio_visibility ON audio(visibility);
 - `GET /api/user/preferences` - Get user preferences
 - `PUT /api/user/preferences` - Update user preferences
 
-**Public Discovery (Future):**
-- `GET /api/words/public` - List public words for discovery
+**Public Discovery:**
+- `GET /api/words/public` - List all public words for discovery
 - `GET /api/words/{original_word}/public` - Get public content for word
-- `GET /api/words/friends` - List friends' content (future social features)
-- `GET /api/words/classroom` - List classroom content (future educational features)
+- `GET /api/flashcards/discover` - Discover public flashcards
+- `GET /api/translations/discover` - Discover public translations
 
 ### 6.7. State Management
 
@@ -708,7 +740,7 @@ CREATE INDEX idx_audio_visibility ON audio(visibility);
 - Word list with content type indicators (translation count, flashcard count)
 - Word detail page showing all content types in tabs/sections
 - Content type-specific management interfaces
-- Visibility selector for each content type (private, public, friends, classroom, unlisted)
+- Public content discovery interface
 - Search and filter capabilities
 - **Content Store:** Content data and CRUD operations (authenticated)
 - **Flashcard Store:** Flashcard data and CRUD operations (authenticated)
