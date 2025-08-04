@@ -46,7 +46,7 @@
 
       <div class="words-list">
         <div 
-          v-for="word in filteredWords" 
+          v-for="word in paginatedWords" 
           :key="`${word.original_word}-${word.target_language}`"
           class="word-row"
           :class="{ 'expanded': expandedWords.includes(`${word.original_word}-${word.target_language}`) }"
@@ -73,7 +73,8 @@
           
           <div v-if="expandedWords.includes(`${word.original_word}-${word.target_language}`)" class="word-details">
             <div class="explanation" v-if="word.explanation">
-              <p>{{ word.explanation }}</p>
+              <h4>Explanation</h4>
+              <div v-html="renderMarkdown(word.explanation)" class="markdown-content"></div>
             </div>
             <div class="examples" v-if="word.examples && word.examples.length > 0">
               <h4>Examples</h4>
@@ -87,12 +88,38 @@
           </div>
         </div>
       </div>
+
+      <!-- Pagination -->
+      <div v-if="totalPages > 1" class="pagination">
+        <button 
+          @click="currentPage = Math.max(1, currentPage - 1)"
+          :disabled="currentPage === 1"
+          class="pagination-btn"
+          :class="{ 'disabled': currentPage === 1 }"
+        >
+          ← Previous
+        </button>
+        
+        <div class="page-info">
+          Page {{ currentPage }} of {{ totalPages }}
+        </div>
+        
+        <button 
+          @click="currentPage = Math.min(totalPages, currentPage + 1)"
+          :disabled="currentPage === totalPages"
+          class="pagination-btn"
+          :class="{ 'disabled': currentPage === totalPages }"
+        >
+          Next →
+        </button>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
+import { marked } from 'marked';
 import { useAuthStore } from '../stores/auth';
 import { useNotificationStore } from '../stores/notification';
 
@@ -138,6 +165,8 @@ const error = ref('');
 const searchTerm = ref('');
 const selectedLanguage = ref('');
 const expandedWords = ref<string[]>([]);
+const currentPage = ref(1);
+const itemsPerPage = 20;
 
 const filteredWords = computed(() => {
   let filtered = words.value;
@@ -160,6 +189,25 @@ const filteredWords = computed(() => {
   
   return filtered;
 });
+
+const totalPages = computed(() => {
+  return Math.ceil(filteredWords.value.length / itemsPerPage);
+});
+
+const paginatedWords = computed(() => {
+  const startIndex = (currentPage.value - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  return filteredWords.value.slice(startIndex, endIndex);
+});
+
+const renderMarkdown = (text: string): string => {
+  try {
+    return marked(text);
+  } catch (error) {
+    console.error('Error rendering markdown:', error);
+    return text; // Fallback to plain text
+  }
+};
 
 const loadWords = async () => {
   if (!authStore.isAuthenticated) {
@@ -258,6 +306,11 @@ watch(() => authStore.isAuthenticated, (isAuthenticated) => {
     error.value = '';
   }
 }, { immediate: true });
+
+// Watch for filter changes to reset pagination
+watch([searchTerm, selectedLanguage], () => {
+  currentPage.value = 1;
+});
 
 // Also load on mount as backup
 onMounted(() => {
@@ -404,6 +457,7 @@ onMounted(() => {
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   overflow: hidden;
+  margin-bottom: 24px;
 }
 
 .word-row {
@@ -523,6 +577,92 @@ onMounted(() => {
   margin: 0;
 }
 
+.markdown-content {
+  font-size: 0.9rem;
+  color: #4a5568;
+  line-height: 1.6;
+}
+
+.markdown-content :deep(h1),
+.markdown-content :deep(h2),
+.markdown-content :deep(h3),
+.markdown-content :deep(h4),
+.markdown-content :deep(h5),
+.markdown-content :deep(h6) {
+  color: #2d3748;
+  margin-top: 16px;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.markdown-content :deep(h1) { font-size: 1.4rem; }
+.markdown-content :deep(h2) { font-size: 1.3rem; }
+.markdown-content :deep(h3) { font-size: 1.2rem; }
+.markdown-content :deep(h4) { font-size: 1.1rem; }
+.markdown-content :deep(h5) { font-size: 1rem; }
+.markdown-content :deep(h6) { font-size: 0.9rem; }
+
+.markdown-content :deep(p) {
+  margin-bottom: 12px;
+}
+
+.markdown-content :deep(ul),
+.markdown-content :deep(ol) {
+  margin: 12px 0;
+  padding-left: 20px;
+}
+
+.markdown-content :deep(li) {
+  margin-bottom: 4px;
+}
+
+.markdown-content :deep(blockquote) {
+  border-left: 4px solid #4299e1;
+  padding-left: 16px;
+  margin: 16px 0;
+  color: #4a5568;
+  font-style: italic;
+}
+
+.markdown-content :deep(code) {
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.85rem;
+}
+
+.markdown-content :deep(pre) {
+  background: #f1f5f9;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 16px 0;
+}
+
+.markdown-content :deep(pre code) {
+  background: none;
+  padding: 0;
+}
+
+.markdown-content :deep(strong) {
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.markdown-content :deep(em) {
+  font-style: italic;
+}
+
+.markdown-content :deep(a) {
+  color: #4299e1;
+  text-decoration: none;
+}
+
+.markdown-content :deep(a:hover) {
+  text-decoration: underline;
+}
+
 .examples ul {
   margin: 0;
   padding-left: 20px;
@@ -549,6 +689,46 @@ onMounted(() => {
 .no-content p {
   margin: 0;
   font-size: 0.9rem;
+}
+
+/* Pagination styles */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 24px;
+  padding: 16px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.pagination-btn {
+  background: #4299e1;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.pagination-btn:hover:not(.disabled) {
+  background: #3182ce;
+}
+
+.pagination-btn.disabled {
+  background: #e2e8f0;
+  color: #a0aec0;
+  cursor: not-allowed;
+}
+
+.page-info {
+  color: #718096;
+  font-size: 0.9rem;
+  font-weight: 500;
 }
 
 @media (max-width: 768px) {
@@ -587,6 +767,11 @@ onMounted(() => {
   
   .separator {
     display: none;
+  }
+  
+  .pagination {
+    flex-direction: column;
+    gap: 12px;
   }
 }
 </style> 
