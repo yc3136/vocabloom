@@ -1,11 +1,15 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 import httpx
 import os
 import json
 import re
+from typing import Optional
+from sqlalchemy.orm import Session
 from dotenv import load_dotenv
 from ..secrets import get_gemini_api_key
+from ..database import get_db
+from ..caching import hash_prompt, get_cached_translation, cache_translation
 
 load_dotenv()
 
@@ -19,11 +23,28 @@ class TranslateResponse(BaseModel):
     translation: str
     explanation: str
     examples: list[str]
+    cached: bool = False
+    cache_hit_count: Optional[int] = None
 
 @router.post("/translate", response_model=TranslateResponse)
-async def translate(request: TranslateRequest):
-    """Translate a term using Gemini API"""
+async def translate(request: TranslateRequest, db: Session = Depends(get_db)):
+    """Translate a term using Gemini API with caching"""
     try:
+        # Check cache first
+        prompt_hash = hash_prompt(request.term, request.language)
+        cached_result = get_cached_translation(db, prompt_hash)
+        
+        if cached_result:
+            # Return cached result
+            cached_data = cached_result.response_json
+            return TranslateResponse(
+                translation=cached_data.get("translation", "Translation not available"),
+                explanation=cached_data.get("explanation", "Explanation not available"),
+                examples=cached_data.get("examples", []),
+                cached=True,
+                cache_hit_count=None  # No longer tracking usage count
+            )
+        
         # Get Gemini API key from Secret Manager or environment
         api_key = get_gemini_api_key()
         environment = os.getenv("ENVIRONMENT", "local")
@@ -38,7 +59,9 @@ async def translate(request: TranslateRequest):
                     f"Example 1: I learned the word '{request.term}' in {request.language} class.",
                     f"Example 2: Can you say '{request.term}' in {request.language}?",
                     f"Example 3: The word '{request.term}' means something special in {request.language}."
-                ]
+                ],
+                cached=False,
+                cache_hit_count=None
             )
         
         # Prepare the prompt for Gemini
@@ -90,7 +113,9 @@ async def translate(request: TranslateRequest):
                         f"Example 1: I learned the word '{request.term}' in {request.language} class.",
                         f"Example 2: Can you say '{request.term}' in {request.language}?",
                         f"Example 3: The word '{request.term}' means something special in {request.language}."
-                    ]
+                    ],
+                    cached=False,
+                    cache_hit_count=None
                 )
             
             data = response.json()
@@ -112,10 +137,21 @@ async def translate(request: TranslateRequest):
                             # Try direct JSON parsing
                             parsed = json.loads(response_text)
                         
+                        # Cache the successful response
+                        cache_translation(
+                            db=db,
+                            prompt_hash=prompt_hash,
+                            word=request.term,
+                            language=request.language,
+                            response_data=parsed
+                        )
+                        
                         return TranslateResponse(
                             translation=parsed.get("translation", "Translation not available"),
                             explanation=parsed.get("explanation", "Explanation not available"),
-                            examples=parsed.get("examples", [])
+                            examples=parsed.get("examples", []),
+                            cached=False,
+                            cache_hit_count=None
                         )
                     except json.JSONDecodeError:
                         # If JSON parsing fails, try to extract translation from text
@@ -138,7 +174,9 @@ async def translate(request: TranslateRequest):
                                 f"Example 1: I learned the word '{request.term}' in {request.language} class.",
                                 f"Example 2: Can you say '{request.term}' in {request.language}?",
                                 f"Example 3: The word '{request.term}' means something special in {request.language}."
-                            ]
+                            ],
+                            cached=False,
+                            cache_hit_count=None
                         )
             
             # Fallback if response format is unexpected
@@ -150,7 +188,9 @@ async def translate(request: TranslateRequest):
                     f"Example 1: I learned the word '{request.term}' in {request.language} class.",
                     f"Example 2: Can you say '{request.term}' in {request.language}?",
                     f"Example 3: The word '{request.term}' means something special in {request.language}."
-                ]
+                ],
+                cached=False,
+                cache_hit_count=None
             )
             
     except httpx.TimeoutException:
@@ -162,7 +202,9 @@ async def translate(request: TranslateRequest):
                 f"Example 1: I learned the word '{request.term}' in {request.language} class.",
                 f"Example 2: Can you say '{request.term}' in {request.language}?",
                 f"Example 3: The word '{request.term}' means something special in {request.language}."
-            ]
+            ],
+            cached=False,
+            cache_hit_count=None
         )
     except Exception as e:
         print(f"Translation error: {str(e)}")
@@ -173,5 +215,7 @@ async def translate(request: TranslateRequest):
                 f"Example 1: I learned the word '{request.term}' in {request.language} class.",
                 f"Example 2: Can you say '{request.term}' in {request.language}?",
                 f"Example 3: The word '{request.term}' means something special in {request.language}."
-            ]
+            ],
+            cached=False,
+            cache_hit_count=None
         ) 

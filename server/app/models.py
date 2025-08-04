@@ -51,4 +51,14 @@ class Translation(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     # Relationships
-    user = relationship("User", back_populates="translations") 
+    user = relationship("User", back_populates="translations")
+
+
+class CachedTranslation(Base):
+    __tablename__ = "cached_translations"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    prompt_hash = Column(String(64), unique=True, nullable=False, index=True)
+    original_word = Column(String(255), nullable=False, index=True)
+    target_language = Column(String(50), nullable=False, index=True)
+    response_json = Column(JSONB, nullable=False)  # Store full LLM response 
