@@ -13,7 +13,26 @@ load_dotenv()
 # Initialize Firebase Admin SDK
 def initialize_firebase():
     try:
-        # Always use Secret Manager for Firebase credentials
+        # Check if we're in local development
+        environment = os.getenv("ENVIRONMENT", "local")
+        
+        if environment == "local":
+            # For local development, try to use service account key file
+            service_account_path = os.getenv("FIREBASE_SERVICE_ACCOUNT_PATH")
+            if service_account_path and os.path.exists(service_account_path):
+                print(f"Local development mode: Using Firebase service account from {service_account_path}")
+                cred = credentials.Certificate(service_account_path)
+                firebase_admin.initialize_app(cred)
+            else:
+                # Fallback to default app without credentials
+                print("Local development mode: Using default Firebase app (no service account)")
+                try:
+                    firebase_admin.get_app()
+                except ValueError:
+                    firebase_admin.initialize_app()
+            return
+        
+        # For production, use Secret Manager for Firebase credentials
         from google.cloud import secretmanager
         import json
         client = secretmanager.SecretManagerServiceClient()
@@ -41,33 +60,22 @@ async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     db: Session = Depends(get_db)
 ) -> User:
+    print(f"[AUTH] get_current_user called with credentials: {credentials.credentials[:20]}...")
     try:
         # Check environment
         environment = os.getenv("ENVIRONMENT", "local")
+        print(f"[AUTH] Environment: {environment}")
         
-        # For local development, create a mock user
-        if environment == "local":
-            # Create a mock user for local development
-            user_id = "local-dev-user"
-            user = db.query(User).filter(User.id == user_id).first()
-            if not user:
-                user = User(
-                    id=user_id,
-                    email="dev@vocabloom.local",
-                    display_name="Local Developer"
-                )
-                db.add(user)
-                db.commit()
-                db.refresh(user)
-            return user
-        
+        print(f"[AUTH] Verifying Firebase token")
         # Verify Firebase token
         decoded_token = auth.verify_id_token(credentials.credentials)
         user_id = decoded_token['uid']
+        print(f"[AUTH] Token verified, user_id: {user_id}")
         
         # Get or create user in database
         user = db.query(User).filter(User.id == user_id).first()
         if not user:
+            print(f"[AUTH] Creating new user in database")
             # Create new user from Firebase data
             user = User(
                 id=user_id,
@@ -77,7 +85,17 @@ async def get_current_user(
             db.add(user)
             db.commit()
             db.refresh(user)
+        else:
+            print(f"[AUTH] Found existing user in database")
+            # Update user info if needed
+            if user.email != decoded_token.get('email', '') or user.display_name != decoded_token.get('name', ''):
+                print(f"[AUTH] Updating user info")
+                user.email = decoded_token.get('email', '')
+                user.display_name = decoded_token.get('name', '')
+                db.commit()
+                db.refresh(user)
         
+        print(f"[AUTH] Returning user: {user.id}, {user.email}")
         return user
     except Exception as e:
         print(f"[AUTH ERROR] Exception in get_current_user: {e}")

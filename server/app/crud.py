@@ -34,6 +34,29 @@ def update_user_last_login(db: Session, user_id: str):
     return user
 
 
+def update_user_preferences(db: Session, user_id: str, display_name: Optional[str] = None, preferences: Optional[dict] = None):
+    user = get_user(db, user_id)
+    if user:
+        if display_name is not None:
+            user.display_name = display_name
+        if preferences is not None:
+            user.preferences = preferences
+        db.commit()
+        db.refresh(user)
+    return user
+
+
+def delete_user_account(db: Session, user_id: str):
+    """Delete user account and all associated data"""
+    user = get_user(db, user_id)
+    if user:
+        # Delete all user data (flashcards and translations will be deleted via cascade)
+        db.delete(user)
+        db.commit()
+        return True
+    return False
+
+
 # Flashcard CRUD operations
 def get_flashcards(db: Session, user_id: str, skip: int = 0, limit: int = 100):
     return db.query(models.Flashcard).filter(

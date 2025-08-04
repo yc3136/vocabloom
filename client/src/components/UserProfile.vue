@@ -9,6 +9,9 @@
     </div>
     
     <div class="dropdown-menu" v-if="showDropdown">
+      <div class="dropdown-item" @click="navigateToProfile">
+        Profile
+      </div>
       <div class="dropdown-item" @click="navigateToWords">
         My Words
       </div>
@@ -42,6 +45,11 @@ const userInitial = computed(() => {
 
 const toggleDropdown = () => {
   showDropdown.value = !showDropdown.value;
+};
+
+const navigateToProfile = () => {
+  router.push('/profile');
+  showDropdown.value = false;
 };
 
 const navigateToWords = () => {

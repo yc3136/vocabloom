@@ -23,6 +23,23 @@ class User(UserBase):
         from_attributes = True
 
 
+# User preferences schemas
+class UserPreferences(BaseModel):
+    child_name: Optional[str] = None
+    child_age: Optional[int] = None
+    preferred_languages: Optional[List[str]] = None
+    content_privacy_default: Optional[str] = "private"
+
+
+class UserPreferencesUpdate(BaseModel):
+    display_name: Optional[str] = None
+    preferences: Optional[UserPreferences] = None
+
+
+class UserDelete(BaseModel):
+    confirm_email: str  # User must type their email to confirm deletion
+
+
 # Flashcard schemas
 class FlashcardBase(BaseModel):
     original_word: str
