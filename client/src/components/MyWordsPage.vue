@@ -287,14 +287,7 @@ const removeWord = async (originalWord: string) => {
   }
 };
 
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric'
-  });
-};
+
 
 // Watch for authentication state changes
 watch(() => authStore.isAuthenticated, (isAuthenticated) => {
