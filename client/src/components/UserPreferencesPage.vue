@@ -199,25 +199,12 @@ const formatDate = (dateString: string | undefined) => {
 };
 
 const loadUserData = async () => {
-  if (!authStore.isAuthenticated) {
-    console.log('User not authenticated, skipping loadUserData');
-    notificationStore.error('Please log in to view your preferences');
-    return;
-  }
-
-  if (!authStore.isFirebaseConfigured) {
-    console.log('Firebase not configured, skipping loadUserData');
-    notificationStore.error('Firebase is not configured');
+  if (!authStore.isAuthenticated || !authStore.isFirebaseConfigured) {
     return;
   }
 
   try {
-    loading.value = true;
-    console.log('Loading user data...');
-    
     const token = await authStore.getIdToken();
-    console.log('Got auth token:', token ? 'Token exists' : 'No token');
-    
     const response = await fetch('http://127.0.0.1:8000/api/auth/me', {
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -225,35 +212,14 @@ const loadUserData = async () => {
       }
     });
 
-    console.log('Response status:', response.status);
-    console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-
     if (!response.ok) {
-      if (response.status === 401) {
-        notificationStore.error('Please log in to view your preferences');
-      } else {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-    } else {
-      const data = await response.json();
-      console.log('User data loaded:', data);
-      user.value = data;
-      
-      if (user.value.preferences) {
-        preferencesForm.value.childName = user.value.preferences.child_name || '';
-        preferencesForm.value.childAge = user.value.preferences.child_age || null;
-        preferencesForm.value.preferredLanguages = user.value.preferences.preferred_languages || [];
-      }
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+
+    const userData = await response.json();
+    user.value = userData;
   } catch (error) {
     console.error('Error loading user data:', error);
-    if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
-      notificationStore.error('Network error: Unable to connect to server');
-    } else {
-      notificationStore.error('Failed to load user data');
-    }
-  } finally {
-    loading.value = false;
   }
 };
 
@@ -267,35 +233,31 @@ const savePreferences = async () => {
     loading.value = true;
     const token = await authStore.getIdToken();
     
-    const preferencesData = {
-      preferences: {
-        child_name: preferencesForm.value.childName || null,
-        child_age: preferencesForm.value.childAge || null,
-        preferred_languages: preferencesForm.value.preferredLanguages || [],
-        content_privacy_default: 'private'
-      }
-    };
-
     const response = await fetch('http://127.0.0.1:8000/api/auth/preferences', {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(preferencesData)
+      body: JSON.stringify({
+        preferences: {
+          child_name: preferencesForm.value.childName,
+          child_age: preferencesForm.value.childAge,
+          preferred_languages: preferencesForm.value.preferredLanguages,
+          content_privacy_default: preferencesForm.value.contentPrivacyDefault
+        }
+      })
     });
 
     if (!response.ok) {
-      if (response.status === 401) {
-        notificationStore.error('Please log in to save preferences');
-      } else {
-        const error = await response.json();
-        notificationStore.error(error.detail || 'Failed to save preferences');
-      }
-    } else {
-      notificationStore.success('Preferences saved successfully!');
-      await loadUserData(); // Reload user data
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+
+    const result = await response.json();
+    notificationStore.success('Preferences saved successfully!');
+    
+    // Reload user data to get updated preferences
+    await loadUserData();
   } catch (error) {
     console.error('Error saving preferences:', error);
     notificationStore.error('Failed to save preferences');
@@ -305,13 +267,21 @@ const savePreferences = async () => {
 };
 
 const changePassword = async () => {
+  if (!securityForm.value.newPassword || !securityForm.value.confirmPassword) {
+    notificationStore.error('Please fill in all password fields');
+    return;
+  }
+
+  if (securityForm.value.newPassword !== securityForm.value.confirmPassword) {
+    notificationStore.error('New passwords do not match');
+    return;
+  }
+
   try {
     loading.value = true;
-    // This would need to be implemented with Firebase Auth
-    // For now, we'll show a placeholder message
+    // Note: Password change should be handled by Firebase Auth directly
+    // This is a placeholder for future implementation
     notificationStore.info('Password change functionality will be implemented with Firebase Auth');
-    securityForm.value.newPassword = '';
-    securityForm.value.confirmPassword = '';
   } catch (error) {
     console.error('Error changing password:', error);
     notificationStore.error('Failed to change password');
@@ -371,26 +341,21 @@ const confirmDeleteAccount = async () => {
 
 // Watch for authentication state changes
 watch(() => authStore.isAuthenticated, (isAuthenticated) => {
-  console.log('Auth state changed:', isAuthenticated);
   if (isAuthenticated) {
     // Add a small delay to ensure Firebase is fully initialized
     setTimeout(() => {
       loadUserData();
-    }, 100);
-  } else {
-    // Clear user data when user logs out
-    user.value = null;
+    }, 1000);
   }
 });
 
 // Load user data on component mount
 onMounted(() => {
-  console.log('Component mounted, auth state:', authStore.isAuthenticated);
   if (authStore.isAuthenticated) {
     // Add a small delay to ensure Firebase is fully initialized
     setTimeout(() => {
       loadUserData();
-    }, 100);
+    }, 1000);
   }
 });
 </script>

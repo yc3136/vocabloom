@@ -53,17 +53,7 @@ async def get_current_user_info(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Get current user information"""
-    print(f"[AUTH ME] Endpoint called")
-    print(f"[AUTH ME] Current user: {current_user.id}, email: {current_user.email}")
-    try:
-        print(f"[AUTH ME] About to return user data")
-        return current_user
-    except Exception as e:
-        print(f"[AUTH ME] Exception in endpoint: {e}")
-        import traceback
-        traceback.print_exc()
-        raise
+    return current_user
 
 
 @router.get("/preferences", response_model=UserPreferences)
