@@ -5,7 +5,7 @@ import { useAuthStore } from '../stores/auth'
 import { useFlashcardStore } from '../stores/flashcards'
 
 const term = ref('')
-const selectedLanguage = ref('Spanish')
+const selectedLanguage = ref('Chinese')
 const translation = ref('')
 const explanation = ref('')
 const examples = ref<string[]>([])
@@ -197,8 +197,8 @@ function handleClickOutside(event: Event) {
     </div>
     
     <button @click="lookup" :disabled="loading" class="lookup-btn">
-      <span v-if="!loading">Translate</span>
-      <span v-else>Translating...</span>
+      <span v-if="!loading">Look up</span>
+      <span v-else>Looking up...</span>
     </button>
     
     <div v-if="error" class="error-box">

@@ -13,8 +13,8 @@
     <div v-else-if="words.length === 0" class="empty-state">
       <div class="empty-icon">📚</div>
       <h3>No words yet</h3>
-      <p>Start by looking up some words on the home page!</p>
-      <router-link to="/" class="cta-btn">Go to Home</router-link>
+      <p>Start by looking up some words on the learn page!</p>
+      <router-link to="/" class="cta-btn">Go to Learn</router-link>
     </div>
 
     <div v-else class="words-content">
@@ -135,7 +135,7 @@ interface WordSummary {
 const authStore = useAuthStore();
 const notificationStore = useNotificationStore();
 
-// Language options (same as HomePage)
+// Language options (same as Learn page)
 const languages = [
   { value: 'Spanish', label: 'Spanish (Español)' },
   { value: 'French', label: 'French (Français)' },
