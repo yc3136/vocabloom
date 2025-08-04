@@ -79,9 +79,17 @@ async function lookup() {
   const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
   
   try {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    
+    // Add auth token if user is logged in
+    if (authStore.isAuthenticated) {
+      const token = await authStore.getIdToken();
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
     const res = await fetch(`${API_BASE}/api/translate`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({ 
         term: term.value,
         language: selectedLanguage.value 

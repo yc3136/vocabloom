@@ -10,6 +10,8 @@ from dotenv import load_dotenv
 from ..secrets import get_gemini_api_key
 from ..database import get_db
 from ..caching import hash_prompt, get_cached_translation, cache_translation
+from ..auth import get_current_user_if_authenticated
+from ..models import Translation, User
 
 load_dotenv()
 
@@ -27,10 +29,14 @@ class TranslateResponse(BaseModel):
     cache_hit_count: Optional[int] = None
 
 @router.post("/translate", response_model=TranslateResponse)
-async def translate(request: TranslateRequest, db: Session = Depends(get_db)):
+async def translate(
+    request: TranslateRequest, 
+    current_user: Optional[User] = Depends(get_current_user_if_authenticated),
+    db: Session = Depends(get_db)
+):
     """Translate a term using Gemini API with caching"""
     try:
-        # Check cache first
+        # Check cache first (works for all users)
         prompt_hash = hash_prompt(request.term, request.language)
         cached_result = get_cached_translation(db, prompt_hash)
         
@@ -137,7 +143,7 @@ async def translate(request: TranslateRequest, db: Session = Depends(get_db)):
                             # Try direct JSON parsing
                             parsed = json.loads(response_text)
                         
-                        # Cache the successful response
+                                                # Cache the successful response
                         cache_translation(
                             db=db,
                             prompt_hash=prompt_hash,
@@ -145,6 +151,18 @@ async def translate(request: TranslateRequest, db: Session = Depends(get_db)):
                             language=request.language,
                             response_data=parsed
                         )
+                        
+                        # Save translation to user's history if authenticated
+                        if current_user:
+                            translation = Translation(
+                                user_id=current_user.id,
+                                original_term=request.term,
+                                target_language=request.language,
+                                translation=parsed.get("translation", "Translation not available"),
+                                explanation=parsed.get("explanation", "Explanation not available")
+                            )
+                            db.add(translation)
+                            db.commit()
                         
                         return TranslateResponse(
                             translation=parsed.get("translation", "Translation not available"),

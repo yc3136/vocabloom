@@ -93,4 +93,17 @@ class FlashcardPreview(BaseModel):
     original_word: str
     translated_word: str
     example_sentences: Optional[List[str]] = None
-    colors: Optional[Dict[str, str]] = None 
+    colors: Optional[Dict[str, str]] = None
+
+
+# Word management schemas
+class WordSummary(BaseModel):
+    original_word: str
+    target_language: str
+    translation: str
+    explanation: Optional[str] = None
+    examples: Optional[List[str]] = None
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True 

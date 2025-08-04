@@ -9,12 +9,13 @@
     </div>
     
     <div class="dropdown-menu" v-if="showDropdown">
+      <div class="dropdown-item" @click="navigateToWords">
+        My Words
+      </div>
       <div class="dropdown-item" @click="navigateToFlashcards">
-        <span class="icon">📚</span>
         My Flashcards
       </div>
       <div class="dropdown-item" @click="handleLogout">
-        <span class="icon">🚪</span>
         Sign Out
       </div>
     </div>
@@ -41,6 +42,11 @@ const userInitial = computed(() => {
 
 const toggleDropdown = () => {
   showDropdown.value = !showDropdown.value;
+};
+
+const navigateToWords = () => {
+  router.push('/words');
+  showDropdown.value = false;
 };
 
 const navigateToFlashcards = () => {
@@ -143,7 +149,6 @@ onUnmounted(() => {
 .dropdown-item {
   display: flex;
   align-items: center;
-  gap: 8px;
   padding: 12px 16px;
   cursor: pointer;
   transition: background-color 0.2s;
@@ -153,9 +158,5 @@ onUnmounted(() => {
 
 .dropdown-item:hover {
   background: var(--bg-primary);
-}
-
-.dropdown-item .icon {
-  font-size: 16px;
 }
 </style> 

@@ -10,7 +10,7 @@ load_dotenv()
 # Import our modules
 from app.database import engine, Base
 from app.auth import initialize_firebase
-from app.routes import auth, flashcards, translations, translate, cache
+from app.routes import auth, flashcards, translations, translate, cache, words
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -55,6 +55,7 @@ app.include_router(flashcards.router, prefix="/api")
 app.include_router(translations.router, prefix="/api")
 app.include_router(translate.router, prefix="/api")
 app.include_router(cache.router, prefix="/api")
+app.include_router(words.router, prefix="/api")
 
 # Health check endpoint
 @app.get("/health")

@@ -14,6 +14,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import HomePage from './components/HomePage.vue';
 import AboutPage from './components/AboutPage.vue';
 import FlashcardDashboard from './components/FlashcardDashboard.vue';
+import MyWordsPage from './components/MyWordsPage.vue';
 
 // const vuetify = createVuetify({
 //   components,
@@ -24,6 +25,7 @@ const routes = [
   { path: '/', component: HomePage },
   { path: '/about', component: AboutPage },
   { path: '/flashcards', component: FlashcardDashboard },
+  { path: '/words', component: MyWordsPage },
 ];
 
 const router = createRouter({

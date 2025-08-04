@@ -1,6 +1,6 @@
 import firebase_admin
 from firebase_admin import credentials, auth
-from fastapi import HTTPException, Depends, status
+from fastapi import HTTPException, Depends, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from .database import get_db
@@ -97,4 +97,19 @@ async def get_current_user_optional(
     try:
         return await get_current_user(credentials, db)
     except HTTPException:
+        return None
+
+# Dependency that doesn't require Authorization header
+async def get_current_user_if_authenticated(
+    request: Request,
+    db: Session = Depends(get_db)
+) -> User | None:
+    try:
+        authorization = request.headers.get('authorization')
+        if not authorization or not authorization.startswith('Bearer '):
+            return None
+            
+        credentials = HTTPAuthorizationCredentials(scheme="Bearer", credentials=authorization[7:])
+        return await get_current_user(credentials, db)
+    except:
         return None 
