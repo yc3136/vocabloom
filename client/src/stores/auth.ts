@@ -6,6 +6,9 @@ import {
   createUserWithEmailAndPassword, 
   signOut, 
   onAuthStateChanged,
+  updatePassword,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
   type User
 } from 'firebase/auth';
 import { useNotificationStore } from './notification';
@@ -94,6 +97,47 @@ export const useAuthStore = defineStore('auth', () => {
     }
   };
 
+  const changePassword = async (newPassword: string, currentPassword?: string) => {
+    if (!isFirebaseConfigured.value) {
+      notificationStore.error('Firebase is not configured. Please check your environment variables.');
+      return;
+    }
+
+    if (!user.value) {
+      notificationStore.error('User not authenticated');
+      return;
+    }
+
+    try {
+      loading.value = true;
+      error.value = null;
+      
+      // If current password is provided, re-authenticate first
+      if (currentPassword) {
+        const credential = EmailAuthProvider.credential(user.value.email!, currentPassword);
+        await reauthenticateWithCredential(user.value, credential);
+      }
+      
+      await updatePassword(user.value, newPassword);
+      notificationStore.success('Password changed successfully!');
+    } catch (err: any) {
+      error.value = err.message;
+      
+      if (err.code === 'auth/requires-recent-login') {
+        notificationStore.error('Please provide your current password to change your password');
+        throw new Error('REAUTH_REQUIRED');
+      } else if (err.code === 'auth/wrong-password') {
+        notificationStore.error('Current password is incorrect');
+        throw new Error('WRONG_PASSWORD');
+      } else {
+        notificationStore.error('Password change failed: ' + err.message);
+        throw err;
+      }
+    } finally {
+      loading.value = false;
+    }
+  };
+
   const getIdToken = async (): Promise<string> => {
     if (!user.value) {
       throw new Error('User not authenticated');
@@ -112,6 +156,7 @@ export const useAuthStore = defineStore('auth', () => {
     signIn,
     signUp,
     logout,
+    changePassword,
     getIdToken,
     initAuth
   };

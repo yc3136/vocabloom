@@ -27,6 +27,9 @@
             required 
             placeholder="Enter your password"
           />
+          <div v-if="isLogin" class="forgot-password">
+            <a href="#" @click.prevent="handleForgotPassword">Forgot password?</a>
+          </div>
         </div>
         
 
@@ -61,6 +64,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useAuthStore } from '../stores/auth';
+import { useNotificationStore } from '../stores/notification';
 
 interface Props {
   show: boolean;
@@ -79,6 +83,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<Emits>();
 
 const authStore = useAuthStore();
+const notificationStore = useNotificationStore();
 const email = ref('');
 const password = ref('');
 
@@ -108,6 +113,16 @@ const handleSubmit = async () => {
     // Error is handled by the store
     console.error('Authentication error:', error);
   }
+};
+
+const handleForgotPassword = () => {
+  if (!email.value) {
+    notificationStore.error('Please enter your email address first');
+    return;
+  }
+  
+  // For now, show a message about password reset
+  notificationStore.info('Password reset functionality will be implemented. Please contact support for now.');
 };
 </script>
 
@@ -194,6 +209,22 @@ const handleSubmit = async () => {
 .form-group input:focus {
   outline: none;
   border-color: var(--primary-blue);
+}
+
+.forgot-password {
+  margin-top: 8px;
+  text-align: right;
+}
+
+.forgot-password a {
+  color: var(--primary-blue);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.forgot-password a:hover {
+  text-decoration: underline;
 }
 
 .error-message {

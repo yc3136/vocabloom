@@ -19,28 +19,45 @@
             <label>Last Login</label>
             <div class="info-text">{{ user?.last_login_at ? formatDate(user.last_login_at) : (user ? 'Never' : 'Loading...') }}</div>
           </div>
-          <div class="info-item button-item">
-            <button 
-              @click="showDeleteWarning" 
-              :disabled="loading"
-              class="btn btn-danger"
-            >
-              Delete Account
-            </button>
-          </div>
+        </div>
+        <div class="section-actions">
+          <button 
+            @click="showDeleteWarning" 
+            :disabled="loading"
+            class="btn btn-danger"
+          >
+            Delete Account
+          </button>
         </div>
         
         <div class="subsection">
           <h3 class="subsection-title">Change Password</h3>
           <div class="form-grid">
             <div class="info-item">
+              <label>Current Password</label>
+              <input 
+                v-model="securityForm.currentPassword" 
+                type="password" 
+                placeholder="Enter your current password"
+                class="form-input"
+              />
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="info-item">
               <label>New Password</label>
               <input 
                 v-model="securityForm.newPassword" 
                 type="password" 
-                placeholder="Enter new password"
+                placeholder="Enter new password (min 6 characters)"
                 class="form-input"
+                :class="{ 'error': passwordErrors.length > 0, 'success': canChangePassword }"
               />
+              <div v-if="passwordErrors.length > 0" class="validation-errors">
+                <div v-for="error in passwordErrors" :key="error" class="error-message">
+                  {{ error }}
+                </div>
+              </div>
             </div>
             <div class="info-item">
               <label>Confirm Password</label>
@@ -49,17 +66,21 @@
                 type="password" 
                 placeholder="Confirm new password"
                 class="form-input"
+                :class="{ 'error': passwordErrors.length > 0, 'success': canChangePassword }"
               />
+              <div v-if="canChangePassword" class="validation-success">
+                <div class="success-message">✅ Password requirements met</div>
+              </div>
             </div>
-            <div class="info-item button-item">
-              <button 
-                @click="changePassword" 
-                :disabled="!canChangePassword || loading"
-                class="btn btn-primary"
-              >
-                {{ loading ? 'Changing...' : 'Change Password' }}
-              </button>
-            </div>
+          </div>
+          <div class="section-actions">
+            <button 
+              @click="changePassword" 
+              :disabled="!canChangePassword || authStore.loading"
+              class="btn btn-primary"
+            >
+              {{ authStore.loading ? 'Changing...' : 'Change Password' }}
+            </button>
           </div>
         </div>
       </div>
@@ -109,17 +130,15 @@
             </select>
           </div>
         </div>
-      </div>
-
-      <!-- Save Button -->
-      <div class="actions">
-        <button 
-          @click="savePreferences" 
-          :disabled="loading"
-          class="btn btn-primary"
-        >
-          {{ loading ? 'Saving...' : 'Save Preferences' }}
-        </button>
+        <div class="section-actions">
+          <button 
+            @click="saveLearningPreferences" 
+            :disabled="loading"
+            class="btn btn-primary"
+          >
+            {{ loading ? 'Saving...' : 'Save Learning Preferences' }}
+          </button>
+        </div>
       </div>
     </div>
 
@@ -170,6 +189,7 @@ const showDeleteModal = ref(false);
 
 // Form data
 const securityForm = ref({
+  currentPassword: '',
   newPassword: '',
   confirmPassword: ''
 });
@@ -182,10 +202,35 @@ const preferencesForm = ref({
 
 // Computed properties
 const canChangePassword = computed(() => {
-  return securityForm.value.newPassword && 
+  return securityForm.value.currentPassword &&
+         securityForm.value.newPassword && 
          securityForm.value.confirmPassword && 
          securityForm.value.newPassword === securityForm.value.confirmPassword &&
          securityForm.value.newPassword.length >= 6;
+});
+
+const passwordErrors = computed(() => {
+  const errors = [];
+  
+  if (securityForm.value.currentPassword || securityForm.value.newPassword || securityForm.value.confirmPassword) {
+    if (!securityForm.value.currentPassword) {
+      errors.push('Current password is required');
+    }
+    
+    if (!securityForm.value.newPassword) {
+      errors.push('New password is required');
+    } else if (securityForm.value.newPassword.length < 6) {
+      errors.push('Password must be at least 6 characters long');
+    }
+    
+    if (!securityForm.value.confirmPassword) {
+      errors.push('Please confirm your password');
+    } else if (securityForm.value.newPassword !== securityForm.value.confirmPassword) {
+      errors.push('Passwords do not match');
+    }
+  }
+  
+  return errors;
 });
 
 // Methods
@@ -219,7 +264,7 @@ const loadUserData = async () => {
   }
 };
 
-const savePreferences = async () => {
+const saveLearningPreferences = async () => {
   if (!authStore.isAuthenticated) {
     notificationStore.error('Please log in to save preferences');
     return;
@@ -239,8 +284,7 @@ const savePreferences = async () => {
         preferences: {
           child_name: preferencesForm.value.childName,
           child_age: preferencesForm.value.childAge,
-          preferred_languages: preferencesForm.value.preferredLanguages,
-          content_privacy_default: preferencesForm.value.contentPrivacyDefault
+          preferred_languages: preferencesForm.value.preferredLanguages
         }
       })
     });
@@ -250,20 +294,20 @@ const savePreferences = async () => {
     }
 
     const result = await response.json();
-    notificationStore.success('Preferences saved successfully!');
+    notificationStore.success('Learning preferences saved successfully!');
     
     // Reload user data to get updated preferences
     await loadUserData();
   } catch (error) {
-    console.error('Error saving preferences:', error);
-    notificationStore.error('Failed to save preferences');
+    console.error('Error saving learning preferences:', error);
+    notificationStore.error('Failed to save learning preferences');
   } finally {
     loading.value = false;
   }
 };
 
 const changePassword = async () => {
-  if (!securityForm.value.newPassword || !securityForm.value.confirmPassword) {
+  if (!securityForm.value.currentPassword || !securityForm.value.newPassword || !securityForm.value.confirmPassword) {
     notificationStore.error('Please fill in all password fields');
     return;
   }
@@ -273,16 +317,20 @@ const changePassword = async () => {
     return;
   }
 
+  if (securityForm.value.newPassword.length < 6) {
+    notificationStore.error('Password must be at least 6 characters long');
+    return;
+  }
+
   try {
-    loading.value = true;
-    // Note: Password change should be handled by Firebase Auth directly
-    // This is a placeholder for future implementation
-    notificationStore.info('Password change functionality will be implemented with Firebase Auth');
+    await authStore.changePassword(securityForm.value.newPassword, securityForm.value.currentPassword);
+    // Clear the form after successful password change
+    securityForm.value.currentPassword = '';
+    securityForm.value.newPassword = '';
+    securityForm.value.confirmPassword = '';
   } catch (error) {
     console.error('Error changing password:', error);
-    notificationStore.error('Failed to change password');
-  } finally {
-    loading.value = false;
+    // Error is already handled by the auth store
   }
 };
 
@@ -456,15 +504,57 @@ onMounted(() => {
   border-color: var(--primary-blue);
 }
 
+.form-input.error {
+  border-color: #dc3545;
+}
+
+.form-input.success {
+  border-color: #28a745;
+}
+
 .form-input.disabled {
   background-color: var(--bg-primary);
   color: var(--text-secondary);
   cursor: not-allowed;
 }
 
+.validation-errors {
+  margin-top: 8px;
+}
+
+.validation-errors .error-message {
+  color: #dc3545;
+  font-size: 12px;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.validation-errors .error-message:before {
+  content: "⚠️";
+  margin-right: 4px;
+  font-size: 10px;
+}
+
+.validation-success {
+  margin-top: 8px;
+}
+
+.validation-success .success-message {
+  color: #28a745;
+  font-size: 12px;
+  font-weight: 500;
+}
+
 .button-item {
   display: flex;
   align-items: flex-end;
+}
+
+.section-actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-start;
 }
 
 .btn {
@@ -488,7 +578,7 @@ onMounted(() => {
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: var(--primary-blue-dark);
+  background: var(--blue-hover);
 }
 
 .btn-secondary {
@@ -510,11 +600,7 @@ onMounted(() => {
   background: #c82333;
 }
 
-.actions {
-  padding: 20px 24px;
-  text-align: center;
-  background: var(--bg-primary);
-}
+
 
 /* Modal Styles */
 .modal-overlay {
