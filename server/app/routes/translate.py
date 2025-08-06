@@ -15,11 +15,46 @@ from ..models import Translation, User
 
 load_dotenv()
 
+def get_age_appropriate_examples(term: str, language: str, child_age: Optional[int] = None) -> list[str]:
+    """Generate age-appropriate example sentences based on child's age."""
+    if not child_age:
+        return [
+            f"Example 1: I learned the word '{term}' in {language} class.",
+            f"Example 2: Can you say '{term}' in {language}?",
+            f"Example 3: The word '{term}' means something special in {language}."
+        ]
+    
+    if child_age <= 5:
+        return [
+            f"Look! A {term}!",
+            f"Can you point to the {term}?",
+            f"The {term} is so pretty!"
+        ]
+    elif child_age <= 8:
+        return [
+            f"I see a {term} in the picture.",
+            f"Let's learn about {term} today!",
+            f"The {term} is my favorite."
+        ]
+    elif child_age <= 12:
+        return [
+            f"I learned about {term} in school today.",
+            f"Can you tell me more about {term}?",
+            f"The {term} is really interesting!"
+        ]
+    else:
+        return [
+            f"Example 1: I learned the word '{term}' in {language} class.",
+            f"Example 2: Can you say '{term}' in {language}?",
+            f"Example 3: The word '{term}' means something special in {language}."
+        ]
+
 router = APIRouter(tags=["translate"])
 
 class TranslateRequest(BaseModel):
     term: str
     language: str
+    child_age: Optional[int] = None
 
 class TranslateResponse(BaseModel):
     translation: str
@@ -36,8 +71,13 @@ async def translate(
 ):
     """Translate a term using Gemini API with caching"""
     try:
+        # Get user preferences for age-appropriate caching
+        user_preferences = None
+        if current_user and current_user.preferences:
+            user_preferences = current_user.preferences
+        
         # Check cache first (works for all users)
-        prompt_hash = hash_prompt(request.term, request.language)
+        prompt_hash = hash_prompt(request.term, request.language, user_preferences)
         cached_result = get_cached_translation(db, prompt_hash)
         
         if cached_result:
@@ -61,14 +101,15 @@ async def translate(
             return TranslateResponse(
                 translation=f"[{request.language}] {request.term}",
                 explanation=f"This is a mock translation for '{request.term}' to {request.language}. To use real translations, set GEMINI_API_KEY in your environment or add the secret to Secret Manager.",
-                examples=[
-                    f"Example 1: I learned the word '{request.term}' in {request.language} class.",
-                    f"Example 2: Can you say '{request.term}' in {request.language}?",
-                    f"Example 3: The word '{request.term}' means something special in {request.language}."
-                ],
+                examples=get_age_appropriate_examples(request.term, request.language, request.child_age),
                 cached=False,
                 cache_hit_count=None
             )
+        
+        # Get user's child age for age-appropriate examples
+        child_age_info = ""
+        if request.child_age:
+            child_age_info = f"\nThe examples should be appropriate for a {request.child_age}-year-old child. Use simple vocabulary and concepts that a {request.child_age}-year-old would understand and find engaging."
         
         # Prepare the prompt for Gemini
         prompt = f"""
@@ -91,7 +132,7 @@ async def translate(
         - Any cultural context
         - Grammar notes if applicable
         
-        For the examples, generate 3 simple example sentences that a kid would understand. Make them engaging and educational.
+        For the examples, generate 3 simple example sentences that a kid would understand. Make them engaging and educational.{child_age_info}
         
         Respond only with valid JSON, no additional text.
         """
@@ -115,11 +156,7 @@ async def translate(
                 return TranslateResponse(
                     translation=f"[{request.language}] {request.term}",
                     explanation=f"Translation service temporarily unavailable. This is a fallback response for '{request.term}' to {request.language}.",
-                    examples=[
-                        f"Example 1: I learned the word '{request.term}' in {request.language} class.",
-                        f"Example 2: Can you say '{request.term}' in {request.language}?",
-                        f"Example 3: The word '{request.term}' means something special in {request.language}."
-                    ],
+                    examples=get_age_appropriate_examples(request.term, request.language, request.child_age),
                     cached=False,
                     cache_hit_count=None
                 )
@@ -188,11 +225,7 @@ async def translate(
                         return TranslateResponse(
                             translation=translation,
                             explanation=explanation,
-                            examples=[
-                                f"Example 1: I learned the word '{request.term}' in {request.language} class.",
-                                f"Example 2: Can you say '{request.term}' in {request.language}?",
-                                f"Example 3: The word '{request.term}' means something special in {request.language}."
-                            ],
+                            examples=get_age_appropriate_examples(request.term, request.language, request.child_age),
                             cached=False,
                             cache_hit_count=None
                         )
@@ -202,11 +235,7 @@ async def translate(
             return TranslateResponse(
                 translation=f"[{request.language}] {request.term}",
                 explanation=f"Unexpected response format from translation service. This is a fallback for '{request.term}' to {request.language}.",
-                examples=[
-                    f"Example 1: I learned the word '{request.term}' in {request.language} class.",
-                    f"Example 2: Can you say '{request.term}' in {request.language}?",
-                    f"Example 3: The word '{request.term}' means something special in {request.language}."
-                ],
+                examples=get_age_appropriate_examples(request.term, request.language, request.child_age),
                 cached=False,
                 cache_hit_count=None
             )
@@ -216,11 +245,7 @@ async def translate(
         return TranslateResponse(
             translation=f"[{request.language}] {request.term}",
             explanation=f"Translation request timed out. This is a fallback response for '{request.term}' to {request.language}.",
-            examples=[
-                f"Example 1: I learned the word '{request.term}' in {request.language} class.",
-                f"Example 2: Can you say '{request.term}' in {request.language}?",
-                f"Example 3: The word '{request.term}' means something special in {request.language}."
-            ],
+            examples=get_age_appropriate_examples(request.term, request.language, request.child_age),
             cached=False,
             cache_hit_count=None
         )
@@ -229,11 +254,7 @@ async def translate(
         return TranslateResponse(
             translation=f"[{request.language}] {request.term}",
             explanation=f"Translation service error: {str(e)}. This is a fallback response for '{request.term}' to {request.language}.",
-            examples=[
-                f"Example 1: I learned the word '{request.term}' in {request.language} class.",
-                f"Example 2: Can you say '{request.term}' in {request.language}?",
-                f"Example 3: The word '{request.term}' means something special in {request.language}."
-            ],
+            examples=get_age_appropriate_examples(request.term, request.language, request.child_age),
             cached=False,
             cache_hit_count=None
         ) 

@@ -27,9 +27,9 @@ const contentTypes = [
   { id: 'flashcard', label: 'Flashcard', icon: '📚' }
 ]
 
-// Combine translation and explanation into a single markdown response
+// Combine translation, explanation, and examples into a single markdown response
 const combinedResponse = computed(() => {
-  if (!translation.value && !explanation.value) return ''
+  if (!translation.value && !explanation.value && examples.value.length === 0) return ''
   
   let response = ''
   
@@ -39,6 +39,13 @@ const combinedResponse = computed(() => {
   
   if (explanation.value) {
     response += explanation.value
+  }
+  
+  if (examples.value && examples.value.length > 0) {
+    response += '\n\n**Examples:**\n'
+    examples.value.forEach((example, index) => {
+      response += `${index + 1}. ${example}\n`
+    })
   }
   
   return response
@@ -69,12 +76,16 @@ async function lookup() {
       headers['Authorization'] = `Bearer ${token}`;
     }
     
+    // Get user's child age from preferences for age-appropriate examples
+    const childAge = preferencesStore.preferences?.child_age || null;
+    
     const res = await fetch(`${API_BASE}/api/translate`, {
       method: 'POST',
       headers,
       body: JSON.stringify({ 
         term: term.value,
-        language: selectedLanguage.value 
+        language: selectedLanguage.value,
+        child_age: childAge
       })
     })
     
