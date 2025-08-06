@@ -92,6 +92,7 @@ async def update_user_preferences(
         )
 
 
+
 @router.delete("/account")
 async def delete_user_account_endpoint(
     delete_data: UserDelete,

@@ -28,7 +28,7 @@
             placeholder="Enter your password"
           />
           <div v-if="isLogin" class="forgot-password">
-            <a href="#" @click.prevent="handleForgotPassword">Forgot password?</a>
+            <a href="#" @click.prevent="handleForgotPasswordClick">Forgot password?</a>
           </div>
         </div>
         
@@ -63,6 +63,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import { useNotificationStore } from '../stores/notification';
 
@@ -82,6 +83,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>();
 
+const router = useRouter();
 const authStore = useAuthStore();
 const notificationStore = useNotificationStore();
 const email = ref('');
@@ -115,15 +117,12 @@ const handleSubmit = async () => {
   }
 };
 
-const handleForgotPassword = () => {
-  if (!email.value) {
-    notificationStore.error('Please enter your email address first');
-    return;
-  }
-  
-  // For now, show a message about password reset
-  notificationStore.info('Password reset functionality will be implemented. Please contact support for now.');
+const handleForgotPasswordClick = () => {
+  closeModal();
+  router.push('/forgot-password');
 };
+
+
 </script>
 
 <style scoped>

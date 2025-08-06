@@ -9,6 +9,7 @@ import {
   updatePassword,
   EmailAuthProvider,
   reauthenticateWithCredential,
+  sendPasswordResetEmail,
   type User
 } from 'firebase/auth';
 import { useNotificationStore } from './notification';
@@ -138,6 +139,34 @@ export const useAuthStore = defineStore('auth', () => {
     }
   };
 
+  const forgotPassword = async (email: string) => {
+    if (!isFirebaseConfigured.value) {
+      notificationStore.error('Firebase is not configured. Please check your environment variables.');
+      return;
+    }
+
+    try {
+      loading.value = true;
+      error.value = null;
+      
+      await sendPasswordResetEmail(auth as any, email);
+      notificationStore.success('Password reset email sent! Check your inbox for instructions.');
+    } catch (err: any) {
+      error.value = err.message;
+      
+      if (err.code === 'auth/user-not-found') {
+        notificationStore.error('No account found with this email address');
+      } else if (err.code === 'auth/invalid-email') {
+        notificationStore.error('Please enter a valid email address');
+      } else {
+        notificationStore.error('Failed to send password reset email: ' + err.message);
+      }
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
   const getIdToken = async (): Promise<string> => {
     if (!user.value) {
       throw new Error('User not authenticated');
@@ -157,6 +186,7 @@ export const useAuthStore = defineStore('auth', () => {
     signUp,
     logout,
     changePassword,
+    forgotPassword,
     getIdToken,
     initAuth
   };

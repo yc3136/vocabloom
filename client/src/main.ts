@@ -16,6 +16,7 @@ import AboutPage from './components/AboutPage.vue';
 import FlashcardDashboard from './components/FlashcardDashboard.vue';
 import MyWordsPage from './components/MyWordsPage.vue';
 import UserPreferencesPage from './components/UserPreferencesPage.vue';
+import ForgotPasswordPage from './components/ForgotPasswordPage.vue';
 
 // const vuetify = createVuetify({
 //   components,
@@ -25,6 +26,7 @@ import UserPreferencesPage from './components/UserPreferencesPage.vue';
 const routes = [
   { path: '/', component: HomePage },
   { path: '/about', component: AboutPage },
+  { path: '/forgot-password', component: ForgotPasswordPage },
   { 
     path: '/flashcards', 
     component: FlashcardDashboard,
