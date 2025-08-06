@@ -52,24 +52,42 @@
           <div class="form-grid">
             <div class="info-item">
               <label>Current Password</label>
-              <input 
-                v-model="securityForm.currentPassword" 
-                type="password" 
-                placeholder="Enter your current password"
-                class="form-input"
-              />
+              <div class="password-input-container">
+                <input 
+                  v-model="securityForm.currentPassword" 
+                  :type="showCurrentPassword ? 'text' : 'password'"
+                  placeholder="Enter your current password"
+                  class="form-input password-input"
+                />
+                <button 
+                  type="button"
+                  @click="showCurrentPassword = !showCurrentPassword"
+                  class="password-toggle-btn"
+                  :title="showCurrentPassword ? 'Hide password' : 'Show password'"
+                >
+                  {{ showCurrentPassword ? '🙈' : '👁️' }}
+                </button>
+              </div>
             </div>
-          </div>
-          <div class="form-grid">
             <div class="info-item">
               <label>New Password</label>
-              <input 
-                v-model="securityForm.newPassword" 
-                type="password" 
-                placeholder="Enter new password (min 6 characters)"
-                class="form-input"
-                :class="{ 'error': passwordErrors.length > 0, 'success': canChangePassword }"
-              />
+              <div class="password-input-container">
+                <input 
+                  v-model="securityForm.newPassword" 
+                  :type="showNewPassword ? 'text' : 'password'"
+                  placeholder="Enter new password (min 6 characters)"
+                  class="form-input password-input"
+                  :class="{ 'error': passwordErrors.length > 0, 'success': canChangePassword }"
+                />
+                <button 
+                  type="button"
+                  @click="showNewPassword = !showNewPassword"
+                  class="password-toggle-btn"
+                  :title="showNewPassword ? 'Hide password' : 'Show password'"
+                >
+                  {{ showNewPassword ? '🙈' : '👁️' }}
+                </button>
+              </div>
               <div v-if="passwordErrors.length > 0" class="validation-errors">
                 <div v-for="error in passwordErrors" :key="error" class="error-message">
                   {{ error }}
@@ -78,13 +96,23 @@
             </div>
             <div class="info-item">
               <label>Confirm Password</label>
-              <input 
-                v-model="securityForm.confirmPassword" 
-                type="password" 
-                placeholder="Confirm new password"
-                class="form-input"
-                :class="{ 'error': passwordErrors.length > 0, 'success': canChangePassword }"
-              />
+              <div class="password-input-container">
+                <input 
+                  v-model="securityForm.confirmPassword" 
+                  :type="showConfirmPassword ? 'text' : 'password'"
+                  placeholder="Confirm new password"
+                  class="form-input password-input"
+                  :class="{ 'error': passwordErrors.length > 0, 'success': canChangePassword }"
+                />
+                <button 
+                  type="button"
+                  @click="showConfirmPassword = !showConfirmPassword"
+                  class="password-toggle-btn"
+                  :title="showConfirmPassword ? 'Hide password' : 'Show password'"
+                >
+                  {{ showConfirmPassword ? '🙈' : '👁️' }}
+                </button>
+              </div>
               <div v-if="canChangePassword" class="validation-success">
                 <div class="success-message">✅ Password requirements met</div>
               </div>
@@ -205,6 +233,11 @@ const router = useRouter();
 const loading = ref(false);
 const user = ref<any>(null);
 const showDeleteModal = ref(false);
+
+// Password visibility states
+const showCurrentPassword = ref(false);
+const showNewPassword = ref(false);
+const showConfirmPassword = ref(false);
 
 // Form data
 const securityForm = ref({
@@ -549,6 +582,36 @@ onMounted(() => {
   background-color: var(--bg-primary);
   color: var(--text-secondary);
   cursor: not-allowed;
+}
+
+.password-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input {
+  padding-right: 40px; /* Make room for the toggle button */
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  font-size: 16px;
+  color: var(--text-secondary);
+  transition: color 0.2s;
+}
+
+.password-toggle-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-primary);
 }
 
 .validation-errors {

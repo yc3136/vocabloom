@@ -20,13 +20,24 @@
         
         <div class="form-group">
           <label for="password">Password</label>
-          <input 
-            type="password" 
-            id="password" 
-            v-model="password" 
-            required 
-            placeholder="Enter your password"
-          />
+          <div class="password-input-container">
+            <input 
+              :type="showPassword ? 'text' : 'password'"
+              id="password" 
+              v-model="password" 
+              required 
+              placeholder="Enter your password"
+              class="password-input"
+            />
+            <button 
+              type="button"
+              @click="showPassword = !showPassword"
+              class="password-toggle-btn"
+              :title="showPassword ? 'Hide password' : 'Show password'"
+            >
+              {{ showPassword ? '🙈' : '👁️' }}
+            </button>
+          </div>
           <div v-if="isLogin" class="forgot-password">
             <a href="#" @click.prevent="handleForgotPasswordClick">Forgot password?</a>
           </div>
@@ -88,6 +99,7 @@ const authStore = useAuthStore();
 const notificationStore = useNotificationStore();
 const email = ref('');
 const password = ref('');
+const showPassword = ref(false);
 
 const closeModal = () => {
   emit('close');
@@ -208,6 +220,36 @@ const handleForgotPasswordClick = () => {
 .form-group input:focus {
   outline: none;
   border-color: var(--primary-blue);
+}
+
+.password-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input {
+  padding-right: 40px; /* Make room for the toggle button */
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  font-size: 16px;
+  color: var(--text-secondary);
+  transition: color 0.2s;
+}
+
+.password-toggle-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-primary);
 }
 
 .forgot-password {
