@@ -1,9 +1,5 @@
 <template>
   <div class="flashcard-dashboard">
-    <div class="dashboard-header">
-      <h2>My Flashcards</h2>
-    </div>
-
     <div v-if="flashcardStore.loading" class="loading-state">
       <div class="spinner"></div>
       <p>Loading flashcards...</p>

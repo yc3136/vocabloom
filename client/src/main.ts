@@ -50,8 +50,21 @@ const router = createRouter({
 });
 
 // Route guard for authentication
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
+  
+  // If Firebase is still loading authentication state, wait for it
+  if (authStore.loading) {
+    // Wait for authentication to be determined
+    await new Promise<void>((resolve) => {
+      const unwatch = watch(() => authStore.loading, (loading) => {
+        if (!loading) {
+          unwatch();
+          resolve();
+        }
+      });
+    });
+  }
   
   // Check if route requires authentication
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
@@ -74,5 +87,14 @@ app.use(router);
 import { useAuthStore } from './stores/auth';
 const authStore = useAuthStore();
 authStore.initAuth();
+
+// Watch for authentication state changes and redirect if needed
+import { watch } from 'vue';
+watch(() => authStore.isAuthenticated, (isAuthenticated) => {
+  if (!isAuthenticated && router.currentRoute.value.meta.requiresAuth) {
+    // User logged out while on a protected route, redirect to home
+    router.push('/');
+  }
+});
 
 app.mount('#app');

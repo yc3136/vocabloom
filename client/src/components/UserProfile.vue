@@ -66,6 +66,8 @@ const handleLogout = async () => {
   try {
     await authStore.logout();
     showDropdown.value = false;
+    // Redirect to home page after logout
+    router.push('/');
   } catch (error) {
     console.error('Logout error:', error);
   }

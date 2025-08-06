@@ -42,11 +42,19 @@ const handleAuthSuccess = () => {
         </nav>
         
         <div class="auth-section">
-          <div v-if="!authStore.isAuthenticated" class="auth-buttons">
-            <button @click="openAuthModal('login')" class="auth-btn signin-btn">Log In</button>
-            <button @click="openAuthModal('signup')" class="auth-btn signup-btn">Sign Up</button>
+          <div class="auth-container">
+            <!-- Show loading state while Firebase is initializing -->
+            <div v-if="authStore.loading" class="auth-loading">
+              <div class="loading-spinner"></div>
+            </div>
+            <!-- Show auth buttons only when not loading and not authenticated -->
+            <div v-else-if="!authStore.isAuthenticated" class="auth-buttons">
+              <button @click="openAuthModal('login')" class="auth-btn signin-btn">Log In</button>
+              <button @click="openAuthModal('signup')" class="auth-btn signup-btn">Sign Up</button>
+            </div>
+            <!-- Show user profile when authenticated -->
+            <UserProfile v-else />
           </div>
-          <UserProfile v-else />
         </div>
       </div>
     </header>
@@ -131,6 +139,14 @@ const handleAuthSuccess = () => {
 .auth-section {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
+}
+
+.auth-container {
+  width: 200px; /* Fixed width to prevent shifting */
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
 }
 
 .auth-buttons {
@@ -166,6 +182,27 @@ const handleAuthSuccess = () => {
 
 .signup-btn:hover {
   background: #2a3a5e;
+}
+
+.auth-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+}
+
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e9ecef;
+  border-top: 2px solid #3b5bdb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .app-main {

@@ -56,7 +56,7 @@ export const useAuthStore = defineStore('auth', () => {
       
       // Check if email is verified
       if (!userCredential.user.emailVerified) {
-        notificationStore.warning('Please verify your email address. Check your inbox for a verification link.');
+        notificationStore.info('Please verify your email address. Check your inbox for a verification link.');
       } else {
         notificationStore.success('Successfully signed in!');
       }
@@ -103,6 +103,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     try {
       await signOut(auth as any);
+      user.value = null;
       notificationStore.success('Successfully signed out!');
     } catch (err: any) {
       error.value = err.message;

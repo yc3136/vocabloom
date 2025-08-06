@@ -51,7 +51,9 @@ async def get_current_user_info(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    return current_user
+    # Update last login time when user profile is accessed
+    updated_user = update_user_last_login(db, current_user.id)
+    return updated_user
 
 
 @router.get("/preferences", response_model=UserPreferences)

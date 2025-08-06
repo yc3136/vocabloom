@@ -1,7 +1,6 @@
 <template>
   <div class="user-preferences-page">
     <div class="container">
-      <h1 class="page-title">User Preferences</h1>
       
       <!-- Profile & Security Section -->
       <div class="section">
@@ -195,11 +194,13 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import { useNotificationStore } from '../stores/notification';
 
 const authStore = useAuthStore();
 const notificationStore = useNotificationStore();
+const router = useRouter();
 
 const loading = ref(false);
 const user = ref<any>(null);
@@ -392,6 +393,8 @@ const confirmDeleteAccount = async () => {
       notificationStore.success('Account deleted successfully');
       closeDeleteModal();
       await authStore.logout();
+      // Redirect to home page after account deletion
+      router.push('/');
     }
   } catch (error) {
     console.error('Error deleting account:', error);
@@ -417,6 +420,9 @@ watch(() => authStore.isAuthenticated, (isAuthenticated) => {
     setTimeout(() => {
       loadUserData();
     }, 1000);
+  } else {
+    // User is no longer authenticated, redirect to home
+    router.push('/');
   }
 });
 
