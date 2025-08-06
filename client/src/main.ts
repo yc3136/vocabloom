@@ -25,14 +25,40 @@ import UserPreferencesPage from './components/UserPreferencesPage.vue';
 const routes = [
   { path: '/', component: HomePage },
   { path: '/about', component: AboutPage },
-  { path: '/flashcards', component: FlashcardDashboard },
-  { path: '/words', component: MyWordsPage },
-  { path: '/profile', component: UserPreferencesPage },
+  { 
+    path: '/flashcards', 
+    component: FlashcardDashboard,
+    meta: { requiresAuth: true }
+  },
+  { 
+    path: '/words', 
+    component: MyWordsPage,
+    meta: { requiresAuth: true }
+  },
+  { 
+    path: '/profile', 
+    component: UserPreferencesPage,
+    meta: { requiresAuth: true }
+  },
 ];
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
+});
+
+// Route guard for authentication
+router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore();
+  
+  // Check if route requires authentication
+  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+    // Redirect to home page if not authenticated
+    next('/');
+  } else {
+    // Allow navigation
+    next();
+  }
 });
 
 const app = createApp(App);
