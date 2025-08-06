@@ -29,15 +29,13 @@ async def register_user(
         # Create user in Firebase Auth
         firebase_user = auth.create_user(
             email=user_data.email,
-            password=user_data.password,
-            display_name=user_data.display_name
+            password=user_data.password
         )
         
         # Create user in database
         db_user = create_user(db, UserRegistration(
             id=firebase_user.uid,
-            email=user_data.email,
-            display_name=user_data.display_name
+            email=user_data.email
         ))
         
         return db_user
@@ -73,18 +71,10 @@ async def update_user_preferences(
 ):
     """Update user preferences"""
     try:
-        # Update display name in Firebase if provided
-        if preferences_update.display_name:
-            auth.update_user(
-                current_user.id,
-                display_name=preferences_update.display_name
-            )
-        
         # Update user in database
         updated_user = update_user_preferences(
             db=db,
             user_id=current_user.id,
-            display_name=preferences_update.display_name,
             preferences=preferences_update.preferences.dict() if preferences_update.preferences else None
         )
         

@@ -11,7 +11,6 @@ class User(Base):
     
     id = Column(String(128), primary_key=True)  # Firebase UID
     email = Column(String(255), unique=True, nullable=False)
-    display_name = Column(String(255))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     last_login_at = Column(DateTime(timezone=True))
     preferences = Column(JSONB)

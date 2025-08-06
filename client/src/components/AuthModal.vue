@@ -29,15 +29,7 @@
           />
         </div>
         
-        <div class="form-group" v-if="!isLogin">
-          <label for="displayName">Display Name (Optional)</label>
-          <input 
-            type="text" 
-            id="displayName" 
-            v-model="displayName" 
-            placeholder="Enter your display name"
-          />
-        </div>
+
         
         <div class="error-message" v-if="authStore.error">
           {{ authStore.error }}
@@ -89,14 +81,12 @@ const emit = defineEmits<Emits>();
 const authStore = useAuthStore();
 const email = ref('');
 const password = ref('');
-const displayName = ref('');
 
 const closeModal = () => {
   emit('close');
   // Reset form
   email.value = '';
   password.value = '';
-  displayName.value = '';
   authStore.error = null;
 };
 
@@ -110,7 +100,7 @@ const handleSubmit = async () => {
     if (props.isLogin) {
       await authStore.signIn(email.value, password.value);
     } else {
-      await authStore.signUp(email.value, password.value, displayName.value || undefined);
+      await authStore.signUp(email.value, password.value);
     }
     emit('success');
     closeModal();

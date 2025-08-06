@@ -16,8 +16,7 @@ def get_user_by_email(db: Session, email: str):
 def create_user(db: Session, user: schemas.UserCreate):
     db_user = models.User(
         id=user.id,
-        email=user.email,
-        display_name=user.display_name
+        email=user.email
     )
     db.add(db_user)
     db.commit()
@@ -34,11 +33,9 @@ def update_user_last_login(db: Session, user_id: str):
     return user
 
 
-def update_user_preferences(db: Session, user_id: str, display_name: Optional[str] = None, preferences: Optional[dict] = None):
+def update_user_preferences(db: Session, user_id: str, preferences: Optional[dict] = None):
     user = get_user(db, user_id)
     if user:
-        if display_name is not None:
-            user.display_name = display_name
         if preferences is not None:
             user.preferences = preferences
         db.commit()

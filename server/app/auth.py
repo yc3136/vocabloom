@@ -69,17 +69,15 @@ async def get_current_user(
             # Create new user from Firebase data
             user = User(
                 id=user_id,
-                email=decoded_token.get('email', ''),
-                display_name=decoded_token.get('name', '')
+                email=decoded_token.get('email', '')
             )
             db.add(user)
             db.commit()
             db.refresh(user)
         else:
             # Update user info if needed
-            if user.email != decoded_token.get('email', '') or user.display_name != decoded_token.get('name', ''):
+            if user.email != decoded_token.get('email', ''):
                 user.email = decoded_token.get('email', '')
-                user.display_name = decoded_token.get('name', '')
                 db.commit()
                 db.refresh(user)
         

@@ -6,7 +6,6 @@ from datetime import datetime
 # User schemas
 class UserBase(BaseModel):
     email: EmailStr
-    display_name: Optional[str] = None
 
 
 class UserCreate(UserBase):
@@ -32,7 +31,6 @@ class UserPreferences(BaseModel):
 
 
 class UserPreferencesUpdate(BaseModel):
-    display_name: Optional[str] = None
     preferences: Optional[UserPreferences] = None
 
 
@@ -97,7 +95,6 @@ class Translation(TranslationBase):
 class UserRegistration(BaseModel):
     email: EmailStr
     password: str
-    display_name: Optional[str] = None
 
 
 class UserLogin(BaseModel):

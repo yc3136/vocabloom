@@ -8,10 +8,6 @@
         <h2 class="section-title">Account Information</h2>
         <div class="form-grid">
           <div class="info-item">
-            <label>Display Name</label>
-            <div class="info-text">{{ user?.display_name || 'Not set' }}</div>
-          </div>
-          <div class="info-item">
             <label>Email Address</label>
             <div class="info-text">{{ user?.email || 'Loading...' }}</div>
           </div>
@@ -21,7 +17,7 @@
           </div>
           <div class="info-item">
             <label>Last Login</label>
-            <div class="info-text">{{ user?.last_login_at ? formatDate(user.last_login_at) : 'Never' }}</div>
+            <div class="info-text">{{ user?.last_login_at ? formatDate(user.last_login_at) : (user ? 'Never' : 'Loading...') }}</div>
           </div>
           <div class="info-item button-item">
             <button 

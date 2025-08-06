@@ -4,7 +4,7 @@
       <div class="user-avatar">
         {{ userInitial }}
       </div>
-      <span class="user-name">{{ displayName }}</span>
+      <span class="user-email">{{ userEmail }}</span>
       <span class="dropdown-arrow" :class="{ 'rotated': showDropdown }">▼</span>
     </div>
     
@@ -34,13 +34,13 @@ const authStore = useAuthStore();
 const router = useRouter();
 const showDropdown = ref(false);
 
-const displayName = computed(() => {
-  return authStore.user?.displayName || authStore.user?.email || 'User';
+const userEmail = computed(() => {
+  return authStore.user?.email || 'User';
 });
 
 const userInitial = computed(() => {
-  const name = displayName.value;
-  return name.charAt(0).toUpperCase();
+  const email = userEmail.value;
+  return email.charAt(0).toUpperCase();
 });
 
 const toggleDropdown = () => {
@@ -125,7 +125,7 @@ onUnmounted(() => {
   font-size: 14px;
 }
 
-.user-name {
+.user-email {
   font-weight: 500;
   color: var(--text-primary);
   font-size: 14px;

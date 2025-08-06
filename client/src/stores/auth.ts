@@ -6,8 +6,7 @@ import {
   createUserWithEmailAndPassword, 
   signOut, 
   onAuthStateChanged,
-  type User,
-  updateProfile
+  type User
 } from 'firebase/auth';
 import { useNotificationStore } from './notification';
 
@@ -59,7 +58,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
   };
 
-  const signUp = async (email: string, password: string, displayName?: string) => {
+  const signUp = async (email: string, password: string) => {
     if (!isFirebaseConfigured.value) {
       notificationStore.error('Firebase is not configured. Please check your environment variables.');
       return;
@@ -68,11 +67,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       loading.value = true;
       error.value = null;
-      const userCredential = await createUserWithEmailAndPassword(auth as any, email, password);
-      
-      if (displayName && userCredential.user) {
-        await updateProfile(userCredential.user, { displayName });
-      }
+      await createUserWithEmailAndPassword(auth as any, email, password);
       
       notificationStore.success('Account created successfully!');
     } catch (err: any) {
