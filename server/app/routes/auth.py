@@ -56,6 +56,35 @@ async def get_current_user_info(
     return updated_user
 
 
+@router.post("/google", response_model=UserSchema)
+async def handle_google_auth(
+    user_data: dict,
+    db: Session = Depends(get_db)
+):
+    """Handle Google authentication - create user if doesn't exist"""
+    try:
+        # Check if user already exists
+        existing_user = get_user_by_email(db, user_data.get("email"))
+        
+        if existing_user:
+            # User exists, update last login and return
+            updated_user = update_user_last_login(db, existing_user.id)
+            return updated_user
+        else:
+            # Create new user in database
+            db_user = create_user(db, UserRegistration(
+                id=user_data.get("uid"),
+                email=user_data.get("email")
+            ))
+            return db_user
+            
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Google authentication failed: {str(e)}"
+        )
+
+
 @router.get("/preferences", response_model=UserPreferences)
 async def get_user_preferences(
     current_user: User = Depends(get_current_user),

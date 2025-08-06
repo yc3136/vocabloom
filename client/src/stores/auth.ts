@@ -11,6 +11,8 @@ import {
   reauthenticateWithCredential,
   sendPasswordResetEmail,
   sendEmailVerification,
+  GoogleAuthProvider,
+  signInWithPopup,
   type User
 } from 'firebase/auth';
 import { useNotificationStore } from './notification';
@@ -57,8 +59,6 @@ export const useAuthStore = defineStore('auth', () => {
       // Check if email is verified
       if (!userCredential.user.emailVerified) {
         notificationStore.info('Please verify your email address. Check your inbox for a verification link.');
-      } else {
-        notificationStore.success('Successfully signed in!');
       }
     } catch (err: any) {
       error.value = err.message;
@@ -89,6 +89,63 @@ export const useAuthStore = defineStore('auth', () => {
     } catch (err: any) {
       error.value = err.message;
       notificationStore.error('Sign up failed: ' + err.message);
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  const signInWithGoogle = async () => {
+    if (!isFirebaseConfigured.value) {
+      notificationStore.error('Firebase is not configured. Please check your environment variables.');
+      return;
+    }
+
+    try {
+      loading.value = true;
+      error.value = null;
+      
+      const provider = new GoogleAuthProvider();
+      // Add scopes if needed
+      provider.addScope('email');
+      provider.addScope('profile');
+      
+      // Customize the OAuth popup
+      provider.setCustomParameters({
+        prompt: 'select_account'
+      });
+      
+      const userCredential = await signInWithPopup(auth as any, provider);
+      
+      // Call backend to create/update user in database
+      const token = await userCredential.user.getIdToken();
+      const response = await fetch('http://127.0.0.1:8000/api/auth/google', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          uid: userCredential.user.uid,
+          email: userCredential.user.email,
+          displayName: userCredential.user.displayName,
+          photoURL: userCredential.user.photoURL
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to sync user data with backend');
+      }
+      
+
+    } catch (err: any) {
+      error.value = err.message;
+      
+      if (err.code === 'auth/popup-closed-by-user') {
+        notificationStore.info('Sign in was cancelled');
+      } else {
+        notificationStore.error('Google sign in failed: ' + err.message);
+      }
       throw err;
     } finally {
       loading.value = false;
@@ -223,6 +280,7 @@ export const useAuthStore = defineStore('auth', () => {
     isFirebaseConfigured,
     signIn,
     signUp,
+    signInWithGoogle,
     logout,
     changePassword,
     forgotPassword,

@@ -12,12 +12,18 @@
       <div class="dropdown-item" @click="navigateToProfile">
         Profile
       </div>
+      
+      <div class="dropdown-divider"></div>
+      
       <div class="dropdown-item" @click="navigateToWords">
         My Words
       </div>
       <div class="dropdown-item" @click="navigateToFlashcards">
         My Flashcards
       </div>
+      
+      <div class="dropdown-divider"></div>
+      
       <div class="dropdown-item" @click="handleLogout">
         Sign Out
       </div>
@@ -168,5 +174,12 @@ onUnmounted(() => {
 
 .dropdown-item:hover {
   background: var(--bg-primary);
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 4px 12px;
+  width: calc(100% - 24px);
 }
 </style> 

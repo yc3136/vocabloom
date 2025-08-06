@@ -120,7 +120,7 @@ function toggleCreateDropdown() {
 function createContent(type: string) {
   if (!authStore.isAuthenticated) {
     // Show authentication prompt
-    alert('Please sign in to create content!')
+            alert('Please sign in to create content!')
     return
   }
   
@@ -139,7 +139,7 @@ function createContent(type: string) {
 
 async function createFlashcard() {
   if (!authStore.isAuthenticated) {
-    alert('Please sign in to create flashcards!')
+            alert('Please sign in to create flashcards!')
     return
   }
 

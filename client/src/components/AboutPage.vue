@@ -1,7 +1,6 @@
 <template>
   <div class="about-container">
-    <h1>About Vocabloom</h1>
-    <p>Vocabloom is an open-source vocabulary learning tool. Built with Vue 3, FastAPI, and Google Cloud Platform.</p>
+    <p>Vocabloom is an open-source vocabulary learning platform. Built with Vue 3, FastAPI, and Google Cloud Platform.</p>
     <p>
       <a href="https://github.com/yc3136/vocabloom" target="_blank" rel="noopener">View on GitHub</a>
     </p>

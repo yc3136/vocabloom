@@ -3,16 +3,16 @@ import { ref } from 'vue';
 import { useAuthStore } from './stores/auth';
 import { useNotificationStore } from './stores/notification';
 import AuthModal from './components/AuthModal.vue';
+import SignUpModal from './components/SignUpModal.vue';
 import UserProfile from './components/UserProfile.vue';
 import NotificationToast from './components/NotificationToast.vue';
 
 const authStore = useAuthStore();
 const notificationStore = useNotificationStore();
 const showAuthModal = ref(false);
-const authModalMode = ref<'login' | 'signup'>('login');
+const showSignUpModal = ref(false);
 
-const openAuthModal = (mode: 'login' | 'signup') => {
-  authModalMode.value = mode;
+const openAuthModal = () => {
   showAuthModal.value = true;
 };
 
@@ -20,9 +20,28 @@ const closeAuthModal = () => {
   showAuthModal.value = false;
 };
 
+const openSignUpModal = () => {
+  showSignUpModal.value = true;
+};
+
+const closeSignUpModal = () => {
+  showSignUpModal.value = false;
+};
+
 const handleAuthSuccess = () => {
   showAuthModal.value = false;
+  showSignUpModal.value = false;
   notificationStore.success('Successfully signed in!');
+};
+
+const handleOpenSignUp = () => {
+  showAuthModal.value = false;
+  showSignUpModal.value = true;
+};
+
+const handleOpenLogIn = () => {
+  showSignUpModal.value = false;
+  showAuthModal.value = true;
 };
 </script>
 
@@ -47,10 +66,9 @@ const handleAuthSuccess = () => {
             <div v-if="authStore.loading" class="auth-loading">
               <div class="loading-spinner"></div>
             </div>
-            <!-- Show auth buttons only when not loading and not authenticated -->
+            <!-- Show single sign in/sign up button when not loading and not authenticated -->
             <div v-else-if="!authStore.isAuthenticated" class="auth-buttons">
-              <button @click="openAuthModal('login')" class="auth-btn signin-btn">Log In</button>
-              <button @click="openAuthModal('signup')" class="auth-btn signup-btn">Sign Up</button>
+              <button @click="openAuthModal()" class="auth-btn signin-btn">Sign In / Sign Up</button>
             </div>
             <!-- Show user profile when authenticated -->
             <UserProfile v-else />
@@ -66,9 +84,17 @@ const handleAuthSuccess = () => {
     <!-- Auth Modal -->
     <AuthModal 
       :show="showAuthModal" 
-      :is-login="authModalMode === 'login'"
       @close="closeAuthModal"
       @success="handleAuthSuccess"
+      @openSignUp="handleOpenSignUp"
+    />
+    
+    <!-- Sign Up Modal -->
+    <SignUpModal 
+      :show="showSignUpModal" 
+      @close="closeSignUpModal"
+      @success="handleAuthSuccess"
+      @openLogIn="handleOpenLogIn"
     />
 
     <!-- Global Notifications -->
@@ -165,23 +191,14 @@ const handleAuthSuccess = () => {
 }
 
 .signin-btn {
-  background: transparent;
-  color: #3b5bdb;
+  background: #3b5bdb;
+  color: white;
   border: 1px solid #3b5bdb;
 }
 
 .signin-btn:hover {
-  background: #3b5bdb;
-  color: white;
-}
-
-.signup-btn {
-  background: #3b5bdb;
-  color: white;
-}
-
-.signup-btn:hover {
   background: #2a3a5e;
+  border-color: #2a3a5e;
 }
 
 .auth-loading {
