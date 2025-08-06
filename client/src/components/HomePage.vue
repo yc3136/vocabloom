@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { marked } from 'marked'
 import { useAuthStore } from '../stores/auth'
 import { useFlashcardStore } from '../stores/flashcards'
+import { usePreferencesStore } from '../stores/preferences'
+import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE } from '../constants/languages'
 
 const term = ref('')
-const selectedLanguage = ref('Chinese')
+const selectedLanguage = ref(DEFAULT_LANGUAGE)
 const translation = ref('')
 const explanation = ref('')
 const examples = ref<string[]>([])
@@ -15,30 +17,10 @@ const showCreateDropdown = ref(false)
 
 const authStore = useAuthStore()
 const flashcardStore = useFlashcardStore()
+const preferencesStore = usePreferencesStore()
 
-// Popular languages for the dropdown
-const languages = [
-  { value: 'Spanish', label: 'Spanish (Español)' },
-  { value: 'French', label: 'French (Français)' },
-  { value: 'German', label: 'German (Deutsch)' },
-  { value: 'Italian', label: 'Italian (Italiano)' },
-  { value: 'Portuguese', label: 'Portuguese (Português)' },
-  { value: 'Japanese', label: 'Japanese (日本語)' },
-  { value: 'Korean', label: 'Korean (한국어)' },
-  { value: 'Chinese', label: 'Chinese Simplified (简体中文)' },
-  { value: 'Russian', label: 'Russian (Русский)' },
-  { value: 'Arabic', label: 'Arabic (العربية)' },
-  { value: 'Hindi', label: 'Hindi (हिन्दी)' },
-  { value: 'Dutch', label: 'Dutch (Nederlands)' },
-  { value: 'Swedish', label: 'Swedish (Svenska)' },
-  { value: 'Norwegian', label: 'Norwegian (Norsk)' },
-  { value: 'Danish', label: 'Danish (Dansk)' },
-  { value: 'Finnish', label: 'Finnish (Suomi)' },
-  { value: 'Polish', label: 'Polish (Polski)' },
-  { value: 'Turkish', label: 'Turkish (Türkçe)' },
-  { value: 'Greek', label: 'Greek (Ελληνικά)' },
-  { value: 'Hebrew', label: 'Hebrew (עברית)' }
-]
+// Use the shared language constants
+const languages = SUPPORTED_LANGUAGES
 
 // Content creation options
 const contentTypes = [
@@ -172,6 +154,42 @@ function handleClickOutside(event: Event) {
     showCreateDropdown.value = false
   }
 }
+
+// Load user preferences and set default language
+onMounted(async () => {
+  if (authStore.isAuthenticated) {
+    await preferencesStore.loadPreferences()
+    // Set the selected language to user's preferred language if available
+    if (preferencesStore.preferredLanguage) {
+      selectedLanguage.value = preferencesStore.preferredLanguage
+    }
+  }
+})
+
+// Watch for authentication changes to load preferences
+watch(() => authStore.isAuthenticated, async (isAuthenticated) => {
+  if (isAuthenticated) {
+    await preferencesStore.loadPreferences()
+    // Set the selected language to user's preferred language if available
+    if (preferencesStore.preferredLanguage) {
+      selectedLanguage.value = preferencesStore.preferredLanguage
+    }
+  }
+})
+
+// Watch for changes in selected language and update preferences if user is authenticated
+watch(selectedLanguage, async (newLanguage) => {
+  if (authStore.isAuthenticated && preferencesStore.preferences.preferred_languages) {
+    // Update the first preferred language
+    const currentLanguages = [...(preferencesStore.preferences.preferred_languages || [])]
+    if (currentLanguages.length > 0) {
+      currentLanguages[0] = newLanguage
+    } else {
+      currentLanguages.push(newLanguage)
+    }
+    await preferencesStore.updatePreferredLanguages(currentLanguages)
+  }
+})
 </script>
 
 <template>

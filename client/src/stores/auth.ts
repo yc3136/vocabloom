@@ -16,6 +16,7 @@ import {
   type User
 } from 'firebase/auth';
 import { useNotificationStore } from './notification';
+import { usePreferencesStore } from './preferences';
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null);
@@ -161,6 +162,11 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       await signOut(auth as any);
       user.value = null;
+      
+      // Clear user preferences on logout
+      const preferencesStore = usePreferencesStore();
+      preferencesStore.clearPreferences();
+      
       notificationStore.success('Successfully signed out!');
     } catch (err: any) {
       error.value = err.message;

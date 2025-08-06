@@ -158,20 +158,14 @@
             />
           </div>
           <div class="info-item">
-            <label>Preferred Languages</label>
+            <label>Primary Preferred Language</label>
             <select 
-              v-model="preferencesForm.preferredLanguages" 
-              multiple
-              class="form-input"
+              v-model="preferencesForm.primaryLanguage" 
+              class="language-select"
             >
-              <option value="Spanish">Spanish</option>
-              <option value="French">French</option>
-              <option value="German">German</option>
-              <option value="Italian">Italian</option>
-              <option value="Portuguese">Portuguese</option>
-              <option value="Chinese Simplified">Chinese Simplified</option>
-              <option value="Japanese">Japanese</option>
-              <option value="Korean">Korean</option>
+              <option v-for="lang in languages" :key="lang.value" :value="lang.value">
+                {{ lang.label }}
+              </option>
             </select>
           </div>
         </div>
@@ -225,9 +219,12 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import { useNotificationStore } from '../stores/notification';
+import { usePreferencesStore } from '../stores/preferences';
+import { SUPPORTED_LANGUAGES } from '../constants/languages';
 
 const authStore = useAuthStore();
 const notificationStore = useNotificationStore();
+const preferencesStore = usePreferencesStore();
 const router = useRouter();
 
 const loading = ref(false);
@@ -249,8 +246,11 @@ const securityForm = ref({
 const preferencesForm = ref({
   childName: '',
   childAge: null as number | null,
-  preferredLanguages: [] as string[]
+  primaryLanguage: 'Chinese' as string
 });
+
+// Use the shared language constants
+const languages = SUPPORTED_LANGUAGES;
 
 // Computed properties
 const canChangePassword = computed(() => {
@@ -297,6 +297,9 @@ const loadUserData = async () => {
   }
 
   try {
+    // Load user data and preferences
+    await preferencesStore.loadPreferences();
+    
     const token = await authStore.getIdToken();
     const response = await fetch('http://127.0.0.1:8000/api/auth/me', {
       headers: {
@@ -311,6 +314,13 @@ const loadUserData = async () => {
 
     const userData = await response.json();
     user.value = userData;
+    
+    // Populate the form with current preferences
+    if (preferencesStore.preferences) {
+      preferencesForm.value.childName = preferencesStore.preferences.child_name || '';
+      preferencesForm.value.childAge = preferencesStore.preferences.child_age || null;
+      preferencesForm.value.primaryLanguage = preferencesStore.preferences.preferred_languages?.[0] || 'Chinese';
+    }
   } catch (error) {
     console.error('Error loading user data:', error);
   }
@@ -324,28 +334,13 @@ const saveLearningPreferences = async () => {
 
   try {
     loading.value = true;
-    const token = await authStore.getIdToken();
     
-    const response = await fetch('http://127.0.0.1:8000/api/auth/preferences', {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        preferences: {
-          child_name: preferencesForm.value.childName,
-          child_age: preferencesForm.value.childAge,
-          preferred_languages: preferencesForm.value.preferredLanguages
-        }
-      })
+    await preferencesStore.savePreferences({
+      child_name: preferencesForm.value.childName || undefined,
+      child_age: preferencesForm.value.childAge || undefined,
+      preferred_languages: [preferencesForm.value.primaryLanguage]
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const result = await response.json();
     notificationStore.success('Learning preferences saved successfully!');
     
     // Reload user data to get updated preferences
@@ -582,6 +577,23 @@ onMounted(() => {
   background-color: var(--bg-primary);
   color: var(--text-secondary);
   cursor: not-allowed;
+}
+
+.language-select {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  font-size: 14px;
+  background: var(--bg-surface, #ffffff);
+  color: var(--text-primary, #1e293b);
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.language-select:focus {
+  outline: none;
+  border-color: var(--primary-blue);
 }
 
 .password-input-container {

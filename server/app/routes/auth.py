@@ -95,7 +95,7 @@ async def get_user_preferences(
 
 
 @router.put("/preferences", response_model=UserSchema)
-async def update_user_preferences(
+async def update_user_preferences_endpoint(
     preferences_update: UserPreferencesUpdate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -103,10 +103,14 @@ async def update_user_preferences(
     """Update user preferences"""
     try:
         # Update user in database
+        preferences_dict = None
+        if preferences_update.preferences:
+            preferences_dict = preferences_update.preferences.dict(exclude_none=True)
+        
         updated_user = update_user_preferences(
             db=db,
             user_id=current_user.id,
-            preferences=preferences_update.preferences.dict() if preferences_update.preferences else None
+            preferences=preferences_dict
         )
         
         if not updated_user:
