@@ -12,6 +12,24 @@
             <div class="info-text">{{ user?.email || 'Loading...' }}</div>
           </div>
           <div class="info-item">
+            <label>Email Verification</label>
+            <div class="info-text">
+              <span v-if="authStore.user?.emailVerified" class="verified-badge">
+                ✅ Verified
+              </span>
+              <span v-else class="unverified-badge">
+                ❌ Not Verified
+                <button 
+                  @click="resendVerification" 
+                  :disabled="authStore.loading"
+                  class="resend-btn"
+                >
+                  {{ authStore.loading ? 'Sending...' : 'Resend Email' }}
+                </button>
+              </span>
+            </div>
+          </div>
+          <div class="info-item">
             <label>Account Created</label>
             <div class="info-text">{{ user?.created_at ? formatDate(user.created_at) : 'Loading...' }}</div>
           </div>
@@ -383,6 +401,15 @@ const confirmDeleteAccount = async () => {
   }
 };
 
+const resendVerification = async () => {
+  try {
+    await authStore.resendEmailVerification();
+  } catch (error) {
+    console.error('Error resending verification:', error);
+    // Error is already handled by the auth store
+  }
+};
+
 // Watch for authentication state changes
 watch(() => authStore.isAuthenticated, (isAuthenticated) => {
   if (isAuthenticated) {
@@ -544,6 +571,40 @@ onMounted(() => {
   color: #28a745;
   font-size: 12px;
   font-weight: 500;
+}
+
+.verified-badge {
+  color: #28a745;
+  font-weight: 500;
+}
+
+.unverified-badge {
+  color: #dc3545;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.resend-btn {
+  background: var(--primary-blue);
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.resend-btn:hover:not(:disabled) {
+  background: var(--blue-hover);
+}
+
+.resend-btn:disabled {
+  background: var(--text-secondary);
+  cursor: not-allowed;
 }
 
 .button-item {

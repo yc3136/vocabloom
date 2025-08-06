@@ -10,6 +10,7 @@ import {
   EmailAuthProvider,
   reauthenticateWithCredential,
   sendPasswordResetEmail,
+  sendEmailVerification,
   type User
 } from 'firebase/auth';
 import { useNotificationStore } from './notification';
@@ -51,8 +52,14 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       loading.value = true;
       error.value = null;
-      await signInWithEmailAndPassword(auth as any, email, password);
-      notificationStore.success('Successfully signed in!');
+      const userCredential = await signInWithEmailAndPassword(auth as any, email, password);
+      
+      // Check if email is verified
+      if (!userCredential.user.emailVerified) {
+        notificationStore.warning('Please verify your email address. Check your inbox for a verification link.');
+      } else {
+        notificationStore.success('Successfully signed in!');
+      }
     } catch (err: any) {
       error.value = err.message;
       notificationStore.error('Sign in failed: ' + err.message);
@@ -71,9 +78,14 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       loading.value = true;
       error.value = null;
-      await createUserWithEmailAndPassword(auth as any, email, password);
       
-      notificationStore.success('Account created successfully!');
+      // Create user account
+      const userCredential = await createUserWithEmailAndPassword(auth as any, email, password);
+      
+      // Send email verification
+      await sendEmailVerification(userCredential.user);
+      
+      notificationStore.success('Account created successfully! Please check your email to verify your account.');
     } catch (err: any) {
       error.value = err.message;
       notificationStore.error('Sign up failed: ' + err.message);
@@ -167,6 +179,32 @@ export const useAuthStore = defineStore('auth', () => {
     }
   };
 
+  const resendEmailVerification = async () => {
+    if (!isFirebaseConfigured.value) {
+      notificationStore.error('Firebase is not configured. Please check your environment variables.');
+      return;
+    }
+
+    if (!user.value) {
+      notificationStore.error('User not authenticated');
+      return;
+    }
+
+    try {
+      loading.value = true;
+      error.value = null;
+      
+      await sendEmailVerification(user.value);
+      notificationStore.success('Verification email sent! Check your inbox.');
+    } catch (err: any) {
+      error.value = err.message;
+      notificationStore.error('Failed to send verification email: ' + err.message);
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
   const getIdToken = async (): Promise<string> => {
     if (!user.value) {
       throw new Error('User not authenticated');
@@ -187,6 +225,7 @@ export const useAuthStore = defineStore('auth', () => {
     logout,
     changePassword,
     forgotPassword,
+    resendEmailVerification,
     getIdToken,
     initAuth
   };
