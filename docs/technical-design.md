@@ -1,8 +1,8 @@
 # Vocabloom Technical Design
 
-**Document Version:** 1.2
-**Last Updated:** Agu 1, 2025
-**Status:** MVP Complete ✅ | Milestone 2 In Progress 🚧
+**Document Version:** 1.3
+**Last Updated:** Aug 1, 2025
+**Status:** MVP Complete ✅ | Milestone 2 Complete ✅ | Milestone 3 In Progress 🚧
 
 ---
 
@@ -562,6 +562,21 @@ CREATE TABLE flashcards (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Stories table (Milestone 3 implementation)
+CREATE TABLE stories (
+    id SERIAL PRIMARY KEY,
+    original_words JSONB NOT NULL, -- Array of words used in story generation
+    story_title VARCHAR(255) NOT NULL,
+    story_content TEXT NOT NULL,
+    story_theme VARCHAR(100),
+    story_length VARCHAR(50), -- 'short', 'medium', 'long'
+    target_age_range VARCHAR(50), -- 'toddler', 'preschool', 'elementary', 'middle_school'
+    target_language VARCHAR(50),
+    view_count INTEGER DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Images table (future implementation - with visibility)
 CREATE TABLE images (
     id SERIAL PRIMARY KEY,
@@ -606,8 +621,15 @@ CREATE INDEX idx_audio_user ON audio(user_id);
 -- For content discovery (all content is public)
 CREATE INDEX idx_translations_created ON translations(created_at);
 CREATE INDEX idx_flashcards_created ON flashcards(created_at);
+CREATE INDEX idx_stories_created ON stories(created_at);
 CREATE INDEX idx_images_created ON images(created_at);
 CREATE INDEX idx_audio_created ON audio(created_at);
+
+-- For story discovery and search
+CREATE INDEX idx_stories_age_range ON stories(target_age_range);
+CREATE INDEX idx_stories_language ON stories(target_language);
+CREATE INDEX idx_stories_words ON stories USING GIN(original_words);
+CREATE INDEX idx_stories_theme ON stories(story_theme);
 ```
 
 **Content Discovery Features:**
@@ -615,7 +637,8 @@ CREATE INDEX idx_audio_created ON audio(created_at);
 - Search and filter capabilities within user's content
 - Public content discovery for all translations and flashcards
 - Quick flashcard discovery and sharing
-- Integration with public content discovery (Milestone 3)
+- Unified discovery and search interface (Milestone 3)
+- Story generation and discovery (Milestone 3)
 
 **Implementation Benefits:**
 - **Simple Design:** No unnecessary `words` table - `original_word` acts as natural key
@@ -625,7 +648,7 @@ CREATE INDEX idx_audio_created ON audio(created_at);
 - **Performance:** Proper indexes for fast queries and discovery
 - **Cost Optimization:** LLM response caching reduces API costs and improves performance
 - **Resume-Friendly:** Clean, professional database design with caching and discovery features
-- **Extensible:** Structure supports advanced features like image generation and audio
+- **Extensible:** Structure supports advanced features like story generation, image generation and audio
 
 ### 6.5. Flashcard System
 
@@ -667,21 +690,89 @@ CREATE INDEX idx_audio_created ON audio(created_at);
 - Responsive design for desktop and mobile
 - Professional appearance for printing
 
-### 6.6. API Endpoints
+### 6.6. Story Generation System (Milestone 3)
 
-#### 6.6.1. Public Endpoints (No Authentication)
+#### 6.6.1. Story Generation Architecture
+
+**AI Integration:**
+- Gemini 2.0 Flash API for story generation
+- Prompt engineering for age-appropriate content
+- Multi-word story generation with context preservation
+- Theme and length customization
+
+**Story Generation Flow:**
+1. User enters words or selects from suggested words
+2. User customizes story parameters (theme, length, age range)
+3. System generates story using Gemini API with structured prompt
+4. Story is displayed with markdown rendering
+5. Story is automatically saved to database for discovery
+
+#### 6.6.2. Story Management
+
+**Story Storage:**
+- PostgreSQL with JSONB for word arrays
+- View count tracking for analytics
+- Full-text search capabilities
+
+**Story Discovery:**
+- All stories available in discovery feed
+- Age-appropriate filtering
+- Language and theme-based categorization
+- Trending stories based on view count
+
+### 6.7. Content Discovery & Search System (Milestone 3)
+
+#### 6.7.1. Discovery Architecture
+
+**Dual-Mode Interface:**
+- **Discovery Mode:** System-recommended content when no search input
+- **Search Mode:** Full-text search when keywords are entered
+- Seamless transition between modes
+
+**Content Aggregation:**
+- Unified API endpoint for all content types
+- Consistent content card design
+- Real-time filtering and sorting
+- Infinite scroll or pagination
+
+#### 6.7.2. Search Implementation
+
+**Full-Text Search:**
+- PostgreSQL full-text search across all content
+- Search across translations, flashcards, and stories
+- Relevance scoring and ranking
+- Autocomplete and search suggestions
+
+**Advanced Filtering:**
+- Language filter (multi-select)
+- Age range filter (toddler, preschool, elementary, middle school)
+- Content type filter (flashcards, stories, translations)
+- Date range filter
+- Sort options (relevance, newest, most popular, most viewed)
+
+#### 6.7.3. Content Recommendation
+
+**Recommendation Algorithm:**
+- Trending content based on view count and engagement
+- Age-appropriate content filtering
+- Language preference matching
+- Featured content curation
+
+### 6.8. API Endpoints
+
+#### 6.8.1. Public Endpoints (No Authentication)
 - `POST /api/translate` - Basic translation with caching (existing MVP endpoint)
 - `POST /api/flashcards/preview` - Generate flashcard preview
 - `GET /api/cache/stats` - Get cache statistics (usage counts, hit rates)
 
-#### 6.6.2. Authentication Endpoints
+#### 6.8.2. Authentication Endpoints
 - `POST /api/auth/register` - User registration via Firebase Auth
 - `POST /api/auth/login` - User login via Firebase Auth
 - `POST /api/auth/logout` - User logout
 - `POST /api/auth/change-password` - Change password
 - `POST /api/auth/reset-password` - Reset password
 
-#### 6.6.3. Protected Endpoints (Requires Authentication)
+#### 6.8.3. Protected Endpoints (Requires Authentication)
 
 **Content Management (by Original Word):**
 - `GET /api/words` - List unique words for user (grouped by original_word)
@@ -712,7 +803,18 @@ CREATE INDEX idx_audio_created ON audio(created_at);
 - `GET /api/flashcards/discover` - Discover public flashcards
 - `GET /api/translations/discover` - Discover public translations
 
-### 6.7. State Management
+**Story Generation (Milestone 3):**
+- `POST /api/stories/generate` - Generate story from words and parameters
+- `GET /api/stories` - Get all stories for discovery
+- `GET /api/stories/discover` - Discover stories with filtering
+
+**Content Discovery & Search (Milestone 3):**
+- `GET /api/discover` - Get recommended content (discovery mode)
+- `GET /api/discover/search` - Search content with filters (search mode)
+- `GET /api/discover/trending` - Get trending content
+- `GET /api/discover/featured` - Get featured content
+
+### 6.9. State Management
 
 **Pinia Stores:**
 - **Auth Store:** User authentication state and methods
@@ -746,6 +848,8 @@ CREATE INDEX idx_audio_created ON audio(created_at);
 - **Flashcard Store:** Flashcard data and CRUD operations (authenticated)
 - **Translation Store:** Current translation state (public)
 - **User Store:** User preferences and settings
+- **Story Store:** Story generation and management (Milestone 3)
+- **Discovery Store:** Content discovery and search state (Milestone 3)
 
 **Anonymous User State:**
 - Current translation results
@@ -758,9 +862,9 @@ CREATE INDEX idx_audio_created ON audio(created_at);
 - Saved flashcards collection
 - User preferences and settings
 
-### 6.8. Deployment Considerations
+### 6.10. Deployment Considerations
 
-#### 6.8.1. Cloud SQL Setup
+#### 6.10.1. Cloud SQL Setup
 
 **Required Cloud SQL Configuration:**
 - **Instance Type:** PostgreSQL 14 or higher
@@ -770,7 +874,7 @@ CREATE INDEX idx_audio_created ON audio(created_at);
 - **High Availability:** Optional for production
 - **Connections:** Cloud SQL Proxy for secure connections
 
-#### 6.8.2. Environment Variables
+#### 6.10.2. Environment Variables
 
 **Backend Environment:**
 - Database connection string via Secret Manager
@@ -783,7 +887,7 @@ CREATE INDEX idx_audio_created ON audio(created_at);
 - API endpoints and service URLs
 - Feature flags and environment indicators
 
-#### 6.8.3. Database Migration
+#### 6.10.3. Database Migration
 
 **Alembic for Database Migrations:**
 - Version-controlled schema changes
@@ -791,9 +895,9 @@ CREATE INDEX idx_audio_created ON audio(created_at);
 - Rollback capabilities
 - Environment-specific migrations
 
-### 6.9. Testing Strategy
+### 6.11. Testing Strategy
 
-#### 6.9.1. Unit Tests
+#### 6.11.1. Unit Tests
 
 **Frontend Testing:**
 - Component testing with Vue Test Utils
@@ -807,7 +911,7 @@ CREATE INDEX idx_audio_created ON audio(created_at);
 - Authentication middleware testing
 - Error handling validation
 
-#### 6.9.2. Integration Tests
+#### 6.11.2. Integration Tests
 
 **Database Integration Tests:**
 - PostgreSQL connection and operations

@@ -90,31 +90,37 @@ Vocabloom will support all major world languages, leveraging the capabilities of
 
 ---
 
-### Milestone 3: Public Content Discovery
+### Milestone 3: Story Generation & Content Discovery
 
 #### Functional Requirements (User Stories)
 
-**Public Content Discovery:**
-- **FR-3.1:** As any user, I can access a "Discover" tab that shows all public content created by other users.
-- **FR-3.2:** As any user, I can browse public content in a feed-like interface without needing to create an account.
-- **FR-3.3:** As any user, I can search and filter public content by language, topic, or keywords.
-- **FR-3.4:** As any user, I can view public content with translations, explanations, and any associated media.
+**Story Generation:**
+- **FR-3.1:** As any user, I can generate a story based on a single word to make learning more engaging.
+- **FR-3.2:** As any user, I can select multiple words to create a more complex story incorporating all selected terms.
+- **FR-3.3:** As any user, I can customize story parameters (theme, length, complexity level, age-appropriate content).
+- **FR-3.4:** As any user, I can view generated stories with proper formatting and markdown rendering.
+- **FR-3.5:** As any user, I receive clear feedback if story generation fails, with options to retry.
 
-**Content Privacy & Sharing:**
-- **FR-3.5:** As an authenticated user, I can choose to make my created content public or private (private by default).
-- **FR-3.6:** As an authenticated user, I can change the privacy settings of my existing content at any time.
-- **FR-3.7:** As an authenticated user, I can see which of my content is public vs private in my content management interface.
+**Content Discovery:**
+- **FR-3.6:** As any user, I can access a "Discover" page that shows recommended content when no search is active.
+- **FR-3.7:** As any user, I can search for content by entering keywords, which switches the interface to search mode.
+- **FR-3.8:** As any user, I can filter content by language, age range, content type (flashcards/stories), and date created.
+- **FR-3.9:** As any user, I can browse content in a unified card-based interface with consistent design across all content types.
+- **FR-3.10:** As any user, I can view content previews and details without needing to create an account.
+- **FR-3.11:** As any user, I can see trending and featured content prominently displayed.
 
 **Enhanced Content Discovery:**
-- **FR-3.8:** When I enter a new word, the system shows me relevant public content created by other users for that word.
-- **FR-3.9:** As any user, I can discover alternative translations and explanations for words through public content.
-- **FR-3.10:** As any user, I can see how many other users have created content for specific words.
+- **FR-3.12:** When I enter a new word, the system shows me relevant public content created by other users for that word.
+- **FR-3.13:** As any user, I can discover alternative translations and explanations for words through public content.
+- **FR-3.14:** As any user, I can see how many other users have created content for specific words.
 
 #### Non-Functional Requirements
-- **Performance:** Public content discovery should load quickly and provide smooth browsing experience.
+- **Performance:** Story generation should complete within 10-15 seconds for complex multi-word stories.
+- **Performance:** Discovery and search results should load within 2 seconds with smooth browsing experience.
+- **Content Quality:** Generated stories should be age-appropriate and educationally valuable.
 - **Content Moderation:** Public content should be reviewed for appropriateness and quality.
-- **Privacy:** Users have full control over their content's visibility and can change settings at any time.
 - **Scalability:** System should handle increased content volume and user discovery activities.
+- **Search Performance:** Full-text search should provide results within 1 second for typical queries.
 
 ---
 
@@ -147,23 +153,28 @@ Vocabloom will support all major world languages, leveraging the capabilities of
 - **FR-5.3:** As an authenticated user, the bedtime stories are personalized using my child's name and age preferences.
 - **FR-5.4:** As any user, I can customize the story length and complexity level.
 - **FR-5.5:** As any user, I can save and access previously generated bedtime stories.
+- **FR-5.6:** As any user, I am informed of my story generation quota and usage limits.
 
 **Flashcard Enhancements:**
-- **FR-5.6:** As a user, I can add hashtags to my flashcards for flexible organization and categorization.
-- **FR-5.7:** As a user, I can filter and search my flashcards by hashtags to find specific content quickly.
-- **FR-5.8:** As a user, I can see suggested hashtags based on my flashcard content and existing tags.
-- **FR-5.9:** As a user, I can perform bulk operations (select multiple flashcards) for efficient management.
-- **FR-5.10:** As a user, I can bulk delete multiple flashcards at once to clean up my collection.
-- **FR-5.11:** As a user, I can bulk edit hashtags across multiple flashcards for consistent organization.
+- **FR-5.7:** As a user, I can add hashtags to my flashcards for flexible organization and categorization.
+- **FR-5.8:** As a user, I can filter and search my flashcards by hashtags to find specific content quickly.
+- **FR-5.9:** As a user, I can see suggested hashtags based on my flashcard content and existing tags.
+- **FR-5.10:** As a user, I can perform bulk operations (select multiple flashcards) for efficient management.
+- **FR-5.11:** As a user, I can bulk delete multiple flashcards at once to clean up my collection.
+- **FR-5.12:** As a user, I can bulk edit hashtags across multiple flashcards for consistent organization.
+
+**Content Discovery Enhancements:**
+- **FR-5.13:** As any user, I can sort content by relevance, newest, most popular, or most viewed.
+- **FR-5.14:** As any user, I can access advanced search filters and sorting options.
 
 **Flashcard Export & Printing:**
-- **FR-5.12:** As a user, I can print my flashcards as PDF for offline use.
-- **FR-5.13:** As a user, I can export my flashcards in various formats (PDF, CSV).
+- **FR-5.15:** As a user, I can print my flashcards as PDF for offline use.
+- **FR-5.16:** As a user, I can export my flashcards in various formats (PDF, CSV).
 
 **Interactive Learning Modes:**
-- **FR-5.14:** As a user, I can study flashcards in slideshow mode with navigation controls.
-- **FR-5.15:** As a user, I can take quizzes based on my flashcards with multiple choice or fill-in-the-blank questions.
-- **FR-5.16:** As a user, I can track my study progress and performance on flashcards.
+- **FR-5.17:** As a user, I can study flashcards in slideshow mode with navigation controls.
+- **FR-5.18:** As a user, I can take quizzes based on my flashcards with multiple choice or fill-in-the-blank questions.
+- **FR-5.19:** As a user, I can track my study progress and performance on flashcards.
 
 #### Non-Functional Requirements
 - **Performance:** Story generation should complete within 10-15 seconds for complex multi-word stories.
