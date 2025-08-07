@@ -238,13 +238,21 @@ watch(selectedLanguage, async (newLanguage) => {
       
       <!-- Create Content Buttons -->
       <div class="create-buttons-container">
-        <button @click="openStoryModal" class="create-btn story-btn" title="Generate Story">
-          <span class="btn-icon">📖</span>
+        <button @click="openStoryModal" class="create-btn story-btn">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+          </svg>
           <span class="btn-text">Story</span>
         </button>
         
-        <button @click="createFlashcard" class="create-btn flashcard-btn" title="Create Flashcard">
-          <span class="btn-icon">📚</span>
+        <button @click="createFlashcard" class="create-btn flashcard-btn">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            <line x1="8" y1="12" x2="16" y2="12"/>
+            <line x1="8" y1="16" x2="16" y2="16"/>
+            <line x1="8" y1="8" x2="16" y2="8"/>
+          </svg>
           <span class="btn-text">Flashcard</span>
         </button>
       </div>
@@ -380,45 +388,32 @@ watch(selectedLanguage, async (newLanguage) => {
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 0.75rem;
-  border: none;
+  border: 1px solid var(--border-color, #e2e8f0);
   border-radius: 6px;
   cursor: pointer;
+  background: var(--bg-surface, #ffffff);
+  transition: all 0.2s ease;
+  color: var(--text-secondary, #64748b);
   font-size: 0.875rem;
   font-weight: 500;
-  transition: all 0.2s;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
 }
 
 .create-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-.story-btn {
+  border-color: var(--primary-blue, #6690ff);
   background: var(--primary-blue, #6690ff);
   color: white;
 }
 
-.story-btn:hover {
-  background: var(--blue-hover, #4a7aff);
-}
-
-.flashcard-btn {
-  background: var(--primary-orange, #e19f5d);
-  color: white;
-}
-
-.flashcard-btn:hover {
-  background: #d18f4d;
-}
-
 .btn-icon {
-  font-size: 1rem;
-  line-height: 1;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }
 
 .btn-text {
   font-size: 0.875rem;
+  font-weight: 500;
 }
 
 .dropdown-item:hover {
