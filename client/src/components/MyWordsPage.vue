@@ -182,7 +182,7 @@ const paginatedWords = computed(() => {
 
 const renderMarkdown = (text: string): string => {
   try {
-    return marked(text);
+    return marked(text) as string;
   } catch (error) {
     console.error('Error rendering markdown:', error);
     return text; // Fallback to plain text
@@ -201,7 +201,8 @@ const loadWords = async () => {
     error.value = '';
     
     const token = await authStore.getIdToken();
-    const response = await fetch('http://127.0.0.1:8000/api/words/my', {
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+    const response = await fetch(`${API_BASE}/api/words/my`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
@@ -244,7 +245,8 @@ const removeWord = async (originalWord: string) => {
 
   try {
     const token = await authStore.getIdToken();
-    const response = await fetch(`http://127.0.0.1:8000/api/words/my/${encodeURIComponent(originalWord)}`, {
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+    const response = await fetch(`${API_BASE}/api/words/my/${encodeURIComponent(originalWord)}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`,

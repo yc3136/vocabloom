@@ -20,9 +20,9 @@ const closeAuthModal = () => {
   showAuthModal.value = false;
 };
 
-const openSignUpModal = () => {
-  showSignUpModal.value = true;
-};
+// const openSignUpModal = () => {
+//   showSignUpModal.value = true;
+// };
 
 const closeSignUpModal = () => {
   showSignUpModal.value = false;

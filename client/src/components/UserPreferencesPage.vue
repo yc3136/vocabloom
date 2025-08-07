@@ -301,7 +301,8 @@ const loadUserData = async () => {
     await preferencesStore.loadPreferences();
     
     const token = await authStore.getIdToken();
-    const response = await fetch('http://127.0.0.1:8000/api/auth/me', {
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+    const response = await fetch(`${API_BASE}/api/auth/me`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
@@ -398,8 +399,9 @@ const confirmDeleteAccount = async () => {
   try {
     loading.value = true;
     const token = await authStore.getIdToken();
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
     
-    const response = await fetch('http://127.0.0.1:8000/api/auth/account', {
+    const response = await fetch(`${API_BASE}/api/auth/account`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`,

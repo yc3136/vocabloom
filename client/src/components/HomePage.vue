@@ -4,6 +4,7 @@ import { marked } from 'marked'
 import { useAuthStore } from '../stores/auth'
 import { useFlashcardStore } from '../stores/flashcards'
 import { usePreferencesStore } from '../stores/preferences'
+import { useTranslationStore } from '../stores/translations'
 import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE } from '../constants/languages'
 
 const term = ref('')
@@ -18,6 +19,7 @@ const showCreateDropdown = ref(false)
 const authStore = useAuthStore()
 const flashcardStore = useFlashcardStore()
 const preferencesStore = usePreferencesStore()
+const translationStore = useTranslationStore()
 
 // Use the shared language constants
 const languages = SUPPORTED_LANGUAGES
@@ -98,6 +100,21 @@ async function lookup() {
     explanation.value = data.explanation || 'No explanation available'
     // Store examples for flashcard creation
     examples.value = data.examples || []
+    
+    // Save translation to user's history if authenticated
+    if (authStore.isAuthenticated && translation.value && translation.value !== 'No translation available') {
+      try {
+        await translationStore.saveTranslation({
+          original_term: term.value,
+          target_language: selectedLanguage.value,
+          translation: translation.value,
+          explanation: explanation.value
+        })
+      } catch (error) {
+        console.error('Failed to save translation to history:', error)
+        // Don't show error to user as this is not critical
+      }
+    }
   } catch (e) {
     error.value = 'Error contacting backend. Please try again.'
     console.error('Translation error:', e)

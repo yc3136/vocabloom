@@ -50,7 +50,7 @@ const router = createRouter({
 });
 
 // Route guard for authentication
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, _from, next) => {
   const authStore = useAuthStore();
   
   // If Firebase is still loading authentication state, wait for it
