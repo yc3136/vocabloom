@@ -86,13 +86,15 @@ export const usePreferencesStore = defineStore('preferences', () => {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || 'Failed to save preferences');
+        console.error('Preferences update error:', errorData);
+        throw new Error(errorData.detail || `Failed to save preferences: ${response.status}`);
       }
 
       // Update local preferences
       preferences.value = { ...preferences.value, ...newPreferences };
     } catch (err: any) {
       error.value = err.message;
+      console.error('Error saving preferences:', err);
       throw err;
     } finally {
       loading.value = false;

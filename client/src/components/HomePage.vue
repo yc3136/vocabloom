@@ -55,6 +55,11 @@ const renderedResponse = computed(() => {
   return marked(combinedResponse.value)
 })
 
+// Computed property to ensure word is properly captured for story generation
+const storyWords = computed(() => {
+  return term.value ? [term.value] : []
+})
+
 async function lookup() {
   if (!term.value) return
   loading.value = true
@@ -120,6 +125,10 @@ async function lookup() {
 }
 
 function openStoryModal() {
+  if (!term?.value?.trim()) {
+    alert('Please enter a word first to generate a story!')
+    return
+  }
   showStoryModal.value = true
 }
 
@@ -190,14 +199,19 @@ watch(() => authStore.isAuthenticated, async (isAuthenticated) => {
 // Watch for changes in selected language and update preferences if user is authenticated
 watch(selectedLanguage, async (newLanguage) => {
   if (authStore.isAuthenticated && preferencesStore.preferences.preferred_languages) {
-    // Update the first preferred language
-    const currentLanguages = [...(preferencesStore.preferences.preferred_languages || [])]
-    if (currentLanguages.length > 0) {
-      currentLanguages[0] = newLanguage
-    } else {
-      currentLanguages.push(newLanguage)
+    try {
+      // Update the first preferred language
+      const currentLanguages = [...(preferencesStore.preferences.preferred_languages || [])]
+      if (currentLanguages.length > 0) {
+        currentLanguages[0] = newLanguage
+      } else {
+        currentLanguages.push(newLanguage)
+      }
+      await preferencesStore.updatePreferredLanguages(currentLanguages)
+    } catch (error) {
+      console.error('Failed to update preferred languages:', error)
+      // Don't show error to user as this is not critical
     }
-    await preferencesStore.updatePreferredLanguages(currentLanguages)
   }
 })
 </script>
@@ -224,9 +238,12 @@ watch(selectedLanguage, async (newLanguage) => {
       </select>
     </div>
     
-    <button @click="lookup" :disabled="loading" class="lookup-btn">
-      <span v-if="!loading">Look up</span>
-      <span v-else>Looking up...</span>
+    <button 
+      @click="lookup" 
+      :disabled="loading || !term.trim()"
+      class="lookup-btn"
+    >
+      {{ loading ? 'Looking up...' : 'Look Up' }}
     </button>
     
     <div v-if="error" class="error-box">
@@ -238,7 +255,11 @@ watch(selectedLanguage, async (newLanguage) => {
       
       <!-- Create Content Buttons -->
       <div class="create-buttons-container">
-        <button @click="openStoryModal" class="create-btn story-btn">
+        <button 
+          @click="openStoryModal" 
+          class="create-btn story-btn"
+          title="Generate a story with this word"
+        >
           <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
             <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
@@ -258,15 +279,15 @@ watch(selectedLanguage, async (newLanguage) => {
       </div>
     </div>
 
-    <!-- Success Message -->
-    <!-- Removed as per edit hint -->
-    
     <!-- Story Generation Modal -->
-    <StoryGenerationModal
-      :show="showStoryModal"
-      :words="[term]"
-      @close="closeStoryModal"
-      @save="handleStorySave"
+    <StoryGenerationModal 
+      v-if="showStoryModal"
+      :show="showStoryModal" 
+      :words="storyWords" 
+      :translation="translation.value"
+      :targetLanguage="selectedLanguage.value"
+      @close="closeStoryModal" 
+      @save="handleStorySave" 
     />
   </div>
 </template>
@@ -359,21 +380,20 @@ watch(selectedLanguage, async (newLanguage) => {
 }
 
 .response-container {
+  margin-top: 2rem;
+  text-align: left;
   position: relative;
-  margin-top: 1.5rem;
 }
 
 .response-box {
   background: var(--bg-primary, #f8fafc);
   border: 1px solid var(--border-color, #e2e8f0);
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 1.5rem;
-  text-align: left;
   line-height: 1.6;
-  text-align: left;
+  color: var(--text-primary, #1e293b);
 }
 
-/* Create Content Buttons Styles */
 .create-buttons-container {
   position: absolute;
   top: 0.75rem;
@@ -405,6 +425,20 @@ watch(selectedLanguage, async (newLanguage) => {
   color: white;
 }
 
+.create-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-color: var(--border-color, #e2e8f0);
+  background: var(--bg-surface, #ffffff);
+  color: var(--text-secondary, #64748b);
+}
+
+.create-btn:disabled:hover {
+  border-color: var(--border-color, #e2e8f0);
+  background: var(--bg-surface, #ffffff);
+  color: var(--text-secondary, #64748b);
+}
+
 .btn-icon {
   width: 16px;
   height: 16px;
@@ -415,100 +449,4 @@ watch(selectedLanguage, async (newLanguage) => {
   font-size: 0.875rem;
   font-weight: 500;
 }
-
-.dropdown-item:hover {
-  background: var(--bg-primary, #f8fafc);
-}
-
-.item-icon {
-  font-size: 1rem;
-}
-
-.item-label {
-  font-size: 0.875rem;
-  color: var(--text-primary, #1e293b);
-}
-
-/* Markdown styling */
-.response-box :deep(h2) {
-  color: var(--text-primary, #1e293b);
-  margin: 0 0 1rem 0;
-  font-size: 1.3rem;
-  font-weight: 600;
-  border-bottom: 2px solid var(--primary-blue, #6690ff);
-  padding-bottom: 0.5rem;
-}
-
-.response-box :deep(h3) {
-  color: var(--text-primary, #1e293b);
-  margin: 1.5rem 0 0.5rem 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.response-box :deep(p) {
-  margin: 0.5rem 0;
-  line-height: 1.6;
-}
-
-.response-box :deep(ul), .response-box :deep(ol) {
-  margin: 0.5rem 0;
-  padding-left: 1.5rem;
-}
-
-.response-box :deep(li) {
-  margin: 0.25rem 0;
-  line-height: 1.5;
-}
-
-.response-box :deep(strong) {
-  font-weight: 600;
-  color: var(--text-primary, #1e293b);
-}
-
-.response-box :deep(code) {
-  background: var(--border-color, #e2e8f0);
-  padding: 0.2rem 0.4rem;
-  border-radius: 4px;
-  font-family: 'Courier New', monospace;
-  font-size: 0.9rem;
-}
-
-.response-box :deep(blockquote) {
-  border-left: 4px solid var(--primary-blue, #6690ff);
-  margin: 1rem 0;
-  padding-left: 1rem;
-  font-style: italic;
-  color: var(--text-secondary, #64748b);
-}
-
-@media (max-width: 768px) {
-  .input-group {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  
-  .term-input, .language-select {
-    width: 100%;
-  }
-  
-  .home-container {
-    margin: 1rem;
-    padding: 1.5rem;
-  }
-  
-  .create-dropdown-container {
-    top: 0.5rem;
-    right: 0.5rem;
-  }
-  
-  .create-content-btn {
-    padding: 0.4rem 0.6rem;
-    font-size: 0.8rem;
-  }
-  
-  .create-text {
-    display: none;
-  }
-}
-</style> 
+</style>

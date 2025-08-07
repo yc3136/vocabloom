@@ -159,6 +159,10 @@ class Story(StoryBase):
 
 class StoryGenerationRequest(BaseModel):
     words: List[str]
-    theme: str
-    max_words: int = 200
-    custom_prompt: Optional[str] = None 
+    theme: Optional[str] = None
+    max_words: int = 100
+    custom_prompt: Optional[str] = None
+    target_language: Optional[str] = None
+    age_range: Optional[str] = None
+    original_word: Optional[str] = None
+    translated_word: Optional[str] = None 

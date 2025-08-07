@@ -11,7 +11,7 @@
         <div class="input-section">
           <div class="form-row">
             <div class="form-group">
-              <label for="theme">Theme</label>
+              <label for="theme">Theme (Optional)</label>
               <select v-model="storyParams.theme" id="theme" class="form-input">
                 <option value="adventure">Adventure</option>
                 <option value="educational">Educational</option>
@@ -32,7 +32,7 @@
                 class="form-input" 
                 min="50" 
                 max="500" 
-                placeholder="200"
+                placeholder="100"
               />
             </div>
           </div>
@@ -61,10 +61,20 @@
           <div class="form-group">
             <label>Words to Include</label>
             <div class="words-display">
-              <span v-for="word in words" :key="word" class="word-tag">
+              <span v-for="word in props.words" :key="word" class="word-tag original-word">
                 {{ word }}
               </span>
+              <span v-if="props.translation" class="word-tag translated-word">
+                {{ props.translation }}
+              </span>
             </div>
+          </div>
+          
+          <!-- Age-appropriate indicator -->
+          <div v-if="childAge" class="age-indicator">
+            <span class="age-badge">
+              For {{ childAge }} year old
+            </span>
           </div>
         </div>
         
@@ -115,6 +125,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { marked } from 'marked'
+import { usePreferencesStore } from '../stores/preferences'
 
 interface StoryParams {
   theme: string
@@ -126,6 +137,8 @@ interface StoryParams {
 interface Props {
   show: boolean
   words: string[]
+  translation?: string
+  targetLanguage?: string
 }
 
 interface Emits {
@@ -135,11 +148,12 @@ interface Emits {
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
+const preferencesStore = usePreferencesStore()
 
 const storyParams = ref<StoryParams>({
-  theme: 'adventure',
+  theme: '',
   customTheme: '',
-  maxWords: 200,
+  maxWords: 100,
   customPrompt: ''
 })
 
@@ -149,13 +163,28 @@ const saving = ref(false)
 const error = ref('')
 
 const canGenerate = computed(() => {
-  return props.words.length > 0 && 
-         (storyParams.value.theme !== 'custom' || storyParams.value.customTheme.trim())
+  return props.words.length > 0
 })
 
 const renderedStory = computed(() => {
   if (!generatedStory.value) return ''
   return marked(generatedStory.value)
+})
+
+// Get child's age from preferences
+const childAge = computed(() => {
+  return preferencesStore.preferences.child_age
+})
+
+// Get age range category from child's age
+const ageRange = computed(() => {
+  if (!childAge.value) return null
+  
+  if (childAge.value <= 3) return 'toddler'
+  if (childAge.value <= 5) return 'preschool'
+  if (childAge.value <= 10) return 'elementary'
+  if (childAge.value <= 13) return 'middle_school'
+  return 'elementary' // default fallback
 })
 
 const closeModal = () => {
@@ -165,26 +194,48 @@ const closeModal = () => {
 const generateStory = async () => {
   if (!canGenerate.value) return
   
+  // Additional validation
+  if (!props.words || props.words.length === 0) {
+    error.value = 'No words provided for story generation.'
+    return
+  }
+  
   generating.value = true
   error.value = ''
   
   try {
     const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
     
+    // Prepare words array with both original and translated words
+    const wordsToInclude = [...props.words]
+    if (props.translation && props.translation.trim()) {
+      wordsToInclude.push(props.translation.trim())
+    }
+    
+    const requestBody = {
+      words: wordsToInclude,
+      theme: storyParams.value.theme === 'custom' ? storyParams.value.customTheme : storyParams.value.theme,
+      max_words: storyParams.value.maxWords,
+      custom_prompt: storyParams.value.customPrompt || null,
+      target_language: props.targetLanguage || null,
+      age_range: ageRange.value || null,
+      original_word: props.words[0] || null,
+      translated_word: props.translation || null
+    }
+    
+    console.log('Generating story with params:', requestBody)
+    
     const response = await fetch(`${API_BASE}/api/stories/generate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        words: props.words,
-        theme: storyParams.value.theme === 'custom' ? storyParams.value.customTheme : storyParams.value.theme,
-        max_words: storyParams.value.maxWords,
-        custom_prompt: storyParams.value.customPrompt
-      })
+      body: JSON.stringify(requestBody)
     })
     
     if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      console.error('Server error details:', errorData)
       throw new Error(`HTTP error! status: ${response.status}`)
     }
     
@@ -217,7 +268,7 @@ const saveStory = async () => {
         story_content: generatedStory.value,
         story_theme: storyParams.value.theme === 'custom' ? storyParams.value.customTheme : storyParams.value.theme,
         story_length: storyParams.value.maxWords <= 100 ? 'short' : storyParams.value.maxWords <= 300 ? 'medium' : 'long',
-        target_age_range: 'elementary' // Default for now
+        target_age_range: ageRange.value // Use ageRange.value
       })
     })
     
@@ -242,9 +293,9 @@ watch(() => props.show, (show) => {
     generatedStory.value = ''
     error.value = ''
     storyParams.value = {
-      theme: 'adventure',
+      theme: '',
       customTheme: '',
-      maxWords: 200,
+      maxWords: 100,
       customPrompt: ''
     }
   }
@@ -268,12 +319,13 @@ watch(() => props.show, (show) => {
 
 .modal-content {
   background: var(--bg-surface, #ffffff);
-  border-radius: 12px;
+  border-radius: 8px;
   max-width: 500px;
-  width: 100%;
   max-height: 85vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  width: 90%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 .modal-header {
@@ -315,6 +367,8 @@ watch(() => props.show, (show) => {
 .modal-body {
   padding: 1rem 1.5rem;
   text-align: left;
+  overflow-y: auto;
+  flex: 1;
 }
 
 .input-section {
@@ -380,12 +434,44 @@ watch(() => props.show, (show) => {
 }
 
 .word-tag {
+  display: inline-block;
+  padding: 0.5rem 0.75rem;
   background: var(--primary-blue, #6690ff);
   color: white;
-  padding: 0.125rem 0.5rem;
-  border-radius: 12px;
-  font-size: 0.75rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
   font-weight: 500;
+  margin: 0.125rem;
+}
+
+.original-word {
+  background: var(--primary-blue, #6690ff);
+  font-size: 1rem;
+  padding: 0.625rem 1rem;
+}
+
+.translated-word {
+  background: var(--primary-orange, #e19f5d);
+  font-size: 1rem;
+  padding: 0.625rem 1rem;
+}
+
+.age-indicator {
+  margin-top: 0.75rem;
+  text-align: left;
+}
+
+.age-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: transparent;
+  color: var(--text-secondary, #64748b);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 400;
 }
 
 .story-section {
@@ -455,6 +541,8 @@ watch(() => props.show, (show) => {
   padding: 1rem 1.5rem;
   border-top: 1px solid var(--border-color, #e2e8f0);
   justify-content: flex-end;
+  background: var(--bg-surface, #ffffff);
+  border-radius: 0 0 8px 8px;
 }
 
 .btn {
