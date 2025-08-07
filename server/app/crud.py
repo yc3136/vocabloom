@@ -133,5 +133,53 @@ def update_translation_bookmark(db: Session, translation_id: int, user_id: str, 
         db_translation.bookmarked = bookmarked
         db.commit()
         db.refresh(db_translation)
-        return db_translation
-    return None 
+    return db_translation
+
+
+# Story CRUD operations
+def get_stories(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Story).order_by(models.Story.created_at.desc()).offset(skip).limit(limit).all()
+
+
+def get_story(db: Session, story_id: int):
+    return db.query(models.Story).filter(models.Story.id == story_id).first()
+
+
+def create_story(db: Session, story: schemas.StoryCreate):
+    db_story = models.Story(**story.dict())
+    db.add(db_story)
+    db.commit()
+    db.refresh(db_story)
+    return db_story
+
+
+def update_story(db: Session, story_id: int, story: schemas.StoryUpdate):
+    db_story = get_story(db, story_id)
+    if not db_story:
+        return None
+    
+    update_data = story.dict(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(db_story, field, value)
+    
+    db.commit()
+    db.refresh(db_story)
+    return db_story
+
+
+def delete_story(db: Session, story_id: int):
+    db_story = get_story(db, story_id)
+    if db_story:
+        db.delete(db_story)
+        db.commit()
+        return True
+    return False
+
+
+def increment_story_view_count(db: Session, story_id: int):
+    db_story = get_story(db, story_id)
+    if db_story:
+        db_story.view_count += 1
+        db.commit()
+        db.refresh(db_story)
+    return db_story 

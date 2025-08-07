@@ -6,6 +6,7 @@ import { useFlashcardStore } from '../stores/flashcards'
 import { usePreferencesStore } from '../stores/preferences'
 import { useTranslationStore } from '../stores/translations'
 import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE } from '../constants/languages'
+import StoryGenerationModal from './StoryGenerationModal.vue'
 
 const term = ref('')
 const selectedLanguage = ref(DEFAULT_LANGUAGE)
@@ -14,7 +15,7 @@ const explanation = ref('')
 const examples = ref<string[]>([])
 const loading = ref(false)
 const error = ref('')
-const showCreateDropdown = ref(false)
+const showStoryModal = ref(false)
 
 const authStore = useAuthStore()
 const flashcardStore = useFlashcardStore()
@@ -23,11 +24,6 @@ const translationStore = useTranslationStore()
 
 // Use the shared language constants
 const languages = SUPPORTED_LANGUAGES
-
-// Content creation options
-const contentTypes = [
-  { id: 'flashcard', label: 'Flashcard', icon: '📚' }
-]
 
 // Combine translation, explanation, and examples into a single markdown response
 const combinedResponse = computed(() => {
@@ -123,28 +119,17 @@ async function lookup() {
   }
 }
 
-function toggleCreateDropdown() {
-  showCreateDropdown.value = !showCreateDropdown.value
+function openStoryModal() {
+  showStoryModal.value = true
 }
 
-function createContent(type: string) {
-  if (!authStore.isAuthenticated) {
-    // Show authentication prompt
-            alert('Please sign in to create content!')
-    return
-  }
-  
-  showCreateDropdown.value = false
-  
-  switch (type) {
-    case 'flashcard':
-      createFlashcard()
-      break
-    // Add more content types here in the future
-    default:
-      // Unknown content type
-      break
-  }
+function closeStoryModal() {
+  showStoryModal.value = false
+}
+
+function handleStorySave(story: any) {
+  // Story saved successfully
+  console.log('Story saved:', story)
 }
 
 async function createFlashcard() {
@@ -177,10 +162,7 @@ async function createFlashcard() {
 
 // Close dropdown when clicking outside
 function handleClickOutside(event: Event) {
-  const target = event.target as HTMLElement
-  if (!target.closest('.create-dropdown-container')) {
-    showCreateDropdown.value = false
-  }
+  // No longer needed since we removed the dropdown
 }
 
 // Load user preferences and set default language
@@ -254,29 +236,30 @@ watch(selectedLanguage, async (newLanguage) => {
     <div v-if="renderedResponse" class="response-container">
       <div class="response-box" v-html="renderedResponse"></div>
       
-      <!-- Create Content Dropdown -->
-      <div class="create-dropdown-container">
-        <button @click="toggleCreateDropdown" class="create-content-btn">
-          <span class="plus-icon">+</span>
-          <span class="create-text">Create</span>
+      <!-- Create Content Buttons -->
+      <div class="create-buttons-container">
+        <button @click="openStoryModal" class="create-btn story-btn" title="Generate Story">
+          <span class="btn-icon">📖</span>
+          <span class="btn-text">Story</span>
         </button>
         
-        <div v-if="showCreateDropdown" class="create-dropdown">
-          <div 
-            v-for="contentType in contentTypes" 
-            :key="contentType.id"
-            @click="createContent(contentType.id)"
-            class="dropdown-item"
-          >
-            <span class="item-icon">{{ contentType.icon }}</span>
-            <span class="item-label">{{ contentType.label }}</span>
-          </div>
-        </div>
+        <button @click="createFlashcard" class="create-btn flashcard-btn" title="Create Flashcard">
+          <span class="btn-icon">📚</span>
+          <span class="btn-text">Flashcard</span>
+        </button>
       </div>
     </div>
 
     <!-- Success Message -->
     <!-- Removed as per edit hint -->
+    
+    <!-- Story Generation Modal -->
+    <StoryGenerationModal
+      :show="showStoryModal"
+      :words="[term]"
+      @close="closeStoryModal"
+      @save="handleStorySave"
+    />
   </div>
 </template>
 
@@ -382,71 +365,60 @@ watch(selectedLanguage, async (newLanguage) => {
   text-align: left;
 }
 
-/* Create Content Dropdown Styles */
-.create-dropdown-container {
+/* Create Content Buttons Styles */
+.create-buttons-container {
   position: absolute;
   top: 0.75rem;
   right: 0.75rem;
   z-index: 10;
+  display: flex;
+  gap: 0.5rem;
 }
 
-.create-content-btn {
+.create-btn {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 0.75rem;
-  background: var(--primary-orange, #e19f5d);
-  color: white;
   border: none;
   border-radius: 6px;
   cursor: pointer;
   font-size: 0.875rem;
   font-weight: 500;
-  transition: background-color 0.2s, transform 0.1s;
-  box-shadow: 0 2px 4px rgba(225, 159, 93, 0.2);
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.create-content-btn:hover {
-  background: #d18f4d;
+.create-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(225, 159, 93, 0.3);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-.plus-icon {
+.story-btn {
+  background: var(--primary-blue, #6690ff);
+  color: white;
+}
+
+.story-btn:hover {
+  background: var(--blue-hover, #4a7aff);
+}
+
+.flashcard-btn {
+  background: var(--primary-orange, #e19f5d);
+  color: white;
+}
+
+.flashcard-btn:hover {
+  background: #d18f4d;
+}
+
+.btn-icon {
   font-size: 1rem;
-  font-weight: bold;
   line-height: 1;
 }
 
-.create-text {
+.btn-text {
   font-size: 0.875rem;
-}
-
-.create-dropdown {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  margin-top: 0.25rem;
-  background: white;
-  border: 1px solid var(--border-color, #e2e8f0);
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  min-width: 140px;
-  overflow: hidden;
-}
-
-.dropdown-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  border-bottom: 1px solid var(--border-color, #e2e8f0);
-}
-
-.dropdown-item:last-child {
-  border-bottom: none;
 }
 
 .dropdown-item:hover {

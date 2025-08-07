@@ -120,4 +120,45 @@ class WordSummary(BaseModel):
     created_at: datetime
     
     class Config:
-        from_attributes = True 
+        from_attributes = True
+
+
+# Story schemas
+class StoryBase(BaseModel):
+    original_words: List[str]
+    story_title: str
+    story_content: str
+    story_theme: Optional[str] = None
+    story_length: Optional[str] = None  # 'short', 'medium', 'long'
+    target_age_range: Optional[str] = None  # 'toddler', 'preschool', 'elementary', 'middle_school'
+    target_language: Optional[str] = None
+
+
+class StoryCreate(StoryBase):
+    pass
+
+
+class StoryUpdate(BaseModel):
+    story_title: Optional[str] = None
+    story_content: Optional[str] = None
+    story_theme: Optional[str] = None
+    story_length: Optional[str] = None
+    target_age_range: Optional[str] = None
+    target_language: Optional[str] = None
+
+
+class Story(StoryBase):
+    id: int
+    view_count: int
+    created_at: datetime
+    updated_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+
+class StoryGenerationRequest(BaseModel):
+    words: List[str]
+    theme: str
+    max_words: int = 200
+    custom_prompt: Optional[str] = None 
