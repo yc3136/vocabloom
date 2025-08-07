@@ -9,18 +9,32 @@
       <div class="modal-body">
         <!-- Input Section -->
         <div class="input-section">
-          <div class="form-group">
-            <label for="theme">Theme</label>
-            <select v-model="storyParams.theme" id="theme" class="form-input">
-              <option value="">Select a theme...</option>
-              <option value="adventure">Adventure</option>
-              <option value="educational">Educational</option>
-              <option value="bedtime">Bedtime</option>
-              <option value="fantasy">Fantasy</option>
-              <option value="nature">Nature</option>
-              <option value="friendship">Friendship</option>
-              <option value="custom">Custom</option>
-            </select>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="theme">Theme</label>
+              <select v-model="storyParams.theme" id="theme" class="form-input">
+                <option value="adventure">Adventure</option>
+                <option value="educational">Educational</option>
+                <option value="bedtime">Bedtime</option>
+                <option value="fantasy">Fantasy</option>
+                <option value="nature">Nature</option>
+                <option value="friendship">Friendship</option>
+                <option value="custom">Custom</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="maxWords">Max Words</label>
+              <input 
+                v-model.number="storyParams.maxWords" 
+                id="maxWords" 
+                type="number" 
+                class="form-input" 
+                min="50" 
+                max="500" 
+                placeholder="200"
+              />
+            </div>
           </div>
           
           <div v-if="storyParams.theme === 'custom'" class="form-group">
@@ -34,26 +48,13 @@
           </div>
           
           <div class="form-group">
-            <label for="maxWords">Max Number of Words</label>
-            <input 
-              v-model.number="storyParams.maxWords" 
-              id="maxWords" 
-              type="number" 
-              class="form-input" 
-              min="50" 
-              max="500" 
-              placeholder="200"
-            />
-          </div>
-          
-          <div class="form-group">
-            <label for="customPrompt">Custom LLM Prompt (Optional)</label>
+            <label for="customPrompt">Custom Instructions (Optional)</label>
             <textarea 
               v-model="storyParams.customPrompt" 
               id="customPrompt" 
               class="form-input" 
-              rows="3"
-              placeholder="Add any specific instructions for the story generation..."
+              rows="2"
+              placeholder="Add any specific instructions..."
             ></textarea>
           </div>
           
@@ -268,9 +269,9 @@ watch(() => props.show, (show) => {
 .modal-content {
   background: var(--bg-surface, #ffffff);
   border-radius: 12px;
-  max-width: 600px;
+  max-width: 500px;
   width: 100%;
-  max-height: 90vh;
+  max-height: 85vh;
   overflow-y: auto;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
 }
@@ -279,15 +280,16 @@ watch(() => props.show, (show) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5rem;
+  padding: 1rem 1.5rem;
   border-bottom: 1px solid var(--border-color, #e2e8f0);
 }
 
 .modal-header h2 {
   margin: 0;
   color: var(--text-primary, #1e293b);
-  font-size: 1.25rem;
+  font-size: 1.125rem;
   font-weight: 600;
+  text-align: left;
 }
 
 .close-btn {
@@ -311,33 +313,58 @@ watch(() => props.show, (show) => {
 }
 
 .modal-body {
-  padding: 1.5rem;
+  padding: 1rem 1.5rem;
+  text-align: left;
 }
 
 .input-section {
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  text-align: left;
 }
 
 .form-group {
-  margin-bottom: 1.5rem;
+  flex: 1;
+  margin-bottom: 0;
+  text-align: left;
+}
+
+.form-group:not(.form-row .form-group) {
+  margin-bottom: 1rem;
+  text-align: left;
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
+  margin-bottom: 0.25rem;
+  font-weight: 600;
   color: var(--text-primary, #1e293b);
+  font-size: 0.875rem;
+  text-align: left;
 }
 
 .form-input {
   width: 100%;
-  padding: 0.75rem;
+  padding: 0.5rem;
   border: 1px solid var(--border-color, #e2e8f0);
   border-radius: 6px;
   font-size: 0.875rem;
+  font-weight: 500;
   background: var(--bg-surface, #ffffff);
   color: var(--text-primary, #1e293b);
   transition: border-color 0.2s;
+  text-align: left;
+}
+
+.form-input option {
+  font-weight: 600;
+  color: var(--text-primary, #1e293b);
 }
 
 .form-input:focus {
@@ -348,53 +375,58 @@ watch(() => props.show, (show) => {
 .words-display {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.25rem;
+  justify-content: flex-start;
 }
 
 .word-tag {
   background: var(--primary-blue, #6690ff);
   color: white;
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.875rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
   font-weight: 500;
 }
 
 .story-section {
-  margin-top: 2rem;
-  padding-top: 2rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
   border-top: 1px solid var(--border-color, #e2e8f0);
+  text-align: left;
 }
 
 .story-section h3 {
-  margin: 0 0 1rem 0;
+  margin: 0 0 0.75rem 0;
   color: var(--text-primary, #1e293b);
-  font-size: 1.125rem;
+  font-size: 1rem;
   font-weight: 600;
+  text-align: left;
 }
 
 .story-content {
   background: var(--bg-primary, #f8fafc);
   border: 1px solid var(--border-color, #e2e8f0);
-  border-radius: 8px;
-  padding: 1rem;
-  line-height: 1.6;
+  border-radius: 6px;
+  padding: 0.75rem;
+  line-height: 1.5;
   color: var(--text-primary, #1e293b);
+  font-size: 0.875rem;
+  text-align: left;
 }
 
 .loading-section {
   text-align: center;
-  padding: 2rem;
+  padding: 1.5rem;
 }
 
 .loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid var(--border-color, #e2e8f0);
-  border-top: 3px solid var(--primary-blue, #6690ff);
+  width: 32px;
+  height: 32px;
+  border: 2px solid var(--border-color, #e2e8f0);
+  border-top: 2px solid var(--primary-blue, #6690ff);
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin: 0 auto 1rem;
+  margin: 0 auto 0.75rem;
 }
 
 @keyframes spin {
@@ -403,27 +435,30 @@ watch(() => props.show, (show) => {
 }
 
 .error-section {
-  margin-top: 1rem;
+  margin-top: 0.75rem;
+  text-align: left;
 }
 
 .error-message {
   color: var(--error-red, #f87171);
   background: #fef2f2;
-  padding: 0.75rem;
-  border-radius: 6px;
+  padding: 0.5rem;
+  border-radius: 4px;
   border: 1px solid #fecaca;
+  font-size: 0.875rem;
+  text-align: left;
 }
 
 .modal-footer {
   display: flex;
-  gap: 1rem;
-  padding: 1.5rem;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
   border-top: 1px solid var(--border-color, #e2e8f0);
   justify-content: flex-end;
 }
 
 .btn {
-  padding: 0.75rem 1.5rem;
+  padding: 0.5rem 1rem;
   border: none;
   border-radius: 6px;
   font-size: 0.875rem;
