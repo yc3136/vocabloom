@@ -137,24 +137,30 @@ def update_translation_bookmark(db: Session, translation_id: int, user_id: str, 
 
 
 # Story CRUD operations
-def get_stories(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Story).order_by(models.Story.created_at.desc()).offset(skip).limit(limit).all()
+def get_stories(db: Session, skip: int = 0, limit: int = 100, user_id: Optional[str] = None):
+    query = db.query(models.Story)
+    if user_id:
+        query = query.filter(models.Story.user_id == user_id)
+    return query.order_by(models.Story.created_at.desc()).offset(skip).limit(limit).all()
 
 
-def get_story(db: Session, story_id: int):
-    return db.query(models.Story).filter(models.Story.id == story_id).first()
+def get_story(db: Session, story_id: int, user_id: Optional[str] = None):
+    query = db.query(models.Story).filter(models.Story.id == story_id)
+    if user_id:
+        query = query.filter(models.Story.user_id == user_id)
+    return query.first()
 
 
-def create_story(db: Session, story: schemas.StoryCreate):
-    db_story = models.Story(**story.dict())
+def create_story(db: Session, story_data: dict):
+    db_story = models.Story(**story_data)
     db.add(db_story)
     db.commit()
     db.refresh(db_story)
     return db_story
 
 
-def update_story(db: Session, story_id: int, story: schemas.StoryUpdate):
-    db_story = get_story(db, story_id)
+def update_story(db: Session, story_id: int, story: schemas.StoryUpdate, user_id: Optional[str] = None):
+    db_story = get_story(db, story_id, user_id)
     if not db_story:
         return None
     
@@ -167,8 +173,8 @@ def update_story(db: Session, story_id: int, story: schemas.StoryUpdate):
     return db_story
 
 
-def delete_story(db: Session, story_id: int):
-    db_story = get_story(db, story_id)
+def delete_story(db: Session, story_id: int, user_id: Optional[str] = None):
+    db_story = get_story(db, story_id, user_id)
     if db_story:
         db.delete(db_story)
         db.commit()

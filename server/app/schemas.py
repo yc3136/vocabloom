@@ -149,6 +149,7 @@ class StoryUpdate(BaseModel):
 
 class Story(StoryBase):
     id: int
+    user_id: str
     view_count: int
     created_at: datetime
     updated_at: datetime

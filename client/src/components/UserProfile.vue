@@ -18,6 +18,9 @@
       <div class="dropdown-item" @click="navigateToWords">
         My Words
       </div>
+      <div class="dropdown-item" @click="navigateToStories">
+        My Stories
+      </div>
       <div class="dropdown-item" @click="navigateToFlashcards">
         My Flashcards
       </div>
@@ -60,6 +63,11 @@ const navigateToProfile = () => {
 
 const navigateToWords = () => {
   router.push('/words');
+  showDropdown.value = false;
+};
+
+const navigateToStories = () => {
+  router.push('/stories');
   showDropdown.value = false;
 };
 

@@ -126,6 +126,7 @@
 import { ref, computed, watch } from 'vue'
 import { marked } from 'marked'
 import { usePreferencesStore } from '../stores/preferences'
+import { useStoriesStore } from '../stores/stories'
 
 interface StoryParams {
   theme: string
@@ -149,6 +150,7 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 const preferencesStore = usePreferencesStore()
+const storiesStore = useStoriesStore()
 
 const storyParams = ref<StoryParams>({
   theme: '',
@@ -255,28 +257,22 @@ const saveStory = async () => {
   saving.value = true
   
   try {
-    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
+    // Generate a story title based on the words and theme
+    const storyTitle = generateStoryTitle()
     
-    const response = await fetch(`${API_BASE}/api/stories`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        original_words: props.words,
-        story_title: `Story about ${props.words.join(', ')}`,
-        story_content: generatedStory.value,
-        story_theme: storyParams.value.theme === 'custom' ? storyParams.value.customTheme : storyParams.value.theme,
-        story_length: storyParams.value.maxWords <= 100 ? 'short' : storyParams.value.maxWords <= 300 ? 'medium' : 'long',
-        target_age_range: ageRange.value // Use ageRange.value
-      })
-    })
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
+    const storyData = {
+      original_words: props.words,
+      story_title: storyTitle,
+      story_content: generatedStory.value,
+      story_theme: storyParams.value.theme === 'custom' ? storyParams.value.customTheme : storyParams.value.theme,
+      story_length: storyParams.value.maxWords <= 100 ? 'short' : storyParams.value.maxWords <= 300 ? 'medium' : 'long',
+      target_age_range: ageRange.value || 'elementary', // Provide default if null
+      target_language: props.targetLanguage || 'en' // Provide default if null
     }
     
-    const data = await response.json()
+
+    
+    const data = await storiesStore.createStory(storyData)
     emit('save', data)
     closeModal()
   } catch (e) {
@@ -284,6 +280,18 @@ const saveStory = async () => {
     console.error('Story save error:', e)
   } finally {
     saving.value = false
+  }
+}
+
+// Generate a story title based on words and theme
+const generateStoryTitle = () => {
+  const words = props.words.join(' and ')
+  const theme = storyParams.value.theme === 'custom' ? storyParams.value.customTheme : storyParams.value.theme
+  
+  if (theme && theme.trim()) {
+    return `The ${theme} of ${words}`
+  } else {
+    return `A Story About ${words}`
   }
 }
 

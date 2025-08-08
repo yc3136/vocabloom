@@ -18,6 +18,7 @@ class User(Base):
     # Relationships
     flashcards = relationship("Flashcard", back_populates="user", cascade="all, delete-orphan")
     translations = relationship("Translation", back_populates="user", cascade="all, delete-orphan")
+    stories = relationship("Story", back_populates="user", cascade="all, delete-orphan")
 
 
 class Flashcard(Base):
@@ -67,6 +68,7 @@ class Story(Base):
     __tablename__ = "stories"
     
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String(128), ForeignKey("users.id"), nullable=False)
     original_words = Column(JSONB, nullable=False)  # Array of words used in story generation
     story_title = Column(String(255), nullable=False)
     story_content = Column(Text, nullable=False)
@@ -76,4 +78,7 @@ class Story(Base):
     target_language = Column(String(50))
     view_count = Column(Integer, default=0)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now) 
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now)
+    
+    # Relationships
+    user = relationship("User", back_populates="stories") 

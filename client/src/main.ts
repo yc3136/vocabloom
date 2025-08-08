@@ -15,6 +15,7 @@ import HomePage from './components/HomePage.vue';
 import AboutPage from './components/AboutPage.vue';
 import FlashcardDashboard from './components/FlashcardDashboard.vue';
 import MyWordsPage from './components/MyWordsPage.vue';
+import MyStoriesPage from './components/MyStoriesPage.vue';
 import UserPreferencesPage from './components/UserPreferencesPage.vue';
 import ForgotPasswordPage from './components/ForgotPasswordPage.vue';
 
@@ -35,6 +36,11 @@ const routes = [
   { 
     path: '/words', 
     component: MyWordsPage,
+    meta: { requiresAuth: true }
+  },
+  { 
+    path: '/stories', 
+    component: MyStoriesPage,
     meta: { requiresAuth: true }
   },
   { 

@@ -4,7 +4,9 @@ from typing import List
 from ..database import get_db
 from ..models import Story
 from ..schemas import Story as StorySchema, StoryCreate, StoryGenerationRequest
-from ..crud import create_story, get_stories, get_story
+from ..crud import create_story, get_stories, get_story, delete_story
+from ..auth import get_current_user
+from ..models import User
 import httpx
 import os
 import json
@@ -164,11 +166,16 @@ async def generate_story(
 @router.post("/", response_model=StorySchema)
 async def create_story_endpoint(
     story_data: StoryCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
-    """Create a new story"""
+    """Create a new story for the authenticated user"""
     try:
-        story = create_story(db, story_data)
+        # Add user_id to the story data
+        story_data_dict = story_data.dict()
+        story_data_dict["user_id"] = current_user.id
+        
+        story = create_story(db, story_data_dict)
         return story
     except Exception as e:
         raise HTTPException(
@@ -178,29 +185,47 @@ async def create_story_endpoint(
 
 
 @router.get("/", response_model=List[StorySchema])
-async def get_all_stories(
+async def get_user_stories(
     skip: int = 0,
     limit: int = 100,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
-    """Get all stories for discovery"""
-    stories = get_stories(db, skip=skip, limit=limit)
+    """Get all stories for the authenticated user"""
+    stories = get_stories(db, skip=skip, limit=limit, user_id=current_user.id)
     return stories
 
 
 @router.get("/{story_id}", response_model=StorySchema)
 async def get_story_by_id(
     story_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
-    """Get a specific story by ID"""
-    story = get_story(db, story_id)
+    """Get a specific story by ID for the authenticated user"""
+    story = get_story(db, story_id, user_id=current_user.id)
     if not story:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Story not found"
         )
     return story
+
+
+@router.delete("/{story_id}")
+async def delete_story_endpoint(
+    story_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Delete a story for the authenticated user"""
+    success = delete_story(db, story_id, user_id=current_user.id)
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Story not found"
+        )
+    return {"message": "Story deleted successfully"}
 
 
 @router.get("/discover", response_model=List[StorySchema])
