@@ -16,6 +16,7 @@ import AboutPage from './components/AboutPage.vue';
 import FlashcardDashboard from './components/FlashcardDashboard.vue';
 import MyWordsPage from './components/MyWordsPage.vue';
 import MyStoriesPage from './components/MyStoriesPage.vue';
+import MyImagesPage from './components/MyImagesPage.vue';
 import UserPreferencesPage from './components/UserPreferencesPage.vue';
 import ForgotPasswordPage from './components/ForgotPasswordPage.vue';
 
@@ -41,6 +42,11 @@ const routes = [
   { 
     path: '/stories', 
     component: MyStoriesPage,
+    meta: { requiresAuth: true }
+  },
+  { 
+    path: '/images', 
+    component: MyImagesPage,
     meta: { requiresAuth: true }
   },
   { 

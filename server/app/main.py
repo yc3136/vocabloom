@@ -10,7 +10,9 @@ load_dotenv()
 # Import our modules
 from app.database import engine, Base
 from app.auth import initialize_firebase
-from app.routes import auth, flashcards, translations, translate, cache, words, stories
+from app.routes import auth, flashcards, translations, translate, cache, words, stories, images
+# Import models to ensure they're registered with SQLAlchemy
+from app.models import User, Flashcard, Translation, Story, Image, CachedTranslation
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -57,6 +59,7 @@ app.include_router(translate.router, prefix="/api")
 app.include_router(cache.router, prefix="/api")
 app.include_router(words.router, prefix="/api")
 app.include_router(stories.router, prefix="/api")
+app.include_router(images.router, prefix="/api")
 
 # Health check endpoint
 @app.get("/health")

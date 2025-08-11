@@ -183,9 +183,70 @@ def delete_story(db: Session, story_id: int, user_id: Optional[str] = None):
 
 
 def increment_story_view_count(db: Session, story_id: int):
-    db_story = get_story(db, story_id)
-    if db_story:
-        db_story.view_count += 1
+    story = db.query(models.Story).filter(models.Story.id == story_id).first()
+    if story:
+        story.view_count += 1
         db.commit()
-        db.refresh(db_story)
-    return db_story 
+        db.refresh(story)
+    return story
+
+
+# Image CRUD operations
+def get_images(db: Session, user_id: str, skip: int = 0, limit: int = 100):
+    return db.query(models.Image).filter(
+        models.Image.user_id == user_id
+    ).order_by(models.Image.created_at.desc()).offset(skip).limit(limit).all()
+
+
+def get_image(db: Session, image_id: int, user_id: str):
+    return db.query(models.Image).filter(
+        models.Image.id == image_id,
+        models.Image.user_id == user_id
+    ).first()
+
+
+def create_image(db: Session, image: schemas.ImageCreate, user_id: str):
+    db_image = models.Image(
+        **image.dict(),
+        user_id=user_id
+    )
+    db.add(db_image)
+    db.commit()
+    db.refresh(db_image)
+    return db_image
+
+
+def update_image(db: Session, image_id: int, image: schemas.ImageUpdate, user_id: str):
+    db_image = get_image(db, image_id, user_id)
+    if not db_image:
+        return None
+    
+    update_data = image.dict(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(db_image, field, value)
+    
+    db.commit()
+    db.refresh(db_image)
+    return db_image
+
+
+def update_image_status(db: Session, image_id: int, status: str, image_url: Optional[str] = None):
+    """Update image status and optionally set the image URL when generation is complete"""
+    image = db.query(models.Image).filter(models.Image.id == image_id).first()
+    if image:
+        image.status = status
+        if image_url:
+            image.image_url = image_url
+        image.updated_at = datetime.utcnow()
+        db.commit()
+        db.refresh(image)
+    return image
+
+
+def delete_image(db: Session, image_id: int, user_id: str):
+    db_image = get_image(db, image_id, user_id)
+    if db_image:
+        db.delete(db_image)
+        db.commit()
+        return True
+    return False 

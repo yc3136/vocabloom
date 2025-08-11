@@ -166,4 +166,45 @@ class StoryGenerationRequest(BaseModel):
     target_language: Optional[str] = None
     age_range: Optional[str] = None
     original_word: Optional[str] = None
-    translated_word: Optional[str] = None 
+    translated_word: Optional[str] = None
+
+
+# Image schemas
+class ImageBase(BaseModel):
+    original_word: str
+    translated_word: str
+    target_language: str
+    generation_prompt: str
+    custom_instructions: Optional[str] = None
+    child_age: Optional[int] = None
+    title: Optional[str] = None
+
+
+class ImageCreate(ImageBase):
+    pass
+
+
+class ImageUpdate(BaseModel):
+    title: Optional[str] = None
+    custom_instructions: Optional[str] = None
+
+
+class Image(ImageBase):
+    id: int
+    user_id: str
+    image_url: Optional[str] = None
+    status: str
+    created_at: datetime
+    updated_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+
+class ImageGenerationRequest(BaseModel):
+    original_word: str
+    translated_word: str
+    target_language: str
+    custom_instructions: Optional[str] = None
+    child_age: Optional[int] = None
+    title: Optional[str] = None 

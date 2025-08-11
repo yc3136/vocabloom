@@ -7,6 +7,7 @@ import { usePreferencesStore } from '../stores/preferences'
 import { useTranslationStore } from '../stores/translations'
 import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE } from '../constants/languages'
 import StoryGenerationModal from './StoryGenerationModal.vue'
+import ImageGenerationModal from './ImageGenerationModal.vue'
 
 const term = ref('')
 const selectedLanguage = ref(DEFAULT_LANGUAGE)
@@ -16,6 +17,7 @@ const examples = ref<string[]>([])
 const loading = ref(false)
 const error = ref('')
 const showStoryModal = ref(false)
+const showImageModal = ref(false)
 
 const authStore = useAuthStore()
 const flashcardStore = useFlashcardStore()
@@ -176,6 +178,25 @@ async function createFlashcard() {
   }
 }
 
+function openImageModal() {
+  if (!term?.value?.trim()) {
+    alert('Please enter a word first to generate an image!')
+    return
+  }
+  
+  if (!selectedLanguage.value) {
+    alert('Please select a language first to generate an image!')
+    return
+  }
+  
+  console.log('Opening image modal with language:', selectedLanguage.value)
+  showImageModal.value = true
+}
+
+function closeImageModal() {
+  showImageModal.value = false
+}
+
 // Close dropdown when clicking outside
 function handleClickOutside(event: Event) {
   // No longer needed since we removed the dropdown
@@ -287,6 +308,19 @@ watch(selectedLanguage, async (newLanguage) => {
           </svg>
           <span class="btn-text">Flashcard</span>
         </button>
+        
+        <button 
+          @click="openImageModal" 
+          class="create-btn image-btn"
+          title="Generate an image for this word"
+        >
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21,15 16,10 5,21"/>
+          </svg>
+          <span class="btn-text">Image</span>
+        </button>
       </div>
     </div>
 
@@ -299,6 +333,16 @@ watch(selectedLanguage, async (newLanguage) => {
       :targetLanguage="selectedLanguage"
       @close="closeStoryModal" 
       @save="handleStorySave" 
+    />
+
+    <!-- Image Generation Modal -->
+    <ImageGenerationModal 
+      v-if="showImageModal"
+      :show="showImageModal" 
+      :originalWord="term"
+      :translatedWord="translation"
+      :targetLanguage="selectedLanguage"
+      @close="closeImageModal" 
     />
   </div>
 </template>
@@ -453,11 +497,25 @@ watch(selectedLanguage, async (newLanguage) => {
 .btn-icon {
   width: 16px;
   height: 16px;
-  flex-shrink: 0;
 }
 
 .btn-text {
-  font-size: 0.875rem;
   font-weight: 500;
+}
+
+/* Button-specific hover colors */
+.story-btn:hover {
+  border-color: #8b5cf6;
+  background: #8b5cf6;
+}
+
+.flashcard-btn:hover {
+  border-color: #10b981;
+  background: #10b981;
+}
+
+.image-btn:hover {
+  border-color: #f59e0b;
+  background: #f59e0b;
 }
 </style>

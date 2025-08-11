@@ -24,6 +24,9 @@
       <div class="dropdown-item" @click="navigateToFlashcards">
         My Flashcards
       </div>
+      <div class="dropdown-item" @click="navigateToImages">
+        My Images
+      </div>
       
       <div class="dropdown-divider"></div>
       
@@ -73,6 +76,11 @@ const navigateToStories = () => {
 
 const navigateToFlashcards = () => {
   router.push('/flashcards');
+  showDropdown.value = false;
+};
+
+const navigateToImages = () => {
+  router.push('/images');
   showDropdown.value = false;
 };
 
