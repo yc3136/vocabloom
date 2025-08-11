@@ -1,14 +1,14 @@
 # Vocabloom Technical Design
 
-**Document Version:** 1.3
-**Last Updated:** Aug 1, 2025
-**Status:** MVP Complete ✅ | Milestone 2 Complete ✅ | Milestone 3 In Progress 🚧
+**Document Version:** 1.4
+**Last Updated:** Dec 19, 2024
+**Status:** MVP Complete ✅ | Milestone 2 Complete ✅ | Milestone 3 Complete ✅ | Story Generation Complete ✅
 
 ---
 
 ## 1. Overview
 
-This document outlines the technical architecture, technology choices, and infrastructure for Vocabloom. The MVP has been successfully implemented and deployed to production. Milestone 2 focuses on user account management, content organization, and flashcard features.
+This document outlines the technical architecture, technology choices, and infrastructure for Vocabloom. The MVP has been successfully implemented and deployed to production. Milestone 2 focuses on user account management, content organization, and flashcard features. Milestone 3 includes AI-powered story generation with age-appropriate content and related word recommendations.
 
 **Production URLs:**
 - **Frontend**: https://vocabloom.app (custom domain) / https://vocabloom-467020.web.app (Firebase)
@@ -1137,13 +1137,43 @@ ALTER TABLE users ADD COLUMN image_quota_limit INTEGER DEFAULT 10;
 - **Progress Tracking:** Study statistics and performance metrics
 - **Spaced Repetition:** Intelligent review scheduling
 
-### 9.3. API Endpoints
+### 9.3. Story Generation System
+
+#### 9.3.1. Core Features
+- **AI-Powered Generation:** Uses Gemini 2.0 Flash API for high-quality story creation
+- **Age-Appropriate Content:** Tailored content based on child's age (toddler, preschool, elementary, middle school)
+- **Multi-Word Support:** Generates stories incorporating multiple words and related vocabulary
+- **Theme Customization:** Educational, adventure, bedtime, fantasy, nature, friendship, and custom themes
+- **Length Control:** Configurable story length (50-500 words)
+- **Language Support:** Full story generation in target language (Chinese, Spanish, etc.)
+
+#### 9.3.2. Related Words System
+- **Contextual Recommendations:** AI-generated related words specific to input word
+- **Age-Appropriate Vocabulary:** Word suggestions tailored to child's developmental level
+- **Interactive Selection:** Users can select which related words to include in story
+- **Translation Support:** Related words provided in both English and target language
+
+#### 9.3.3. Story Management
+- **User Collections:** Personal story library with search and filtering
+- **Story Metadata:** Title, theme, length, age range, target language tracking
+- **Content Display:** Markdown rendering with word highlighting
+- **Search Functionality:** Search by title, content, and individual words
+
+#### 9.3.4. Technical Implementation
+- **Database Schema:** JSONB storage for word arrays and story metadata
+- **Prompt Engineering:** Sophisticated prompts for age-appropriate, educational content
+- **Error Handling:** Graceful fallbacks and user-friendly error messages
+- **Caching Strategy:** LLM response caching for cost optimization
+
+### 9.4. API Endpoints
 
 **Story Generation:**
-- `POST /api/stories/generate` - Generate bedtime story
-- `GET /api/stories` - Get user's generated stories
-- `PUT /api/stories/{id}` - Update story
-- `DELETE /api/stories/{id}` - Delete story
+- `POST /api/stories/generate` - Generate AI-powered story with age-appropriate content
+- `POST /api/stories/related-words` - Get contextually relevant words for story generation
+- `GET /api/stories` - Get user's generated stories with search and filtering
+- `POST /api/stories` - Save generated story to user's collection
+- `GET /api/stories/{id}` - Get specific story by ID
+- `DELETE /api/stories/{id}` - Delete story from user's collection
 
 **Flashcard Enhancements:**
 - `POST /api/flashcards/bulk-tags` - Bulk tag operations
