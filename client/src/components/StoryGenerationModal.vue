@@ -153,7 +153,7 @@ const preferencesStore = usePreferencesStore()
 const storiesStore = useStoriesStore()
 
 const storyParams = ref<StoryParams>({
-  theme: '',
+  theme: 'educational',
   customTheme: '',
   maxWords: 100,
   customPrompt: ''
@@ -301,7 +301,7 @@ watch(() => props.show, (show) => {
     generatedStory.value = ''
     error.value = ''
     storyParams.value = {
-      theme: '',
+      theme: 'educational',
       customTheme: '',
       maxWords: 100,
       customPrompt: ''

@@ -53,11 +53,13 @@
         >
           <div class="story-main" @click="toggleExpand(story.id)">
             <div class="story-info">
-              <div class="story-title">{{ story.story_title }}</div>
-              <div class="story-meta">
-                <span v-if="story.story_theme" class="theme-badge">{{ story.story_theme }}</span>
-                <span v-if="story.target_language" class="language-badge">{{ story.target_language }}</span>
-                <span v-if="story.target_age_range" class="age-badge">For {{ getAgeDisplay(story.target_age_range) }}</span>
+              <div class="story-header">
+                <div class="story-title">{{ story.story_title }}</div>
+                <div class="story-chips">
+                  <span v-if="story.story_theme" class="theme-badge">{{ story.story_theme }}</span>
+                  <span v-if="story.target_language" class="language-badge">{{ getLanguageDisplay(story.target_language) }}</span>
+                  <span v-if="story.target_age_range" class="age-badge">{{ getAgeDisplay(story.target_age_range) }} years old</span>
+                </div>
               </div>
               <div class="story-words">
                 <span class="words-label">Words:</span>
@@ -199,12 +201,50 @@ const renderMarkdown = (content: string) => {
   return marked(content)
 }
 
+const getLanguageDisplay = (languageCode: string) => {
+  // Handle common language code mappings
+  const languageCodeMap: { [key: string]: string } = {
+    'en': 'English',
+    'es': 'Spanish',
+    'fr': 'French',
+    'de': 'German',
+    'it': 'Italian',
+    'pt': 'Portuguese',
+    'ja': 'Japanese',
+    'ko': 'Korean',
+    'zh': 'Chinese',
+    'ru': 'Russian',
+    'ar': 'Arabic',
+    'hi': 'Hindi',
+    'nl': 'Dutch',
+    'sv': 'Swedish',
+    'no': 'Norwegian',
+    'da': 'Danish',
+    'fi': 'Finnish',
+    'pl': 'Polish',
+    'tr': 'Turkish',
+    'el': 'Greek',
+    'he': 'Hebrew'
+  }
+  
+  // First try to map the code to a full name
+  const mappedLanguage = languageCodeMap[languageCode.toLowerCase()]
+  if (mappedLanguage) {
+    const language = SUPPORTED_LANGUAGES.find(lang => lang.value === mappedLanguage)
+    return language ? language.label : mappedLanguage
+  }
+  
+  // If no mapping found, try to find it directly in SUPPORTED_LANGUAGES
+  const language = SUPPORTED_LANGUAGES.find(lang => lang.value === languageCode)
+  return language ? language.label : languageCode
+}
+
 const getAgeDisplay = (ageRange: string) => {
   const ageMap: Record<string, string> = {
-    'toddler': '2-3 years',
-    'preschool': '4-5 years',
-    'elementary': '6-10 years',
-    'middle_school': '11-13 years'
+    'toddler': '2-3',
+    'preschool': '4-5',
+    'elementary': '6-10',
+    'middle_school': '11-13'
   }
   return ageMap[ageRange] || ageRange
 }
@@ -384,43 +424,59 @@ watch(stories, (newStories) => {
   min-width: 0;
 }
 
+.story-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
 .story-title {
   font-size: 1.1rem;
   font-weight: 600;
   color: #1a202c;
-  margin-bottom: 0.5rem;
+  flex: 1;
+  min-width: 0;
 }
 
-.story-meta {
+.story-chips {
   display: flex;
   gap: 0.5rem;
-  margin-bottom: 0.5rem;
   flex-wrap: wrap;
+  align-items: center;
+  margin-left: 1rem;
 }
 
 .theme-badge {
+  background: #e19f5d;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-transform: capitalize;
+  min-width: 80px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.language-badge {
   background: #4299e1;
   color: white;
   padding: 4px 8px;
   border-radius: 6px;
   font-size: 0.7rem;
   font-weight: 500;
-  text-transform: uppercase;
-}
-
-.language-badge {
-  background: #48bb78;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 0.7rem;
-  font-weight: 500;
-  text-transform: uppercase;
+  text-transform: capitalize;
+  min-width: 100px;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .age-badge {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.25rem;
   padding: 0.25rem 0.5rem;
   background: transparent;
@@ -429,6 +485,9 @@ watch(stories, (newStories) => {
   border-radius: 4px;
   font-size: 0.75rem;
   font-weight: 400;
+  min-width: 110px;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .story-words {

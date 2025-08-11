@@ -4,6 +4,7 @@ export interface LanguageOption {
 }
 
 export const SUPPORTED_LANGUAGES: LanguageOption[] = [
+  { value: 'English', label: 'English' },
   { value: 'Spanish', label: 'Spanish (Español)' },
   { value: 'French', label: 'French (Français)' },
   { value: 'German', label: 'German (Deutsch)' },
