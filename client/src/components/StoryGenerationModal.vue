@@ -60,10 +60,32 @@
           
           <div class="form-group">
             <label>Words to Include</label>
+            
+            <!-- Original word (always selected) -->
             <div class="words-display">
-              <span v-for="word in props.words" :key="word" class="word-chip">
+              <span v-for="word in props.words" :key="word" class="word-chip selected">
                 {{ word }} / {{ props.translation || 'Loading...' }}
               </span>
+            </div>
+            
+            <!-- Related words section -->
+            <div v-if="loadingRelatedWords" class="related-words-loading">
+              <div class="loading-spinner small"></div>
+              <span>Finding related words...</span>
+            </div>
+            
+            <div v-else-if="relatedWords.length > 0" class="related-words-section">
+              <div class="related-words-display">
+                <span 
+                  v-for="word in relatedWords" 
+                  :key="word.id" 
+                  class="word-chip"
+                  :class="{ selected: selectedRelatedWords.includes(word.id) }"
+                  @click="toggleRelatedWord(word.id)"
+                >
+                  {{ word.english }} / {{ word.translation }}
+                </span>
+              </div>
             </div>
           </div>
           
@@ -120,7 +142,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, watchEffect, nextTick } from 'vue'
 import { marked } from 'marked'
 import { usePreferencesStore } from '../stores/preferences'
 import { useStoriesStore } from '../stores/stories'
@@ -130,6 +152,12 @@ interface StoryParams {
   customTheme: string
   maxWords: number
   customPrompt: string
+}
+
+interface RelatedWord {
+  id: string
+  english: string
+  translation: string
 }
 
 interface Props {
@@ -161,8 +189,19 @@ const generating = ref(false)
 const saving = ref(false)
 const error = ref('')
 
+// Related words functionality
+const relatedWords = ref<RelatedWord[]>([])
+const selectedRelatedWords = ref<string[]>([])
+const loadingRelatedWords = ref(false)
+
 const canGenerate = computed(() => {
   return props.words.length > 0
+})
+
+// Debug computed property
+const debugShow = computed(() => {
+  console.log('Debug: show prop is', props.show)
+  return props.show
 })
 
 const renderedStory = computed(() => {
@@ -200,6 +239,70 @@ const closeModal = () => {
   emit('close')
 }
 
+const fetchRelatedWords = async () => {
+  console.log('fetchRelatedWords called with:', {
+    word: props.words[0],
+    targetLanguage: props.targetLanguage
+  })
+  
+  if (!props.words[0] || !props.targetLanguage) {
+    console.log('Missing word or targetLanguage, skipping related words fetch')
+    return
+  }
+  
+  loadingRelatedWords.value = true
+  relatedWords.value = []
+  selectedRelatedWords.value = []
+  
+  try {
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
+    
+    const requestBody = {
+      word: props.words[0],
+      target_language: props.targetLanguage,
+      max_words: 8, // Limit to 8 related words
+      child_age: childAge.value || null
+    }
+    
+    console.log('Sending related words request:', requestBody)
+    
+    const response = await fetch(`${API_BASE}/api/stories/related-words`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestBody)
+    })
+    
+    console.log('Related words response status:', response.status)
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    
+    const data = await response.json()
+    console.log('Related words response data:', data)
+    
+    relatedWords.value = data.related_words || []
+    console.log('Set relatedWords to:', relatedWords.value)
+  } catch (e) {
+    console.error('Failed to fetch related words:', e)
+    // Don't show error to user as this is not critical
+  } finally {
+    loadingRelatedWords.value = false
+    console.log('Loading finished, relatedWords count:', relatedWords.value.length)
+  }
+}
+
+const toggleRelatedWord = (wordId: string) => {
+  const index = selectedRelatedWords.value.indexOf(wordId)
+  if (index > -1) {
+    selectedRelatedWords.value.splice(index, 1)
+  } else {
+    selectedRelatedWords.value.push(wordId)
+  }
+}
+
 const generateStory = async () => {
   if (!canGenerate.value) return
   
@@ -215,14 +318,24 @@ const generateStory = async () => {
   try {
     const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
     
-    // Prepare words array - we'll use the translated word as the primary word for the story
+    // Prepare words array - include original word and selected related words
     const wordsToInclude = []
+    
+    // Add the original word
     if (props.translation && props.translation.trim()) {
       wordsToInclude.push(props.translation.trim())
     } else {
       // Fallback to original word if no translation available
       wordsToInclude.push(...props.words)
     }
+    
+    // Add selected related words
+    const selectedWords = relatedWords.value.filter(word => 
+      selectedRelatedWords.value.includes(word.id)
+    )
+    selectedWords.forEach(word => {
+      wordsToInclude.push(word.translation)
+    })
     
     const requestBody = {
       words: wordsToInclude,
@@ -310,9 +423,10 @@ const generateStoryTitle = () => {
   }
 }
 
-// Reset form when modal opens
-watch(() => props.show, (show) => {
-  if (show) {
+// Reset form when modal opens and fetch related words
+watchEffect(() => {
+  console.log('WatchEffect triggered - props.show is:', props.show)
+  if (props.show) {
     console.log('StoryGenerationModal opened with props:', {
       targetLanguage: props.targetLanguage,
       words: props.words,
@@ -327,6 +441,15 @@ watch(() => props.show, (show) => {
       maxWords: 100,
       customPrompt: ''
     }
+    
+    // Fetch related words when modal opens
+    console.log('About to call fetchRelatedWords...')
+    fetchRelatedWords()
+  } else {
+    console.log('Modal closed, resetting related words')
+    relatedWords.value = []
+    selectedRelatedWords.value = []
+    loadingRelatedWords.value = false
   }
 })
 </script>
@@ -465,23 +588,60 @@ watch(() => props.show, (show) => {
 .word-chip {
   display: inline-block;
   padding: 0.5rem 0.75rem;
-  background: var(--primary-blue, #6690ff);
-  color: white;
+  background: transparent;
+  color: var(--text-primary, #1e293b);
+  border: 1px solid var(--border-color, #e2e8f0);
   border-radius: 6px;
   font-size: 0.875rem;
   font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-.original-word {
+.word-chip.selected {
   background: var(--primary-blue, #6690ff);
-  font-size: 1rem;
-  padding: 0.625rem 1rem;
+  color: white;
+  border-color: var(--primary-blue, #6690ff);
 }
 
-.translated-word {
-  background: var(--primary-orange, #e19f5d);
-  font-size: 1rem;
-  padding: 0.625rem 1rem;
+.word-chip:hover:not(.selected) {
+  background: var(--bg-primary, #f8fafc);
+  border-color: var(--primary-blue, #6690ff);
+}
+
+.related-words-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  color: var(--text-secondary, #64748b);
+  font-size: 0.875rem;
+}
+
+.loading-spinner.small {
+  width: 16px;
+  height: 16px;
+  border-width: 1px;
+}
+
+.related-words-section {
+  margin-top: 0.75rem;
+}
+
+.related-words-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary, #1e293b);
+  margin-bottom: 0.5rem;
+  text-align: left;
+}
+
+.related-words-display {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-start;
 }
 
 .age-indicator {

@@ -180,7 +180,7 @@ async def translate(
                             # Try direct JSON parsing
                             parsed = json.loads(response_text)
                         
-                                                # Cache the successful response
+                        # Cache the successful response
                         cache_translation(
                             db=db,
                             prompt_hash=prompt_hash,

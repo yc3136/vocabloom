@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
+from pydantic import BaseModel
 from ..database import get_db
 from ..models import Story
 from ..schemas import Story as StorySchema, StoryCreate, StoryGenerationRequest
@@ -67,15 +68,16 @@ async def generate_story(
         
         # Word highlighting instruction
         word_highlighting = ""
-        if request.original_word and request.translated_word:
-            # If multiple translations are provided (comma-separated), use the first one
-            translated_word = request.translated_word.split(',')[0].strip()
+        if request.words and len(request.words) > 0:
+            # Highlight all selected words
+            words_to_highlight = request.words
             word_highlighting = f"""
         Word Usage:
-        - Use the translated word "{translated_word}" prominently in the target language
-        - Highlight the translated word by making it **bold** (use **{translated_word}** format)
-        - Ensure the translated word appears multiple times throughout the story
-        - The story should be written in {request.target_language} language, so emphasize the translated word, not the English word
+        - Include and highlight ALL of these words: {', '.join(words_to_highlight)}
+        - Make each word **bold** when it appears (use **word** format)
+        - Ensure each word appears multiple times throughout the story
+        - The story should be written in {request.target_language} language
+        - Use the words naturally in the story context
         """
         
         # Theme instruction - let AI be creative if no theme specified
@@ -251,4 +253,195 @@ async def discover_stories(
     """Discover stories with optional filtering"""
     # This would implement filtering logic
     stories = get_stories(db, skip=skip, limit=limit)
-    return stories 
+    return stories
+
+
+class RelatedWordsRequest(BaseModel):
+    word: str
+    target_language: str
+    max_words: int = 8
+    child_age: Optional[int] = None
+
+
+@router.post("/related-words")
+async def get_related_words(
+    request: RelatedWordsRequest,
+    db: Session = Depends(get_db)
+):
+    """Generate related words for story creation using AI"""
+    try:
+        # Get Gemini API key from environment
+        gemini_api_key = os.getenv("GEMINI_API_KEY")
+        if not gemini_api_key:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Gemini API key not configured"
+            )
+        
+        # Determine age-appropriate guidance
+        age_guidance = ""
+        if request.child_age:
+            if request.child_age <= 3:
+                age_guidance = "Use very simple, basic words that toddlers can understand. Focus on concrete objects, simple actions, and familiar concepts. Avoid abstract or complex words."
+            elif request.child_age <= 5:
+                age_guidance = "Use simple, concrete words that preschoolers can grasp. Include basic colors, shapes, animals, and everyday objects. Keep vocabulary accessible and familiar."
+            elif request.child_age <= 8:
+                age_guidance = "Use age-appropriate words that elementary school children can understand. Include some educational concepts, descriptive words, and slightly more complex vocabulary."
+            elif request.child_age <= 12:
+                age_guidance = "Use words suitable for older children. Can include more descriptive language, abstract concepts, and educational vocabulary while remaining age-appropriate."
+            else:
+                age_guidance = "Use age-appropriate vocabulary suitable for children. Focus on clear, understandable words that support learning."
+        else:
+            age_guidance = "Use age-appropriate vocabulary suitable for children. Focus on clear, understandable words that support learning."
+
+        # Build the prompt for related words generation
+        prompt = f"""
+        You are a language learning assistant. Generate exactly {request.max_words} contextually specific words for the word "{request.word}" in {request.target_language} language.
+
+        AGE GUIDANCE: {age_guidance}
+
+        CRITICAL REQUIREMENTS:
+        - Each word must be SPECIFICALLY related to "{request.word}" and its context
+        - Choose words appropriate for a {request.child_age if request.child_age else 'child'} year old
+        - Avoid generic words like "happy", "friend", "big", "small" unless they are truly specific to "{request.word}"
+        - Choose words that would naturally appear in a story specifically about "{request.word}"
+        - Include words that are part of the same semantic field or scenario
+        - Focus on words that create a coherent story about "{request.word}"
+        - Ensure all words are age-appropriate and educational
+
+        Examples for different words (age-appropriate):
+        - For "sun" (toddler): bright, hot, yellow, sky, day, warm, shine, light
+        - For "dog" (preschool): bark, tail, pet, walk, bone, play, furry, friend
+        - For "tree" (elementary): leaf, branch, grow, green, tall, forest, nature, plant
+        - For "book" (older child): read, story, page, learn, library, knowledge, words, imagination
+        - For "yellow" (preschool): color, bright, sunshine, flower, paint, lemon, banana, golden
+        - For "blue" (elementary): sky, ocean, water, cool, calm, sea, azure, cerulean
+
+        RESPONSE FORMAT - YOU MUST RETURN ONLY VALID JSON:
+        [
+          {{"english": "word1", "translation": "translation1"}},
+          {{"english": "word2", "translation": "translation2"}},
+          {{"english": "word3", "translation": "translation3"}},
+          {{"english": "word4", "translation": "translation4"}}
+        ]
+
+        CRITICAL: 
+        - Return ONLY the JSON array above
+        - Do NOT include any explanations, markdown formatting, or additional text
+        - Ensure the JSON is properly formatted with double quotes
+        - Make sure the array contains exactly {request.max_words} items
+        - Each item must have "english" and "translation" fields
+        - Choose words appropriate for a {request.child_age if request.child_age else 'child'} year old
+        """
+        
+        # Call Gemini API
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key={gemini_api_key}",
+                json={
+                    "contents": [
+                        {
+                            "parts": [
+                                {
+                                    "text": prompt
+                                }
+                            ]
+                        }
+                    ],
+                    "generationConfig": {
+                        "temperature": 0.7,
+                        "topK": 40,
+                        "topP": 0.95,
+                        "maxOutputTokens": 512
+                    }
+                },
+                timeout=15.0
+            )
+            
+            if response.status_code != 200:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Failed to generate related words from Gemini API"
+                )
+            
+            data = response.json()
+            
+            # Extract the generated text
+            if "candidates" in data and len(data["candidates"]) > 0:
+                content = data["candidates"][0]["content"]["parts"][0]["text"]
+                print(f"AI Response for related words: {content}")
+                
+                # Parse the JSON response
+                try:
+                    import json
+                    related_words = json.loads(content.strip())
+                    
+                    # Validate the structure
+                    if not isinstance(related_words, list):
+                        raise ValueError("Response is not a list")
+                    
+                    # Ensure each item has the required fields
+                    validated_words = []
+                    for word in related_words:
+                        if isinstance(word, dict) and "english" in word and "translation" in word:
+                            validated_words.append({
+                                "id": f"{word['english']}_{word['translation']}",
+                                "english": word["english"],
+                                "translation": word["translation"]
+                            })
+                    
+                    print(f"Successfully parsed {len(validated_words)} related words")
+                    return {"related_words": validated_words}
+                    
+                except (json.JSONDecodeError, ValueError) as e:
+                    print(f"JSON parsing failed for word '{request.word}': {e}")
+                    print(f"Raw AI response: {repr(content)}")
+                    print(f"Response length: {len(content)}")
+                    
+                    # Try to extract JSON from the response if it's wrapped in other text
+                    import re
+                    json_match = re.search(r'\[.*\]', content, re.DOTALL)
+                    if json_match:
+                        try:
+                            extracted_json = json_match.group(0)
+                            print(f"Extracted JSON: {extracted_json}")
+                            related_words = json.loads(extracted_json)
+                            if isinstance(related_words, list):
+                                validated_words = []
+                                for word in related_words:
+                                    if isinstance(word, dict) and "english" in word and "translation" in word:
+                                        validated_words.append({
+                                            "id": f"{word['english']}_{word['translation']}",
+                                            "english": word["english"],
+                                            "translation": word["translation"]
+                                        })
+                                print(f"Successfully parsed {len(validated_words)} words from extracted JSON")
+                                return {"related_words": validated_words}
+                        except Exception as extract_error:
+                            print(f"Failed to parse extracted JSON: {extract_error}")
+                    
+                    # Fallback: return some basic related words
+                    fallback_words = [
+                        {"id": "friend_朋友", "english": "friend", "translation": "朋友"},
+                        {"id": "happy_快乐", "english": "happy", "translation": "快乐"},
+                        {"id": "big_大", "english": "big", "translation": "大"},
+                        {"id": "small_小", "english": "small", "translation": "小"}
+                    ]
+                    print(f"Using fallback words for '{request.word}'")
+                    return {"related_words": fallback_words}
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="No related words generated"
+                )
+        
+    except httpx.TimeoutException:
+        raise HTTPException(
+            status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+            detail="Related words generation timed out"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Related words generation failed: {str(e)}"
+        ) 
