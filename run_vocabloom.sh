@@ -53,6 +53,9 @@ GEMINI_API_KEY=your_gemini_api_key_here
 # Google Cloud Configuration
 GOOGLE_CLOUD_PROJECT=local
 
+# Google Cloud Storage Configuration
+GCS_BUCKET_NAME=vocabloom-images-local
+
 # Environment
 ENVIRONMENT=local
 EOF
@@ -161,6 +164,23 @@ EOF
     echo "✅ Database migrations complete"
 }
 
+# Function to setup Google Cloud Storage
+setup_gcs() {
+    echo "☁️  Setting up Google Cloud Storage..."
+    cd server
+    
+    # Check if GCS bucket setup script exists
+    if [ -f "setup_gcs.py" ]; then
+        echo "Running GCS bucket setup..."
+        poetry run python setup_gcs.py
+    else
+        echo "⚠️  GCS setup script not found, skipping GCS setup"
+    fi
+    
+    cd ..
+    echo "✅ GCS setup complete"
+}
+
 # Function to kill existing processes
 kill_existing() {
     echo "🛑 Stopping existing processes..."
@@ -232,6 +252,9 @@ main() {
     
     # Run migrations
     run_migrations
+    
+    # Setup GCS
+    setup_gcs
     
     # Kill existing processes
     kill_existing

@@ -1,18 +1,17 @@
-from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
-from sqlalchemy.orm import Session
-from typing import List, Optional
-from pydantic import BaseModel
-from ..database import get_db, engine
-from ..models import Image, User
-from ..schemas import Image as ImageSchema, ImageCreate, ImageUpdate, ImageGenerationRequest
-from ..crud import create_image, get_images, get_image, update_image, update_image_status, delete_image
-from ..auth import get_current_user
-import httpx
 import os
-import json
+import time
+import httpx
 import asyncio
-import threading
 from datetime import datetime
+from typing import List
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, status
+from sqlalchemy.orm import Session
+from app.database import get_db, engine
+from app.models import Image as ImageModel, User
+from app.schemas import Image, ImageCreate, ImageUpdate, ImageGenerationRequest
+from app.crud import create_image, get_image, update_image, delete_image, update_image_status, get_images
+from app.auth import get_current_user
+from app.storage import storage_manager
 
 router = APIRouter(prefix="/images", tags=["images"])
 
@@ -30,15 +29,93 @@ def generate_image_sync(image_id: int, prompt: str):
             return
         
         # Get the image record to access the word and translation
-        image = db.query(Image).filter(Image.id == image_id).first()
+        image = db.query(ImageModel).filter(ImageModel.id == image_id).first()
         if not image:
             update_image_status(db, image_id, "failed")
             return
         
-        # For now, we'll use a placeholder URL since Gemini doesn't generate images directly
-        # In a real implementation, you'd use DALL-E or another image generation service
-        # Create a simple SVG placeholder
-        svg_content = f'''<svg width="512" height="512" xmlns="http://www.w3.org/2000/svg">
+        # Call Gemini Image Generation API
+        async def generate_with_gemini():
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key={gemini_api_key}",
+                    json={
+                        "contents": [{
+                            "parts": [{
+                                "text": prompt
+                            }]
+                        }],
+                        "generationConfig": {
+                            "temperature": 0.7,
+                            "topK": 40,
+                            "topP": 0.95,
+                            "maxOutputTokens": 1024,
+                        },
+                        "responseMimeType": "image/png"
+                    },
+                    timeout=60.0
+                )
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    # Extract image data from response
+                    if "candidates" in data and len(data["candidates"]) > 0:
+                        candidate = data["candidates"][0]
+                        if "content" in candidate and "parts" in candidate["content"]:
+                            for part in candidate["content"]["parts"]:
+                                if "inlineData" in part:
+                                    # This is the generated image data
+                                    image_data = part["inlineData"]["data"]
+                                    mime_type = part["inlineData"]["mimeType"]
+                                    
+                                    # Generate filename
+                                    filename = f"image_{image_id}_{int(time.time())}.{mime_type.split('/')[-1]}"
+                                    
+                                    # Upload to Google Cloud Storage
+                                    try:
+                                        image_url = storage_manager.upload_image_from_base64(
+                                            image_data, 
+                                            filename, 
+                                            mime_type
+                                        )
+                                        
+                                        # Update the image with the GCS URL
+                                        update_image_status(db, image_id, "completed", image_url)
+                                        return
+                                    except Exception as e:
+                                        print(f"Error uploading to GCS: {e}")
+                                        # Fall back to placeholder
+                                        create_placeholder_image(db, image_id, image)
+                                        return
+                    
+                    # If no image data found, fall back to placeholder
+                    print("No image data found in Gemini response, using placeholder")
+                    create_placeholder_image(db, image_id, image)
+                else:
+                    print(f"Gemini API error: {response.status_code} - {response.text}")
+                    # Fall back to placeholder on API error
+                    create_placeholder_image(db, image_id, image)
+        
+        # Run the async function in a sync context
+        try:
+            asyncio.run(generate_with_gemini())
+        except Exception as e:
+            print(f"Error in async generation: {e}")
+            # Fall back to placeholder
+            create_placeholder_image(db, image_id, image)
+                
+    except Exception as e:
+        print(f"Error generating image: {e}")
+        # Update status to failed
+        update_image_status(db, image_id, "failed")
+    finally:
+        db.close()
+
+
+def create_placeholder_image(db: Session, image_id: int, image: ImageModel):
+    """Create a placeholder SVG image and upload to GCS"""
+    # Create a simple SVG placeholder
+    svg_content = f'''<svg width="512" height="512" xmlns="http://www.w3.org/2000/svg">
   <rect width="100%" height="100%" fill="#6690ff"/>
   <text x="50%" y="50%" font-family="Arial, sans-serif" font-size="24" fill="white" text-anchor="middle" dy=".3em">
     Generated Image for "{image.original_word}"
@@ -47,25 +124,43 @@ def generate_image_sync(image_id: int, prompt: str):
     {image.translated_word}
   </text>
 </svg>'''
+    
+    # Convert SVG to base64
+    import base64
+    svg_encoded = base64.b64encode(svg_content.encode('utf-8')).decode('utf-8')
+    
+    # Generate filename
+    filename = f"placeholder_{image_id}_{int(time.time())}.svg"
+    
+    try:
+        # Upload to Google Cloud Storage
+        image_url = storage_manager.upload_image_from_base64(
+            svg_encoded, 
+            filename, 
+            "image/svg+xml"
+        )
         
-        # Convert SVG to data URL
-        import base64
-        svg_encoded = base64.b64encode(svg_content.encode('utf-8')).decode('utf-8')
-        image_url = f"data:image/svg+xml;base64,{svg_encoded}"
-        
-        # Simulate some processing time
-        import time
-        time.sleep(2)
-        
-        # Update the image with the generated URL
+        # Update the image with the GCS URL
         update_image_status(db, image_id, "completed", image_url)
-                
     except Exception as e:
-        print(f"Error generating image: {e}")
-        # Update status to failed
+        print(f"Error uploading placeholder to GCS: {e}")
+        # If GCS fails, update status to failed
         update_image_status(db, image_id, "failed")
-    finally:
-        db.close()
+
+
+def update_image_status(db: Session, image_id: int, status: str, image_url: str = None):
+    """Update image status and optionally the image URL"""
+    try:
+        image = db.query(ImageModel).filter(ImageModel.id == image_id).first()
+        if image:
+            image.status = status
+            if image_url:
+                image.image_url = image_url
+            image.updated_at = datetime.utcnow()
+            db.commit()
+    except Exception as e:
+        print(f"Error updating image status: {e}")
+        db.rollback()
 
 
 @router.post("/generate")
@@ -95,14 +190,19 @@ async def generate_image(
         
         # Create the generation prompt
         base_prompt = f"""
-        Create a visual representation for the word "{request.original_word}" (translated as "{request.translated_word}" in {request.target_language}).
+        Generate a colorful, engaging illustration of "{request.original_word}" (which means "{request.translated_word}" in {request.target_language}).
         
-        Requirements:
-        - Style: {age_guidance}
-        - Language context: {request.target_language}
-        - Educational and child-friendly
-        - Clear, simple, and engaging visual
+        Style requirements:
+        - {age_guidance}
+        - Bright, vibrant colors
+        - Simple, clear shapes and lines
+        - Cartoon or illustration style
+        - Centered composition
+        - White or light background
+        - No text or words in the image
         - Safe and appropriate for children
+        
+        Make it visually appealing and educational for language learning.
         """
         
         if request.custom_instructions:
@@ -137,7 +237,7 @@ async def generate_image(
         )
 
 
-@router.get("/", response_model=List[ImageSchema])
+@router.get("/", response_model=List[Image])
 async def get_user_images(
     skip: int = 0,
     limit: int = 100,
@@ -145,10 +245,11 @@ async def get_user_images(
     current_user: User = Depends(get_current_user)
 ):
     """Get all images for the current user"""
-    return get_images(db, current_user.id, skip, limit)
+    images = get_images(db, current_user.id, skip=skip, limit=limit)
+    return images
 
 
-@router.get("/{image_id}", response_model=ImageSchema)
+@router.get("/{image_id}", response_model=Image)
 async def get_image_by_id(
     image_id: int,
     db: Session = Depends(get_db),
@@ -164,7 +265,7 @@ async def get_image_by_id(
     return image
 
 
-@router.put("/{image_id}", response_model=ImageSchema)
+@router.put("/{image_id}", response_model=Image)
 async def update_image_endpoint(
     image_id: int,
     image_update: ImageUpdate,

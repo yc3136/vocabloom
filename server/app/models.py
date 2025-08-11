@@ -93,7 +93,7 @@ class Image(Base):
     original_word = Column(String(255), nullable=False)
     translated_word = Column(String(255), nullable=False)
     target_language = Column(String(50), nullable=False)
-    image_url = Column(String(500))  # URL to the generated image
+    image_url = Column(String(500))  # URL to the generated image in Google Cloud Storage
     generation_prompt = Column(Text, nullable=False)  # The prompt used for generation
     custom_instructions = Column(Text)  # Additional custom instructions
     status = Column(String(20), default="pending")  # 'pending', 'completed', 'failed'

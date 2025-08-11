@@ -243,10 +243,22 @@ def update_image_status(db: Session, image_id: int, status: str, image_url: Opti
     return image
 
 
-def delete_image(db: Session, image_id: int, user_id: str):
-    db_image = get_image(db, image_id, user_id)
-    if db_image:
-        db.delete(db_image)
+def delete_image(db: Session, image_id: int, user_id: str) -> bool:
+    """Delete an image and its file from Google Cloud Storage"""
+    image = db.query(models.Image).filter(models.Image.id == image_id, models.Image.user_id == user_id).first()
+    if image:
+        # Delete from Google Cloud Storage if URL exists
+        if image.image_url:
+            try:
+                from app.storage import storage_manager
+                # Extract filename from URL
+                filename = image.image_url.split('/')[-1]
+                storage_manager.delete_image(filename)
+            except Exception as e:
+                print(f"Error deleting image from GCS: {e}")
+                # Continue with database deletion even if GCS deletion fails
+        
+        db.delete(image)
         db.commit()
         return True
     return False 
