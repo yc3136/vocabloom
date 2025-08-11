@@ -60,18 +60,22 @@ async def generate_story(
         
         # Language instruction
         language_instruction = ""
-        if request.target_language:
-            language_instruction = f"Write the story in {request.target_language} language. "
+        if request.target_language and request.target_language != "None" and request.target_language.strip():
+            language_instruction = f"IMPORTANT: Write the entire story in {request.target_language} language. Do not use English unless specifically requested. "
+        else:
+            language_instruction = "Write the story in English. "
         
         # Word highlighting instruction
         word_highlighting = ""
         if request.original_word and request.translated_word:
+            # If multiple translations are provided (comma-separated), use the first one
+            translated_word = request.translated_word.split(',')[0].strip()
             word_highlighting = f"""
         Word Usage:
-        - Include the original word "{request.original_word}" in the story context
-        - Use the translated word "{request.translated_word}" prominently in the target language
-        - Highlight the translated word by making it stand out (use **bold** or emphasize it naturally)
+        - Use the translated word "{translated_word}" prominently in the target language
+        - Highlight the translated word by making it **bold** (use **{translated_word}** format)
         - Ensure the translated word appears multiple times throughout the story
+        - The story should be written in {request.target_language} language, so emphasize the translated word, not the English word
         """
         
         # Theme instruction - let AI be creative if no theme specified
@@ -87,7 +91,14 @@ async def generate_story(
         {theme_instruction}Maximum length: {request.max_words} words
         Age guidance: {age_guidance}
         
-        Requirements:
+        CRITICAL LANGUAGE REQUIREMENTS:
+        - Write the story ENTIRELY in {request.target_language} language
+        - NEVER include pinyin, romanization, or pronunciation guides in parentheses
+        - NEVER add English translations or explanations
+        - NEVER use English words or phrases
+        - Use ONLY the target language characters and words
+        
+        Story Requirements:
         - Make the story engaging and age-appropriate
         - Naturally incorporate all the provided words
         - Include educational elements or moral lessons
@@ -98,7 +109,7 @@ async def generate_story(
         
         {f"Additional instructions: {request.custom_prompt}" if request.custom_prompt else ""}
         
-        Please write the story in a clear, engaging format suitable for children.
+        IMPORTANT: The story must be written in pure {request.target_language} without any pronunciation guides, pinyin, or English text.
         """
         
         # Call Gemini API

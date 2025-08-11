@@ -129,6 +129,13 @@ function openStoryModal() {
     alert('Please enter a word first to generate a story!')
     return
   }
+  
+  if (!selectedLanguage.value) {
+    alert('Please select a language first to generate a story!')
+    return
+  }
+  
+  console.log('Opening story modal with language:', selectedLanguage.value)
   showStoryModal.value = true
 }
 
@@ -176,13 +183,16 @@ function handleClickOutside(event: Event) {
 
 // Load user preferences and set default language
 onMounted(async () => {
+  console.log('HomePage mounted, initial selectedLanguage:', selectedLanguage.value)
   if (authStore.isAuthenticated) {
     await preferencesStore.loadPreferences()
     // Set the selected language to user's preferred language if available
     if (preferencesStore.preferredLanguage) {
       selectedLanguage.value = preferencesStore.preferredLanguage
+      console.log('Set selectedLanguage from preferences:', selectedLanguage.value)
     }
   }
+  console.log('Final selectedLanguage after mount:', selectedLanguage.value)
 })
 
 // Watch for authentication changes to load preferences
@@ -198,6 +208,7 @@ watch(() => authStore.isAuthenticated, async (isAuthenticated) => {
 
 // Watch for changes in selected language and update preferences if user is authenticated
 watch(selectedLanguage, async (newLanguage) => {
+  console.log('Language changed to:', newLanguage)
   if (authStore.isAuthenticated && preferencesStore.preferences.preferred_languages) {
     try {
       // Update the first preferred language
@@ -284,8 +295,8 @@ watch(selectedLanguage, async (newLanguage) => {
       v-if="showStoryModal"
       :show="showStoryModal" 
       :words="storyWords" 
-      :translation="translation.value"
-      :targetLanguage="selectedLanguage.value"
+      :translation="translation"
+      :targetLanguage="selectedLanguage"
       @close="closeStoryModal" 
       @save="handleStorySave" 
     />

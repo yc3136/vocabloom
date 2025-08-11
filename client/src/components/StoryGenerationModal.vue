@@ -61,11 +61,8 @@
           <div class="form-group">
             <label>Words to Include</label>
             <div class="words-display">
-              <span v-for="word in props.words" :key="word" class="word-tag original-word">
-                {{ word }}
-              </span>
-              <span v-if="props.translation" class="word-tag translated-word">
-                {{ props.translation }}
+              <span v-for="word in props.words" :key="word" class="word-chip">
+                {{ word }} / {{ props.translation || 'Loading...' }}
               </span>
             </div>
           </div>
@@ -170,7 +167,17 @@ const canGenerate = computed(() => {
 
 const renderedStory = computed(() => {
   if (!generatedStory.value) return ''
-  return marked(generatedStory.value)
+  try {
+    const rendered = marked(generatedStory.value, {
+      breaks: true,
+      gfm: true
+    })
+    console.log('Markdown rendering:', { original: generatedStory.value, rendered })
+    return rendered
+  } catch (error) {
+    console.error('Markdown rendering error:', error)
+    return generatedStory.value // Fallback to raw text if markdown fails
+  }
 })
 
 // Get child's age from preferences
@@ -208,10 +215,13 @@ const generateStory = async () => {
   try {
     const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
     
-    // Prepare words array with both original and translated words
-    const wordsToInclude = [...props.words]
+    // Prepare words array - we'll use the translated word as the primary word for the story
+    const wordsToInclude = []
     if (props.translation && props.translation.trim()) {
       wordsToInclude.push(props.translation.trim())
+    } else {
+      // Fallback to original word if no translation available
+      wordsToInclude.push(...props.words)
     }
     
     const requestBody = {
@@ -219,13 +229,14 @@ const generateStory = async () => {
       theme: storyParams.value.theme === 'custom' ? storyParams.value.customTheme : storyParams.value.theme,
       max_words: storyParams.value.maxWords,
       custom_prompt: storyParams.value.customPrompt || null,
-      target_language: props.targetLanguage || null,
+      target_language: props.targetLanguage || 'English',
       age_range: ageRange.value || null,
       original_word: props.words[0] || null,
       translated_word: props.translation || null
     }
     
     console.log('Generating story with params:', requestBody)
+    console.log('Target language being sent:', props.targetLanguage)
     
     const response = await fetch(`${API_BASE}/api/stories/generate`, {
       method: 'POST',
@@ -242,6 +253,7 @@ const generateStory = async () => {
     }
     
     const data = await response.json()
+    console.log('Raw story content received:', data.story_content)
     generatedStory.value = data.story_content
   } catch (e) {
     error.value = 'Failed to generate story. Please try again.'
@@ -267,8 +279,11 @@ const saveStory = async () => {
       story_theme: storyParams.value.theme === 'custom' ? storyParams.value.customTheme : storyParams.value.theme,
       story_length: storyParams.value.maxWords <= 100 ? 'short' : storyParams.value.maxWords <= 300 ? 'medium' : 'long',
       target_age_range: ageRange.value || 'elementary', // Provide default if null
-      target_language: props.targetLanguage || 'en' // Provide default if null
+      target_language: props.targetLanguage || 'English' // Provide default if null
     }
+    
+    console.log('Saving story with data:', storyData)
+    console.log('Target language being saved:', props.targetLanguage)
     
 
     
@@ -298,6 +313,12 @@ const generateStoryTitle = () => {
 // Reset form when modal opens
 watch(() => props.show, (show) => {
   if (show) {
+    console.log('StoryGenerationModal opened with props:', {
+      targetLanguage: props.targetLanguage,
+      words: props.words,
+      translation: props.translation
+    })
+    
     generatedStory.value = ''
     error.value = ''
     storyParams.value = {
@@ -437,19 +458,18 @@ watch(() => props.show, (show) => {
 .words-display {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.25rem;
+  gap: 0.5rem;
   justify-content: flex-start;
 }
 
-.word-tag {
+.word-chip {
   display: inline-block;
   padding: 0.5rem 0.75rem;
   background: var(--primary-blue, #6690ff);
   color: white;
-  border-radius: 8px;
+  border-radius: 6px;
   font-size: 0.875rem;
   font-weight: 500;
-  margin: 0.125rem;
 }
 
 .original-word {
@@ -506,6 +526,12 @@ watch(() => props.show, (show) => {
   color: var(--text-primary, #1e293b);
   font-size: 0.875rem;
   text-align: left;
+}
+
+.story-content :deep(strong),
+.story-content :deep(b) {
+  font-weight: 700;
+  color: var(--primary-blue, #6690ff);
 }
 
 .loading-section {
