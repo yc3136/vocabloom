@@ -385,8 +385,22 @@ const saveStory = async () => {
     // Generate a story title based on the words and theme
     const storyTitle = generateStoryTitle()
     
+    // Prepare words array - include original word and selected related words
+    const wordsToInclude = []
+    
+    // Add the original word
+    wordsToInclude.push(...props.words)
+    
+    // Add selected related words
+    const selectedWords = relatedWords.value.filter(word => 
+      selectedRelatedWords.value.includes(word.id)
+    )
+    selectedWords.forEach(word => {
+      wordsToInclude.push(word.english)
+    })
+    
     const storyData = {
-      original_words: props.words,
+      original_words: wordsToInclude,
       story_title: storyTitle,
       story_content: generatedStory.value,
       story_theme: storyParams.value.theme === 'custom' ? storyParams.value.customTheme : storyParams.value.theme,

@@ -24,7 +24,7 @@
             <input 
               v-model="searchTerm" 
               type="text" 
-              placeholder="Search stories..."
+              placeholder="Search by title, content, or words..."
               class="search-input"
             />
           </div>
@@ -63,9 +63,16 @@
               </div>
               <div class="story-words">
                 <span class="words-label">Words:</span>
-                <span v-for="word in story.original_words" :key="word" class="word-chip">
-                  {{ word }}
-                </span>
+                <div class="words-container">
+                  <span 
+                    v-for="(word, index) in story.original_words" 
+                    :key="`${word}-${index}`" 
+                    class="word-chip"
+                    :title="`Word ${index + 1} of ${story.original_words.length}`"
+                  >
+                    {{ word }}
+                  </span>
+                </div>
               </div>
             </div>
             <div class="story-actions">
@@ -501,6 +508,12 @@ watch(stories, (newStories) => {
   font-size: 0.8rem;
   color: #718096;
   font-weight: 500;
+}
+
+.words-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
 }
 
 .word-chip {
