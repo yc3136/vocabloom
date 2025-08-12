@@ -57,7 +57,14 @@ def generate_image_sync(image_id: int, prompt: str):
             # Get the first generated image
             generated_image = images.images[0]
             
-            # Get the image bytes directly
+            # Check if there's any generated title or description (simple field access only)
+            generated_title = None
+            if hasattr(generated_image, 'caption') and generated_image.caption:
+                generated_title = generated_image.caption
+            elif hasattr(generated_image, 'description') and generated_image.description:
+                generated_title = generated_image.description
+            
+            # Get the image bytes directly (working approach)
             img_byte_arr = generated_image._image_bytes
             
             # Generate filename
@@ -73,119 +80,45 @@ def generate_image_sync(image_id: int, prompt: str):
                 
                 print(f"Image uploaded successfully: {image_url}")
                 
-                # Update the image with the GCS URL
-                update_image_status(db, image_id, "completed", image_url)
+                # Update the image with the GCS URL and any generated title
+                if generated_title:
+                    print(f"Generated title: {generated_title}")
+                    update_image_status(db, image_id, "completed", image_url, generated_title)
+                else:
+                    update_image_status(db, image_id, "completed", image_url)
                 return
             except Exception as e:
                 print(f"Error uploading to GCS: {e}")
-                # Fallback to placeholder image
-                create_custom_svg_image(db, image_id, image, prompt)
+                update_image_status(db, image_id, "failed")
                 return
         else:
             print("No images generated")
-            # Fallback to placeholder image
-            create_custom_svg_image(db, image_id, image, prompt)
+            update_image_status(db, image_id, "failed")
             return
                 
     except Exception as e:
         print(f"Error generating image with Imagen: {e}")
         import traceback
         traceback.print_exc()
-        # Fallback to placeholder image
-        try:
-            image = db.query(ImageModel).filter(ImageModel.id == image_id).first()
-            if image:
-                create_custom_svg_image(db, image_id, image, prompt)
-            else:
-                update_image_status(db, image_id, "failed")
-        except Exception as fallback_error:
-            print(f"Fallback also failed: {fallback_error}")
-            update_image_status(db, image_id, "failed")
+        # Mark as failed
+        update_image_status(db, image_id, "failed")
     finally:
         db.close()
 
 
-def create_custom_svg_image(db: Session, image_id: int, image: ImageModel, prompt: str):
-    """Create a custom SVG image based on the prompt and word"""
-    # Create a more engaging SVG with colors and styling
-    svg_content = f'''<svg width="512" height="512" xmlns="http://www.w3.org/2000/svg">
-<!-- Background gradient -->
-<defs>
-<linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-<stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
-<stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
-</linearGradient>
-</defs>
-
-<!-- Background -->
-<rect width="100%" height="100%" fill="url(#bg)"/>
-
-<!-- Decorative circles -->
-<circle cx="100" cy="100" r="30" fill="rgba(255,255,255,0.1)"/>
-<circle cx="412" cy="412" r="40" fill="rgba(255,255,255,0.1)"/>
-<circle cx="412" cy="100" r="25" fill="rgba(255,255,255,0.1)"/>
-<circle cx="100" cy="412" r="35" fill="rgba(255,255,255,0.1)"/>
-
-<!-- Main content -->
-<g transform="translate(256, 200)">
-<!-- Original word -->
-<text x="0" y="0" font-family="Arial, sans-serif" font-size="32" font-weight="bold" fill="white" text-anchor="middle">
-{image.original_word}
-</text>
-
-<!-- Arrow -->
-<text x="0" y="40" font-family="Arial, sans-serif" font-size="24" fill="rgba(255,255,255,0.8)" text-anchor="middle">
-↓
-</text>
-
-<!-- Translation -->
-<text x="0" y="80" font-family="Arial, sans-serif" font-size="28" fill="white" text-anchor="middle">
-{image.translated_word}
-</text>
-
-<!-- Language -->
-<text x="0" y="120" font-family="Arial, sans-serif" font-size="16" fill="rgba(255,255,255,0.7)" text-anchor="middle">
-{image.target_language}
-</text>
-</g>
-
-<!-- Bottom decoration -->
-<rect x="50" y="450" width="412" height="2" fill="rgba(255,255,255,0.3)"/>
-<text x="256" y="480" font-family="Arial, sans-serif" font-size="12" fill="rgba(255,255,255,0.6)" text-anchor="middle">
-Vocabloom Learning Card
-</text>
-</svg>'''
-
-    # Convert SVG to base64
-    svg_encoded = base64.b64encode(svg_content.encode('utf-8')).decode('utf-8')
-
-    # Generate filename
-    filename = f"custom_svg_{image_id}_{int(time.time())}.svg"
-
-    try:
-        # Upload to Google Cloud Storage
-        image_url = storage_manager.upload_image_from_base64(
-            svg_encoded,
-            filename,
-            "image/svg+xml"
-        )
-
-        # Update the image with the GCS URL
-        update_image_status(db, image_id, "completed", image_url)
-    except Exception as e:
-        print(f"Error uploading custom SVG to GCS: {e}")
-        # If GCS fails, update status to failed
-        update_image_status(db, image_id, "failed")
 
 
-def update_image_status(db: Session, image_id: int, status: str, image_url: str = None):
-    """Update image status and optionally the image URL"""
+
+def update_image_status(db: Session, image_id: int, status: str, image_url: str = None, title: str = None):
+    """Update image status and optionally the image URL and title"""
     try:
         image = db.query(ImageModel).filter(ImageModel.id == image_id).first()
         if image:
             image.status = status
             if image_url:
                 image.image_url = image_url
+            if title:
+                image.title = title
             image.updated_at = datetime.utcnow()
             db.commit()
     except Exception as e:
@@ -206,34 +139,48 @@ async def generate_image(
         age_guidance = ""
         if request.child_age:
             if request.child_age <= 3:
-                age_guidance = "very simple, colorful, child-friendly, safe for toddlers"
+                age_guidance = "very simple, colorful, child-friendly, safe for toddlers, large simple objects, basic shapes"
             elif 4 <= request.child_age <= 5:
-                age_guidance = "simple, engaging, educational, safe for preschoolers"
+                age_guidance = "simple, engaging, educational, safe for preschoolers, clear objects, bright colors"
             elif 6 <= request.child_age <= 10:
-                age_guidance = "engaging, educational, age-appropriate for elementary school"
+                age_guidance = "engaging, educational, age-appropriate for elementary school, detailed but clear, colorful"
             elif 11 <= request.child_age <= 13:
-                age_guidance = "more detailed, educational, suitable for middle school"
+                age_guidance = "more detailed, educational, suitable for middle school, sophisticated but still colorful and clear"
             else:
-                age_guidance = "engaging and educational for children"
+                age_guidance = "engaging and educational for children, colorful and clear"
         else:
-            age_guidance = "engaging and educational for children"
+            age_guidance = "engaging and educational for children, colorful and clear"
         
         # Create the generation prompt
         base_prompt = f"""
-        Generate a colorful, engaging illustration of "{request.original_word}" (which means "{request.translated_word}" in {request.target_language}), and also write a short, educational caption describing the image.
-        
-        Style requirements:
-        - {age_guidance}
-        - Bright, vibrant colors
-        - Simple, clear shapes and lines
-        - Cartoon or illustration style
-        - Centered composition
-        - White or light background
-        - No text or words in the image
-        - Safe and appropriate for children
-        
-        Make it visually appealing and educational for language learning.
+        Create a simple, colorful educational illustration for children learning {request.target_language}.
+
+        Requirements:
+        - Show a clear, simple illustration of "{request.original_word}" (which means "{request.translated_word}" in {request.target_language})
+        - Use bright, child-friendly colors
+        - Simple cartoon style with clean lines
+        - White background
+        - No text, words, or letters in the image
+        - No metadata, technical information, or extra text
+        - Focus only on the visual representation of the word/concept
+        - Fill the entire canvas with the illustration
+        - Use the full available space effectively
+        - Make the illustration large and prominent
+
+        Style: Simple, educational, colorful, child-friendly, clean design, full canvas utilization, no text
         """
+        
+        # Add simple word type guidance
+        original_word_lower = request.original_word.lower()
+        
+        if any(word in original_word_lower for word in ['run', 'jump', 'walk', 'eat', 'sleep', 'play', 'dance', 'sing', 'read', 'write']):
+            base_prompt += "\nShow the action being performed."
+        elif any(word in original_word_lower for word in ['big', 'small', 'tall', 'short', 'fast', 'slow', 'hot', 'cold', 'happy', 'sad']):
+            base_prompt += "\nShow contrasting examples to illustrate the concept."
+        elif any(word in original_word_lower for word in ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown', 'black', 'white']):
+            base_prompt += "\nShow the color prominently."
+        else:
+            base_prompt += "\nShow the object/concept clearly."
         
         if request.custom_instructions:
             base_prompt += f"\nAdditional instructions: {request.custom_instructions}"

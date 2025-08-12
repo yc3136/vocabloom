@@ -97,6 +97,10 @@
                 <span class="translated-word">{{ image.translated_word }}</span>
               </div>
               
+              <div v-if="image.title" class="image-title">
+                <p class="title-text">{{ image.title }}</p>
+              </div>
+              
               <div class="image-badges">
                 <span class="language-badge">{{ getLanguageDisplay(image.target_language) }}</span>
                 <span v-if="image.child_age" class="age-badge">{{ image.child_age }} years old</span>
@@ -481,6 +485,18 @@ onMounted(() => {
 
 .image-details {
   margin-bottom: 12px;
+}
+
+.image-title {
+  margin: 8px 0;
+}
+
+.title-text {
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-style: italic;
+  margin: 0;
+  line-height: 1.4;
 }
 
 .word-pair {

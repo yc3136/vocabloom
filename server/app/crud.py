@@ -230,13 +230,15 @@ def update_image(db: Session, image_id: int, image: schemas.ImageUpdate, user_id
     return db_image
 
 
-def update_image_status(db: Session, image_id: int, status: str, image_url: Optional[str] = None):
-    """Update image status and optionally set the image URL when generation is complete"""
+def update_image_status(db: Session, image_id: int, status: str, image_url: Optional[str] = None, title: Optional[str] = None):
+    """Update image status and optionally set the image URL and title when generation is complete"""
     image = db.query(models.Image).filter(models.Image.id == image_id).first()
     if image:
         image.status = status
         if image_url:
             image.image_url = image_url
+        if title:
+            image.title = title
         image.updated_at = datetime.utcnow()
         db.commit()
         db.refresh(image)
