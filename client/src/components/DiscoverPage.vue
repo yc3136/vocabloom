@@ -21,14 +21,14 @@
 
         <!-- Filters Toggle Button -->
         <button @click="toggleFilters" class="filters-toggle-btn" :class="{ 'active': hasActiveFilters }">
-          <span class="filter-icon">⚙️</span>
-          {{ showFilters ? 'Hide Filters' : 'Filters' }}
+
+          <span class="filter-text">Filters</span>
           <span v-if="hasActiveFilters" class="active-indicator">●</span>
         </button>
       </div>
 
       <!-- Collapsible Filter Controls -->
-      <div v-if="showFilters" class="filter-controls">
+      <div class="filter-controls" :class="{ 'show': showFilters }">
         <div class="filter-group">
           <label>Language:</label>
           <select v-model="selectedLanguage" @change="handleFilterChange" class="filter-select">
@@ -121,9 +121,6 @@
             <div class="card-body">
               <h3 class="card-title">{{ item.story_title }}</h3>
               <div class="card-subtitle" v-html="renderMarkdown(item.story_content)"></div>
-              <div v-if="item.story_theme" class="card-theme">
-                <span class="theme-label">Theme:</span> {{ item.story_theme }}
-              </div>
             </div>
             <div class="card-footer">
               <div class="card-badges">
@@ -368,7 +365,7 @@ watch(() => discoverStore.filters, (newFilters) => {
 }
 
 .filters-toggle-btn {
-  padding: 8px 12px;
+  padding: 8px 16px;
   background: var(--bg-secondary);
   color: var(--text-primary);
   border: 1px solid var(--border-color);
@@ -379,9 +376,12 @@ watch(() => discoverStore.filters, (newFilters) => {
   display: flex;
   align-items: center;
   gap: 6px;
-  transition: background-color 0.2s, border-color 0.2s;
+  transition: all 0.2s ease;
   height: 40px;
   white-space: nowrap;
+  width: 120px;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .filters-toggle-btn:hover {
@@ -403,6 +403,11 @@ watch(() => discoverStore.filters, (newFilters) => {
   font-size: 14px;
 }
 
+.filter-text {
+  font-size: 14px;
+  font-weight: 500;
+}
+
 .active-indicator {
   color: #ff6b6b;
   font-size: 12px;
@@ -418,6 +423,18 @@ watch(() => discoverStore.filters, (newFilters) => {
   gap: 12px;
   align-items: flex-end;
   flex-wrap: wrap;
+  justify-content: center;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.3s ease, margin 0.3s ease;
+  opacity: 0;
+  margin-top: 0;
+}
+
+.filter-controls.show {
+  max-height: 200px;
+  opacity: 1;
+  margin-top: 16px;
 }
 
 .filter-group {
@@ -656,30 +673,33 @@ watch(() => discoverStore.filters, (newFilters) => {
 }
 
 .content-type-badge {
-  background: var(--primary-blue);
-  color: white;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 11px;
   font-weight: 500;
+  background: transparent;
 }
 
 .language-badge {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 11px;
   font-weight: 500;
+  background: transparent;
 }
 
 .age-badge {
-  background: var(--success-green);
-  color: white;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 11px;
   font-weight: 500;
+  background: transparent;
 }
 
 .date {
