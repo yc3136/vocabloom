@@ -10,16 +10,6 @@
         <!-- Input Section -->
         <div class="input-section">
           <div class="form-group">
-            <label for="title">Title (Optional)</label>
-            <input 
-              v-model="imageParams.title" 
-              id="title" 
-              class="form-input" 
-              placeholder="Enter a title for your image..."
-            />
-          </div>
-          
-          <div class="form-group">
             <label for="customInstructions">Custom Instructions (Optional)</label>
             <textarea 
               v-model="imageParams.customInstructions" 
@@ -31,50 +21,52 @@
           </div>
           
           <div class="form-group">
-            <label>Image Details</label>
             
-            <!-- Original word and translation -->
-            <div class="image-details">
-              <div class="word-pair">
-                <span class="original-word">{{ props.originalWord }}</span>
-                <span class="separator">→</span>
-                <span class="translated-word">{{ props.translatedWord }}</span>
+            <!-- Word pair, language, and age info row -->
+            <div class="info-row">
+              <!-- Word pair display -->
+              <div class="words-display">
+                <span class="word-chip selected">
+                  {{ props.originalWord }} / {{ props.translatedWord }}
+                </span>
               </div>
+              
+              <!-- Language badge -->
               <div class="language-badge">{{ props.targetLanguage }}</div>
+              
+              <!-- Age-appropriate indicator -->
+              <div v-if="childAge" class="age-indicator">
+                <span class="age-badge">
+                  For {{ childAge }} year old
+                </span>
+              </div>
             </div>
           </div>
           
-          <!-- Age-appropriate indicator -->
-          <div v-if="childAge" class="age-indicator">
-            <span class="age-badge">
-              For {{ childAge }} year old
-            </span>
+          <!-- Generation Status Section -->
+          <div v-if="generating" class="generation-status">
+            <div class="loading-spinner"></div>
+            <p>Starting image generation...</p>
+            <p class="status-note">You can close this modal and check the status in My Images page.</p>
+          </div>
+          
+          <!-- Error Section -->
+          <div v-if="error" class="error-section">
+            <p class="error-message">{{ error }}</p>
+            <button @click="clearError" class="retry-btn">Try Again</button>
           </div>
         </div>
         
-        <!-- Generation Status Section -->
-        <div v-if="generating" class="generation-status">
-          <div class="loading-spinner"></div>
-          <p>Starting image generation...</p>
-          <p class="status-note">You can close this modal and check the status in My Images page.</p>
+        <div class="modal-footer">
+          <button @click="closeModal" class="cancel-btn">Cancel</button>
+          <button 
+            @click="generateImage" 
+            :disabled="generating"
+            class="generate-btn"
+          >
+            {{ generating ? 'Starting Generation...' : 'Generate Image' }}
+          </button>
         </div>
-        
-        <!-- Error Section -->
-        <div v-if="error" class="error-section">
-          <p class="error-message">{{ error }}</p>
-          <button @click="clearError" class="retry-btn">Try Again</button>
-        </div>
-      </div>
-      
-      <div class="modal-footer">
-        <button @click="closeModal" class="cancel-btn">Cancel</button>
-        <button 
-          @click="generateImage" 
-          :disabled="generating"
-          class="generate-btn"
-        >
-          {{ generating ? 'Starting Generation...' : 'Generate Image' }}
-        </button>
       </div>
     </div>
   </div>
@@ -101,7 +93,6 @@ const imageStore = useImageStore()
 const preferencesStore = usePreferencesStore()
 
 const imageParams = ref({
-  title: '',
   customInstructions: ''
 })
 
@@ -135,8 +126,7 @@ const generateImage = async () => {
       translated_word: props.translatedWord,
       target_language: props.targetLanguage,
       custom_instructions: imageParams.value.customInstructions || undefined,
-      child_age: childAge.value || undefined,
-      title: imageParams.value.title || undefined
+      child_age: childAge.value || undefined
     })
 
     if (result) {
@@ -165,7 +155,6 @@ watch(() => imageStore.error, (newError) => {
 watch(() => props.show, (show) => {
   if (show) {
     imageParams.value = {
-      title: '',
       customInstructions: ''
     }
     error.value = ''
@@ -270,59 +259,71 @@ textarea.form-input {
   min-height: 80px;
 }
 
-.image-details {
-  background: #f9fafb;
-  padding: 16px;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-}
-
-.word-pair {
+.info-row {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 8px;
+  flex-wrap: wrap;
 }
 
-.original-word {
-  font-weight: 600;
-  color: #111827;
-  font-size: 1rem;
+.words-display {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-start;
 }
 
-.separator {
-  color: #6b7280;
-  font-weight: 500;
-}
-
-.translated-word {
-  font-weight: 600;
-  color: #6690ff;
-  font-size: 1rem;
-}
-
-.language-badge {
+.word-chip {
   display: inline-block;
-  background: #6690ff;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-.age-indicator {
-  margin-top: 16px;
-}
-
-.age-badge {
-  display: inline-block;
-  background: #10b981;
-  color: white;
-  padding: 6px 12px;
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  color: var(--text-primary, #1e293b);
+  border: 1px solid var(--border-color, #e2e8f0);
   border-radius: 6px;
   font-size: 0.875rem;
   font-weight: 500;
+  transition: all 0.2s;
+  height: 32px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+}
+
+.word-chip.selected {
+  background: var(--primary-blue, #6690ff);
+  color: white;
+  border-color: var(--primary-blue, #6690ff);
+}
+
+.language-badge {
+  display: inline-flex;
+  align-items: center;
+  background: #6690ff;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  height: 32px;
+  line-height: 1;
+}
+
+.age-indicator {
+  display: flex;
+  align-items: center;
+}
+
+.age-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: transparent;
+  color: var(--text-secondary, #64748b);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 400;
 }
 
 .generation-status {
@@ -436,16 +437,6 @@ textarea.form-input {
   .modal-footer {
     padding-left: 16px;
     padding-right: 16px;
-  }
-  
-  .word-pair {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-  }
-  
-  .separator {
-    display: none;
   }
 }
 </style> 

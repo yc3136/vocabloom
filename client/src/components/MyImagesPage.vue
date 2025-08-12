@@ -49,8 +49,11 @@
           <span class="stat-item">
             <strong>{{ filteredImages.length }}</strong> images
           </span>
-          <button @click="refreshImages" class="refresh-btn" :disabled="refreshing">
-            {{ refreshing ? 'Refreshing...' : 'Refresh' }}
+          <button @click="refreshImages" class="refresh-btn" :disabled="refreshing" title="Refresh images">
+            <svg v-if="!refreshing" class="refresh-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+            <div v-else class="refresh-spinner"></div>
           </button>
         </div>
       </div>
@@ -87,10 +90,6 @@
 
           <!-- Image Metadata -->
           <div class="image-metadata">
-            <div class="image-title">
-              <h3>{{ image.title || `${image.original_word} / ${image.translated_word}` }}</h3>
-            </div>
-            
             <div class="image-details">
               <div class="word-pair">
                 <span class="original-word">{{ image.original_word }}</span>
@@ -113,10 +112,10 @@
             <div class="image-actions">
               <button 
                 @click="deleteImage(image.id)"
-                class="delete-btn"
+                class="remove-btn"
                 title="Delete image"
               >
-                Delete
+                ×
               </button>
             </div>
           </div>
@@ -364,11 +363,15 @@ onMounted(() => {
   background: #f3f4f6;
   color: #374151;
   border: 1px solid #d1d5db;
-  padding: 6px 12px;
+  padding: 8px;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 0.875rem;
   transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
 }
 
 .refresh-btn:hover:not(:disabled) {
@@ -378,6 +381,20 @@ onMounted(() => {
 .refresh-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.refresh-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.refresh-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #d1d5db;
+  border-top: 2px solid #374151;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
 }
 
 .images-grid {
@@ -460,13 +477,7 @@ onMounted(() => {
   padding: 16px;
 }
 
-.image-title h3 {
-  margin: 0 0 12px 0;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #111827;
-  line-height: 1.4;
-}
+
 
 .image-details {
   margin-bottom: 12px;
@@ -515,7 +526,7 @@ onMounted(() => {
 }
 
 .age-badge {
-  background: #10b981;
+  background: #8b5cf6;
   color: white;
 }
 
@@ -565,19 +576,22 @@ onMounted(() => {
   justify-content: flex-end;
 }
 
-.delete-btn {
-  background: #ef4444;
-  color: white;
+.remove-btn {
+  background: none;
   border: none;
-  padding: 6px 12px;
-  border-radius: 4px;
+  color: #a0aec0;
+  font-size: 1.2rem;
+  font-weight: bold;
   cursor: pointer;
-  font-size: 0.875rem;
-  transition: background-color 0.2s;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  line-height: 1;
 }
 
-.delete-btn:hover {
-  background: #dc2626;
+.remove-btn:hover {
+  background: #e2e8f0;
+  color: #e53e3e;
 }
 
 .pagination {
