@@ -21,9 +21,7 @@
 
         <!-- Filters Toggle Button -->
         <button @click="toggleFilters" class="filters-toggle-btn" :class="{ 'active': hasActiveFilters }">
-
           <span class="filter-text">Filters</span>
-          <span v-if="hasActiveFilters" class="active-indicator">●</span>
         </button>
       </div>
 
@@ -97,7 +95,7 @@
           :class="`content-card--${item.content_type}`"
         >
           <!-- Flashcard Card -->
-          <div v-if="item.content_type === 'flashcard'" class="card-content">
+          <div v-if="item.content_type === 'flashcard'" class="card-content" @click="openFlashcardViewer(item)">
             <div class="card-body">
               <h3 class="card-title">{{ item.original_word }}</h3>
               <p class="card-subtitle">{{ item.translated_word }}</p>
@@ -181,6 +179,13 @@
         </button>
       </div>
     </div>
+
+    <!-- Flashcard Viewer Modal -->
+    <FlashcardViewer
+      :show="showFlashcardViewer"
+      :flashcard="selectedFlashcard"
+      @close="closeFlashcardViewer"
+    />
   </div>
 </template>
 
@@ -189,6 +194,7 @@ import { ref, onMounted, computed, watch } from 'vue';
 import { marked } from 'marked';
 import { useDiscoverStore } from '../stores/discover';
 import { SUPPORTED_LANGUAGES } from '../constants/languages';
+import FlashcardViewer from './FlashcardViewer.vue';
 
 const discoverStore = useDiscoverStore();
 
@@ -198,6 +204,10 @@ const selectedLanguage = ref('');
 const selectedAgeGroup = ref('');
 const selectedContentType = ref('');
 const showFilters = ref(false); // Start with filters hidden on mobile
+
+// Flashcard viewer state
+const showFlashcardViewer = ref(false);
+const selectedFlashcard = ref<any>(null);
 
 // Debounced search
 let searchTimeout: NodeJS.Timeout | null = null;
@@ -258,6 +268,16 @@ const openImage = (imageUrl: string) => {
   window.open(imageUrl, '_blank');
 };
 
+const openFlashcardViewer = (flashcard: any) => {
+  selectedFlashcard.value = flashcard;
+  showFlashcardViewer.value = true;
+};
+
+const closeFlashcardViewer = () => {
+  showFlashcardViewer.value = false;
+  selectedFlashcard.value = null;
+};
+
 const formatDate = (dateString?: string) => {
   if (!dateString) return '';
   return new Date(dateString).toLocaleDateString();
@@ -316,7 +336,7 @@ watch(() => discoverStore.filters, (newFilters) => {
 .search-filter-row {
   display: flex;
   gap: 16px;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
   flex-wrap: wrap;
 }
@@ -366,7 +386,7 @@ watch(() => discoverStore.filters, (newFilters) => {
 
 .filters-toggle-btn {
   padding: 8px 16px;
-  background: var(--bg-secondary);
+  background: transparent;
   color: var(--text-primary);
   border: 1px solid var(--border-color);
   border-radius: 6px;
@@ -385,18 +405,18 @@ watch(() => discoverStore.filters, (newFilters) => {
 }
 
 .filters-toggle-btn:hover {
-  background: var(--bg-surface);
-  border-color: var(--primary-blue);
+  background: var(--bg-secondary);
+  border-color: var(--text-secondary);
 }
 
 .filters-toggle-btn.active {
-  background: var(--primary-blue);
+  background: var(--text-secondary);
   color: white;
-  border-color: var(--primary-blue);
+  border-color: var(--text-secondary);
 }
 
 .filters-toggle-btn.active:hover {
-  background: var(--blue-hover);
+  background: var(--text-primary);
 }
 
 .filter-icon {
@@ -406,16 +426,6 @@ watch(() => discoverStore.filters, (newFilters) => {
 .filter-text {
   font-size: 14px;
   font-weight: 500;
-}
-
-.active-indicator {
-  color: #ff6b6b;
-  font-size: 12px;
-  margin-left: 2px;
-}
-
-.filters-toggle-btn.active .active-indicator {
-  color: white;
 }
 
 .filter-controls {
@@ -461,19 +471,20 @@ watch(() => discoverStore.filters, (newFilters) => {
 
 .clear-filters-btn {
   padding: 8px 16px;
-  background: var(--text-secondary);
-  color: white;
-  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   font-size: 14px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
   height: 40px;
   white-space: nowrap;
 }
 
 .clear-filters-btn:hover {
-  background: var(--text-primary);
+  background: var(--bg-secondary);
+  border-color: var(--text-secondary);
 }
 
 .content-section {
@@ -549,6 +560,10 @@ watch(() => discoverStore.filters, (newFilters) => {
   margin-bottom: 24px;
   display: inline-block;
   width: 100%;
+}
+
+.content-card--flashcard .card-content {
+  cursor: pointer;
 }
 
 .content-card:hover {
