@@ -1050,23 +1050,25 @@ graph TB
 #### 8.2.1. API Integration Strategy
 - **Primary Provider:** Imagen 4.0 Standard via Vertex AI for high-quality, photorealistic images
 - **Model Selection:** Imagen 4.0 Standard for superior quality and detailed output
-- **Prompt Engineering:** Optimized prompts for educational content with age-appropriate guidance
+- **Prompt Engineering:** Optimized prompts for educational content with age-appropriate guidance and explicit text-free requirements
 - **Content Safety:** Built-in safety filtering with configurable levels
-- **Fallback Strategy:** Custom SVG generation for failed API calls
+- **Error Handling:** Simple failure marking without fallback images for clean status tracking
 
 #### 8.2.2. Image Storage & Management
 - **Cloud Storage:** Google Cloud Storage for image files with organized bucket structure
 - **Metadata Database:** PostgreSQL table for image metadata and generation history
 - **CDN Integration:** Fast image delivery via Cloud CDN
 - **Image Optimization:** Automatic resizing and compression
-- **Fallback Images:** Custom SVG generation for failed API calls with educational content
+- **Title Capture:** AI-generated titles/descriptions captured and stored for display
 
 #### 8.2.3. User Experience Features
 - **Generation Quotas:** User-specific limits and usage tracking
 - **Progress Indicators:** Real-time generation status with background processing
-- **Error Handling:** Graceful fallbacks with custom SVG generation and retry mechanisms
-- **Image Gallery:** User's generated images with search and filter capabilities
+- **Error Handling:** Simple failure marking with clean status display
+- **Image Gallery:** User's generated images with search, filter, and click-to-open capabilities
 - **Age-Appropriate Content:** Tailored image generation based on child's age and preferences
+- **Immediate Modal Closure:** Modal closes immediately on generation start with toast notification
+- **Clickable Images:** Completed images can be clicked to open in new tab
 
 ### 8.3. Database Schema Extensions
 
