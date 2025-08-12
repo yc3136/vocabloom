@@ -19,6 +19,7 @@ import MyStoriesPage from './components/MyStoriesPage.vue';
 import MyImagesPage from './components/MyImagesPage.vue';
 import UserPreferencesPage from './components/UserPreferencesPage.vue';
 import ForgotPasswordPage from './components/ForgotPasswordPage.vue';
+import DiscoverPage from './components/DiscoverPage.vue';
 
 // const vuetify = createVuetify({
 //   components,
@@ -27,6 +28,7 @@ import ForgotPasswordPage from './components/ForgotPasswordPage.vue';
 
 const routes = [
   { path: '/', component: HomePage },
+  { path: '/discover', component: DiscoverPage },
   { path: '/about', component: AboutPage },
   { path: '/forgot-password', component: ForgotPasswordPage },
   { 
