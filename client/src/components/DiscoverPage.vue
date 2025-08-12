@@ -1,37 +1,40 @@
 <template>
   <div class="discover-container">
-    <!-- Header Section -->
-    <div class="discover-header">
-      <h1>Discover Content</h1>
-      <p class="subtitle">Explore flashcards, stories, images, and translations created by the Vocabloom community</p>
-    </div>
-
     <!-- Search and Filter Section -->
     <div class="search-filter-section">
-      <!-- Search Bar -->
-      <div class="search-container">
-        <div class="search-input-wrapper">
-          <input
-            v-model="searchQuery"
-            @input="handleSearchInput"
-            @keyup.enter="handleSearch"
-            placeholder="Search for words, translations, or story content..."
-            class="search-input"
-          />
-          <button @click="handleSearch" class="search-btn">
-            🔍
-          </button>
+      <div class="search-filter-row">
+        <!-- Search Bar -->
+        <div class="search-container">
+          <div class="search-input-wrapper">
+            <input
+              v-model="searchQuery"
+              @input="handleSearchInput"
+              @keyup.enter="handleSearch"
+              placeholder="Search for words, translations, or story content..."
+              class="search-input"
+            />
+            <button @click="handleSearch" class="search-btn">
+              🔍
+            </button>
+          </div>
         </div>
+
+        <!-- Filters Toggle Button -->
+        <button @click="toggleFilters" class="filters-toggle-btn" :class="{ 'active': hasActiveFilters }">
+          <span class="filter-icon">⚙️</span>
+          {{ showFilters ? 'Hide Filters' : 'Filters' }}
+          <span v-if="hasActiveFilters" class="active-indicator">●</span>
+        </button>
       </div>
 
-      <!-- Filter Controls -->
-      <div class="filter-controls">
+      <!-- Collapsible Filter Controls -->
+      <div v-if="showFilters" class="filter-controls">
         <div class="filter-group">
           <label>Language:</label>
           <select v-model="selectedLanguage" @change="handleFilterChange" class="filter-select">
             <option value="">All Languages</option>
-            <option v-for="lang in availableLanguages" :key="lang" :value="lang">
-              {{ lang }}
+            <option v-for="lang in supportedLanguages" :key="lang.value" :value="lang.value">
+              {{ lang.label }}
             </option>
           </select>
         </div>
@@ -60,28 +63,6 @@
         <button @click="clearFilters" class="clear-filters-btn">
           Clear Filters
         </button>
-      </div>
-    </div>
-
-    <!-- Stats Section -->
-    <div v-if="discoverStore.stats" class="stats-section">
-      <div class="stats-grid">
-        <div class="stat-item">
-          <div class="stat-number">{{ discoverStore.stats.content_counts.total }}</div>
-          <div class="stat-label">Total Items</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-number">{{ discoverStore.stats.content_counts.flashcards }}</div>
-          <div class="stat-label">Flashcards</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-number">{{ discoverStore.stats.content_counts.stories }}</div>
-          <div class="stat-label">Stories</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-number">{{ discoverStore.stats.content_counts.images }}</div>
-          <div class="stat-label">Images</div>
-        </div>
       </div>
     </div>
 
@@ -117,10 +98,6 @@
         >
           <!-- Flashcard Card -->
           <div v-if="item.content_type === 'flashcard'" class="card-content">
-            <div class="card-header">
-              <span class="content-type-badge">📚 Flashcard</span>
-              <span class="language-badge">{{ item.target_language }}</span>
-            </div>
             <div class="card-body">
               <h3 class="card-title">{{ item.original_word }}</h3>
               <p class="card-subtitle">{{ item.translated_word }}</p>
@@ -131,35 +108,35 @@
               </div>
             </div>
             <div class="card-footer">
+              <div class="card-badges">
+                <span class="content-type-badge">📚 Flashcard</span>
+                <span class="language-badge">{{ item.target_language }}</span>
+              </div>
               <span class="date">{{ formatDate(item.created_at) }}</span>
             </div>
           </div>
 
           <!-- Story Card -->
           <div v-else-if="item.content_type === 'story'" class="card-content">
-            <div class="card-header">
-              <span class="content-type-badge">📖 Story</span>
-              <span class="language-badge">{{ item.target_language }}</span>
-              <span v-if="item.target_age_range" class="age-badge">{{ formatAgeGroup(item.target_age_range) }}</span>
-            </div>
             <div class="card-body">
               <h3 class="card-title">{{ item.story_title }}</h3>
-              <p class="card-subtitle">{{ truncateText(item.story_content, 150) }}</p>
+              <div class="card-subtitle" v-html="renderMarkdown(item.story_content)"></div>
               <div v-if="item.story_theme" class="card-theme">
                 <span class="theme-label">Theme:</span> {{ item.story_theme }}
               </div>
             </div>
             <div class="card-footer">
+              <div class="card-badges">
+                <span class="content-type-badge">📖 Story</span>
+                <span class="language-badge">{{ item.target_language }}</span>
+                <span v-if="item.target_age_range" class="age-badge">{{ formatAgeGroup(item.target_age_range) }}</span>
+              </div>
               <span class="date">{{ formatDate(item.created_at) }}</span>
             </div>
           </div>
 
           <!-- Image Card -->
           <div v-else-if="item.content_type === 'image'" class="card-content">
-            <div class="card-header">
-              <span class="content-type-badge">🖼️ Image</span>
-              <span class="language-badge">{{ item.target_language }}</span>
-            </div>
             <div class="card-body">
               <div v-if="item.image_url" class="image-preview">
                 <img :src="item.image_url" :alt="item.original_word" @click="openImage(item.image_url)" />
@@ -168,6 +145,10 @@
               <p class="card-subtitle">{{ item.translated_word }}</p>
             </div>
             <div class="card-footer">
+              <div class="card-badges">
+                <span class="content-type-badge">🖼️ Image</span>
+                <span class="language-badge">{{ item.target_language }}</span>
+              </div>
               <span class="date">{{ formatDate(item.created_at) }}</span>
             </div>
           </div>
@@ -208,6 +189,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue';
+import { marked } from 'marked';
 import { useDiscoverStore } from '../stores/discover';
 import { SUPPORTED_LANGUAGES } from '../constants/languages';
 
@@ -218,13 +200,19 @@ const searchQuery = ref('');
 const selectedLanguage = ref('');
 const selectedAgeGroup = ref('');
 const selectedContentType = ref('');
+const showFilters = ref(false); // Start with filters hidden on mobile
 
 // Debounced search
 let searchTimeout: NodeJS.Timeout | null = null;
 
 // Computed properties
-const availableLanguages = computed(() => {
-  return discoverStore.availableLanguages;
+const supportedLanguages = computed(() => {
+  return SUPPORTED_LANGUAGES;
+});
+
+// Check if any filters are active
+const hasActiveFilters = computed(() => {
+  return selectedLanguage.value || selectedAgeGroup.value || selectedContentType.value;
 });
 
 // Methods
@@ -255,6 +243,10 @@ const clearFilters = async () => {
   selectedAgeGroup.value = '';
   selectedContentType.value = '';
   await discoverStore.clearFilters();
+};
+
+const toggleFilters = () => {
+  showFilters.value = !showFilters.value;
 };
 
 const loadMore = async () => {
@@ -290,9 +282,18 @@ const truncateText = (text: string, maxLength: number) => {
   return text.substring(0, maxLength) + '...';
 };
 
+const renderMarkdown = (text: string) => {
+  if (!text) return '';
+  return marked(text);
+};
+
 // Initialize on mount
 onMounted(async () => {
   await discoverStore.initialize();
+  
+  // Show filters by default on desktop, hide on mobile
+  const isMobile = window.innerWidth <= 768;
+  showFilters.value = !isMobile;
 });
 
 // Watch for URL changes to reset filters
@@ -311,36 +312,27 @@ watch(() => discoverStore.filters, (newFilters) => {
   padding: 24px;
 }
 
-.discover-header {
-  text-align: center;
-  margin-bottom: 32px;
-}
-
-.discover-header h1 {
-  margin: 0 0 8px 0;
-  color: var(--text-primary);
-  font-size: 32px;
-  font-weight: 700;
-}
-
-.subtitle {
-  color: var(--text-secondary);
-  font-size: 16px;
-  margin: 0;
-}
-
 .search-filter-section {
   margin-bottom: 32px;
 }
 
+.search-filter-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
 .search-container {
-  margin-bottom: 24px;
+  flex: 1;
+  min-width: 300px;
+  max-width: 500px;
 }
 
 .search-input-wrapper {
   position: relative;
-  max-width: 600px;
-  margin: 0 auto;
+  width: 100%;
 }
 
 .search-input {
@@ -375,12 +367,57 @@ watch(() => discoverStore.filters, (newFilters) => {
   background: rgba(102, 144, 255, 0.1);
 }
 
+.filters-toggle-btn {
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background-color 0.2s, border-color 0.2s;
+  height: 40px;
+  white-space: nowrap;
+}
+
+.filters-toggle-btn:hover {
+  background: var(--bg-surface);
+  border-color: var(--primary-blue);
+}
+
+.filters-toggle-btn.active {
+  background: var(--primary-blue);
+  color: white;
+  border-color: var(--primary-blue);
+}
+
+.filters-toggle-btn.active:hover {
+  background: var(--blue-hover);
+}
+
+.filter-icon {
+  font-size: 14px;
+}
+
+.active-indicator {
+  color: #ff6b6b;
+  font-size: 12px;
+  margin-left: 2px;
+}
+
+.filters-toggle-btn.active .active-indicator {
+  color: white;
+}
+
 .filter-controls {
   display: flex;
-  gap: 16px;
-  align-items: center;
+  gap: 12px;
+  align-items: flex-end;
   flex-wrap: wrap;
-  justify-content: center;
 }
 
 .filter-group {
@@ -402,6 +439,7 @@ watch(() => discoverStore.filters, (newFilters) => {
   font-size: 14px;
   background: white;
   min-width: 120px;
+  height: 40px;
 }
 
 .clear-filters-btn {
@@ -413,44 +451,12 @@ watch(() => discoverStore.filters, (newFilters) => {
   font-size: 14px;
   cursor: pointer;
   transition: background-color 0.2s;
+  height: 40px;
+  white-space: nowrap;
 }
 
 .clear-filters-btn:hover {
   background: var(--text-primary);
-}
-
-.stats-section {
-  margin-bottom: 32px;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 16px;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.stat-item {
-  text-align: center;
-  padding: 16px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-}
-
-.stat-number {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--primary-blue);
-  margin-bottom: 4px;
-}
-
-.stat-label {
-  font-size: 12px;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  font-weight: 500;
 }
 
 .content-section {
@@ -509,9 +515,8 @@ watch(() => discoverStore.filters, (newFilters) => {
 }
 
 .content-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 24px;
+  column-count: 3;
+  column-gap: 24px;
   margin-bottom: 32px;
 }
 
@@ -522,6 +527,11 @@ watch(() => discoverStore.filters, (newFilters) => {
   overflow: hidden;
   transition: all 0.2s;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  break-inside: avoid;
+  page-break-inside: avoid;
+  margin-bottom: 24px;
+  display: inline-block;
+  width: 100%;
 }
 
 .content-card:hover {
@@ -531,43 +541,13 @@ watch(() => discoverStore.filters, (newFilters) => {
 
 .card-content {
   padding: 20px;
-}
-
-.card-header {
   display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-}
-
-.content-type-badge {
-  background: var(--primary-blue);
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.language-badge {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.age-badge {
-  background: var(--success-green);
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
+  flex-direction: column;
+  height: 100%;
 }
 
 .card-body {
+  flex: 1;
   margin-bottom: 16px;
 }
 
@@ -582,7 +562,34 @@ watch(() => discoverStore.filters, (newFilters) => {
   margin: 0 0 12px 0;
   color: var(--text-secondary);
   font-size: 14px;
-  line-height: 1.4;
+  line-height: 1.6;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.card-subtitle :deep(p) {
+  margin: 0 0 8px 0;
+}
+
+.card-subtitle :deep(p:last-child) {
+  margin-bottom: 0;
+}
+
+.card-subtitle :deep(strong) {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.card-subtitle :deep(em) {
+  font-style: italic;
+}
+
+.card-subtitle :deep(code) {
+  background: var(--bg-secondary);
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 12px;
 }
 
 .card-examples {
@@ -618,17 +625,19 @@ watch(() => discoverStore.filters, (newFilters) => {
   border-radius: 8px;
   overflow: hidden;
   cursor: pointer;
+  width: 100%;
 }
 
 .image-preview img {
   width: 100%;
-  height: 150px;
-  object-fit: cover;
+  height: auto;
+  display: block;
   transition: transform 0.2s;
+  object-fit: contain;
 }
 
 .image-preview:hover img {
-  transform: scale(1.05);
+  transform: scale(1.02);
 }
 
 .card-footer {
@@ -637,11 +646,46 @@ watch(() => discoverStore.filters, (newFilters) => {
   align-items: center;
   padding-top: 12px;
   border-top: 1px solid var(--border-color);
+  margin-top: auto;
+}
+
+.card-badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.content-type-badge {
+  background: var(--primary-blue);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.language-badge {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.age-badge {
+  background: var(--success-green);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
 }
 
 .date {
   font-size: 12px;
   color: var(--text-secondary);
+  white-space: nowrap;
 }
 
 .load-more-section {
@@ -676,9 +720,26 @@ watch(() => discoverStore.filters, (newFilters) => {
     padding: 16px;
   }
   
+  .search-filter-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  
+  .search-container {
+    min-width: auto;
+    max-width: none;
+  }
+
+  .filters-toggle-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
   .filter-controls {
     flex-direction: column;
     align-items: stretch;
+    gap: 8px;
   }
   
   .filter-group {
@@ -689,12 +750,37 @@ watch(() => discoverStore.filters, (newFilters) => {
     width: 100%;
   }
   
-  .content-grid {
-    grid-template-columns: 1fr;
+  .clear-filters-btn {
+    width: 100%;
   }
   
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .content-grid {
+    column-count: 1; /* Single column on mobile */
+    column-gap: 0;
+  }
+  
+  .card-content {
+    padding: 16px;
+  }
+  
+  .card-title {
+    font-size: 16px;
+  }
+  
+  .card-subtitle {
+    font-size: 13px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .content-grid {
+    column-count: 2; /* Two columns on medium screens */
+  }
+}
+
+@media (min-width: 1025px) {
+  .content-grid {
+    column-count: 3; /* Three columns on large screens */
   }
 }
 </style> 
