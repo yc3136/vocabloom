@@ -1,8 +1,8 @@
 # Vocabloom Technical Design
 
-**Document Version:** 1.4
+**Document Version:** 1.5
 **Last Updated:** Dec 19, 2024
-**Status:** MVP Complete ✅ | Milestone 2 Complete ✅ | Milestone 3 Complete ✅ | Story Generation Complete ✅
+**Status:** MVP Complete ✅ | Milestone 2 Complete ✅ | Milestone 3 Complete ✅ | Story Generation Complete ✅ | Image Generation Complete ✅
 
 ---
 
@@ -43,10 +43,10 @@ This document outlines the technical architecture, technology choices, and infra
 ### 2.3. AI/ML Integration
 
 - **Provider:** Gemini 2.0 Flash API (primary for LLM-powered translation and explanation)
-- **Image Generation:** DALL-E 3 API or Stable Diffusion API (Milestone 4)
-- **Integration:** Direct REST API calls using httpx
+- **Image Generation:** Imagen 4.0 Standard via Vertex AI (Milestone 4)
+- **Integration:** Direct REST API calls using httpx (Gemini), Vertex AI SDK (Imagen)
 - **Response Format:** JSON with translation and explanation fields
-- **Error Handling:** Graceful fallback with user-friendly error messages
+- **Error Handling:** Graceful fallback with user-friendly error messages and custom SVG generation
 
 ### 2.4. Cloud & Infrastructure
 
@@ -83,10 +83,11 @@ This document outlines the technical architecture, technology choices, and infra
   - Node.js >= 18.x (for frontend tooling)  
   - Python >= 3.10 (for backend)  
   - Poetry (for Python dependency management)
-  - GCloud CLI (for cloud integration)  
+  - GCloud CLI (for cloud integration and Vertex AI access)  
   - npm (frontend)
   - Firebase CLI (for local development and deployment)
   - PostgreSQL client (for local database development)
+  - Google Cloud credentials with Vertex AI permissions
 
 - **Recommended IDE:** VSCode (with recommended extensions for TypeScript, ESLint, Prettier, Python, Docker)
 
@@ -223,6 +224,7 @@ poetry run alembic upgrade head  # Uses local database
   - **GCP was chosen over AWS** for the following reasons:
     - **Cost Control:** GCP provides a $300 free credit and always-free tier, with a hard spending limit before you upgrade to a paid account, making it safer for side projects and experimentation.
     - **Gemini Integration:** Native and seamless integration with Gemini API and other Google AI/ML services.
+    - **Imagen Integration:** Native access to Imagen models through Vertex AI for high-quality image generation.
     - **Managed Services:** GCP offers robust managed services for compute, storage, database, and monitoring, all compatible with the project's tech stack.
     - **Developer Experience:** GCP's developer tooling and documentation are well-suited for rapid prototyping and deployment.
 - **Database Choice for Milestone 2:**
@@ -1024,9 +1026,8 @@ graph TB
         F[Content Safety Filter]
     end
     
-    subgraph "External APIs"
-        G[DALL-E 3 API]
-        H[Stable Diffusion API]
+    subgraph "Vertex AI"
+        G[Imagen 4.0 Standard]
     end
     
     subgraph "Storage"
@@ -1039,7 +1040,6 @@ graph TB
     C --> E
     D --> F
     F --> G
-    F --> H
     D --> E
     E --> I
     E --> J
@@ -1048,22 +1048,25 @@ graph TB
 ### 8.2. Image Generation Implementation
 
 #### 8.2.1. API Integration Strategy
-- **Primary Provider:** DALL-E 3 API for high-quality images
-- **Fallback Provider:** Stable Diffusion API for cost optimization
-- **Prompt Engineering:** Optimized prompts for educational content
-- **Content Safety:** Built-in filtering for inappropriate content
+- **Primary Provider:** Imagen 4.0 Standard via Vertex AI for high-quality, photorealistic images
+- **Model Selection:** Imagen 4.0 Standard for superior quality and detailed output
+- **Prompt Engineering:** Optimized prompts for educational content with age-appropriate guidance
+- **Content Safety:** Built-in safety filtering with configurable levels
+- **Fallback Strategy:** Custom SVG generation for failed API calls
 
 #### 8.2.2. Image Storage & Management
-- **Cloud Storage:** Google Cloud Storage for image files
-- **Metadata Database:** PostgreSQL table for image metadata
+- **Cloud Storage:** Google Cloud Storage for image files with organized bucket structure
+- **Metadata Database:** PostgreSQL table for image metadata and generation history
 - **CDN Integration:** Fast image delivery via Cloud CDN
 - **Image Optimization:** Automatic resizing and compression
+- **Fallback Images:** Custom SVG generation for failed API calls with educational content
 
 #### 8.2.3. User Experience Features
 - **Generation Quotas:** User-specific limits and usage tracking
-- **Progress Indicators:** Real-time generation status
-- **Error Handling:** Graceful fallbacks and retry mechanisms
-- **Image Gallery:** User's generated images with search and filter
+- **Progress Indicators:** Real-time generation status with background processing
+- **Error Handling:** Graceful fallbacks with custom SVG generation and retry mechanisms
+- **Image Gallery:** User's generated images with search and filter capabilities
+- **Age-Appropriate Content:** Tailored image generation based on child's age and preferences
 
 ### 8.3. Database Schema Extensions
 
@@ -1072,16 +1075,18 @@ graph TB
 CREATE TABLE images (
     id SERIAL PRIMARY KEY,
     user_id VARCHAR(128) NOT NULL,
-    content_id INTEGER,
     original_word VARCHAR(255) NOT NULL,
-    prompt TEXT NOT NULL,
-    image_url VARCHAR(500) NOT NULL,
-    thumbnail_url VARCHAR(500),
-    generation_provider VARCHAR(50) NOT NULL,
-    generation_cost DECIMAL(10,4),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (content_id) REFERENCES content(id) ON DELETE SET NULL
+    translated_word VARCHAR(255) NOT NULL,
+    target_language VARCHAR(50) NOT NULL,
+    generation_prompt TEXT NOT NULL,
+    custom_instructions TEXT,
+    child_age INTEGER,
+    title VARCHAR(255),
+    image_url VARCHAR(500),
+    status VARCHAR(20) DEFAULT 'pending', -- pending, completed, failed
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 ```
 
@@ -1091,13 +1096,56 @@ ALTER TABLE users ADD COLUMN image_quota_used INTEGER DEFAULT 0;
 ALTER TABLE users ADD COLUMN image_quota_limit INTEGER DEFAULT 10;
 ```
 
-### 8.4. API Endpoints
+### 8.4. Imagen Model Selection Rationale
+
+#### 8.4.1. Why Imagen Over Other Providers
+
+**Existing GCP Credits:**
+- Our project already has GCP credits, making Imagen a financially attractive option
+- Instead of paying out-of-pocket for new services like DALL-E or Stable Diffusion, we can use existing resources
+- Cost-effective utilization of available cloud credits
+
+**High-Quality Output:**
+- Imagen is a specialized image generation model from Google, known for high-quality, photorealistic, and detailed output
+- Since the project's goal is to produce engaging and educational illustrations, quality is a top priority
+- Superior image quality enhances the learning experience for children
+
+**Vertex AI Integration:**
+- Being part of the Vertex AI platform means Imagen is a native GCP service
+- Simplifies our infrastructure and allows for easier integration with other Google Cloud services
+- Consistent authentication and billing through GCP
+
+**Clear Pricing:**
+- Pay-as-you-go pricing model is straightforward
+- Only charged for images we generate, with clear cost per image
+- Easy to track spending and manage budget
+
+#### 8.4.2. Technical Implementation Details
+
+**Model Configuration:**
+- **Model:** Imagen 4.0 Standard (`imagen-4.0-generate-preview-06-06`)
+- **Aspect Ratio:** 1:1 (square) for consistent flashcard design
+- **Safety Filtering:** `block_some` level for moderate content filtering
+- **Person Generation:** Disabled for safety and educational appropriateness
+
+**Background Processing:**
+- Asynchronous image generation using FastAPI background tasks
+- Real-time status updates through database polling
+- Graceful error handling with custom SVG fallback
+
+**Prompt Engineering:**
+- Age-appropriate content guidance based on child's age
+- Educational focus with clear, simple illustrations
+- Safety considerations for children's content
+
+### 8.5. API Endpoints
 
 **Image Generation Endpoints:**
-- `POST /api/images/generate` - Generate image for word
-- `GET /api/images` - Get user's generated images
+- `POST /api/images/generate` - Generate image for word with age-appropriate content
+- `GET /api/images` - Get user's generated images with status tracking
+- `GET /api/images/{image_id}` - Get specific image by ID
+- `PUT /api/images/{image_id}` - Update image metadata
 - `DELETE /api/images/{id}` - Delete generated image
-- `GET /api/images/quota` - Get user's image generation quota
 
 ---
 

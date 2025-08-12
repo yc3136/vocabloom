@@ -34,7 +34,8 @@ def initialize_firebase():
         from google.cloud import secretmanager
         import json
         client = secretmanager.SecretManagerServiceClient()
-        name = f"projects/vocabloom-467020/secrets/firebase-admin-key/versions/latest"
+        project_id = os.getenv("GOOGLE_CLOUD_PROJECT", "vocabloom-467020")
+        name = f"projects/{project_id}/secrets/firebase-admin-key/versions/latest"
         response = client.access_secret_version(request={"name": name})
         # Parse the JSON string into a dictionary
         service_account_info = json.loads(response.payload.data.decode("UTF-8"))

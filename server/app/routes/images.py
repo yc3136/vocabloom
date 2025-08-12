@@ -1,7 +1,6 @@
 import os
 import time
-import httpx
-import asyncio
+import base64
 from datetime import datetime
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, status
@@ -17,133 +16,164 @@ router = APIRouter(prefix="/images", tags=["images"])
 
 
 def generate_image_sync(image_id: int, prompt: str):
-    """Synchronous background task to generate image using Gemini API"""
+    """Synchronous background task to generate image using Imagen API"""
     # Create a new database session for the background task
     db = Session(engine)
     try:
-        # Get Gemini API key from environment
-        gemini_api_key = os.getenv("GEMINI_API_KEY")
-        if not gemini_api_key:
-            # Update status to failed
-            update_image_status(db, image_id, "failed")
-            return
-        
         # Get the image record to access the word and translation
         image = db.query(ImageModel).filter(ImageModel.id == image_id).first()
         if not image:
+            print(f"Image record not found for ID: {image_id}")
             update_image_status(db, image_id, "failed")
             return
         
-        # Call Gemini Image Generation API
-        async def generate_with_gemini():
-            async with httpx.AsyncClient() as client:
-                response = await client.post(
-                    f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key={gemini_api_key}",
-                    json={
-                        "contents": [{
-                            "parts": [{
-                                "text": prompt
-                            }]
-                        }],
-                        "generationConfig": {
-                            "temperature": 0.7,
-                            "topK": 40,
-                            "topP": 0.95,
-                            "maxOutputTokens": 1024,
-                        },
-                        "responseMimeType": "image/png"
-                    },
-                    timeout=60.0
+        # Import Vertex AI
+        import vertexai
+        from vertexai.preview.vision_models import ImageGenerationModel
+        
+        # Initialize Vertex AI
+        project_id = os.getenv("GOOGLE_CLOUD_PROJECT", "vocabloom-467020")
+        location = "us-central1"
+        
+        vertexai.init(project=project_id, location=location)
+        
+        print(f"Generating image with Imagen for: {image.original_word} -> {image.translated_word}")
+        
+        # Load the ImageGenerationModel for Imagen 4 Standard
+        model = ImageGenerationModel.from_pretrained("imagen-4.0-generate-preview-06-06")
+        
+        # Generate images from the text prompt
+        images = model.generate_images(
+            prompt=prompt,
+            number_of_images=1,
+            aspect_ratio="1:1",  # Square aspect ratio for consistent cards
+            safety_filter_level="block_some",  # Moderate safety filtering
+            person_generation="dont_allow"  # Don't generate people for safety
+        )
+        
+        print(f"Successfully generated {len(images.images)} image(s).")
+        
+        if images.images:
+            # Get the first generated image
+            generated_image = images.images[0]
+            
+            # Get the image bytes directly
+            img_byte_arr = generated_image._image_bytes
+            
+            # Generate filename
+            filename = f"imagen_{image_id}_{int(time.time())}.png"
+            
+            # Upload to Google Cloud Storage
+            try:
+                image_url = storage_manager.upload_image_from_bytes(
+                    img_byte_arr,
+                    filename,
+                    "image/png"
                 )
                 
-                if response.status_code == 200:
-                    data = response.json()
-                    # Extract image data from response
-                    if "candidates" in data and len(data["candidates"]) > 0:
-                        candidate = data["candidates"][0]
-                        if "content" in candidate and "parts" in candidate["content"]:
-                            for part in candidate["content"]["parts"]:
-                                if "inlineData" in part:
-                                    # This is the generated image data
-                                    image_data = part["inlineData"]["data"]
-                                    mime_type = part["inlineData"]["mimeType"]
-                                    
-                                    # Generate filename
-                                    filename = f"image_{image_id}_{int(time.time())}.{mime_type.split('/')[-1]}"
-                                    
-                                    # Upload to Google Cloud Storage
-                                    try:
-                                        image_url = storage_manager.upload_image_from_base64(
-                                            image_data, 
-                                            filename, 
-                                            mime_type
-                                        )
-                                        
-                                        # Update the image with the GCS URL
-                                        update_image_status(db, image_id, "completed", image_url)
-                                        return
-                                    except Exception as e:
-                                        print(f"Error uploading to GCS: {e}")
-                                        # Fall back to placeholder
-                                        create_placeholder_image(db, image_id, image)
-                                        return
-                    
-                    # If no image data found, fall back to placeholder
-                    print("No image data found in Gemini response, using placeholder")
-                    create_placeholder_image(db, image_id, image)
-                else:
-                    print(f"Gemini API error: {response.status_code} - {response.text}")
-                    # Fall back to placeholder on API error
-                    create_placeholder_image(db, image_id, image)
-        
-        # Run the async function in a sync context
-        try:
-            asyncio.run(generate_with_gemini())
-        except Exception as e:
-            print(f"Error in async generation: {e}")
-            # Fall back to placeholder
-            create_placeholder_image(db, image_id, image)
+                print(f"Image uploaded successfully: {image_url}")
+                
+                # Update the image with the GCS URL
+                update_image_status(db, image_id, "completed", image_url)
+                return
+            except Exception as e:
+                print(f"Error uploading to GCS: {e}")
+                # Fallback to placeholder image
+                create_custom_svg_image(db, image_id, image, prompt)
+                return
+        else:
+            print("No images generated")
+            # Fallback to placeholder image
+            create_custom_svg_image(db, image_id, image, prompt)
+            return
                 
     except Exception as e:
-        print(f"Error generating image: {e}")
-        # Update status to failed
-        update_image_status(db, image_id, "failed")
+        print(f"Error generating image with Imagen: {e}")
+        import traceback
+        traceback.print_exc()
+        # Fallback to placeholder image
+        try:
+            image = db.query(ImageModel).filter(ImageModel.id == image_id).first()
+            if image:
+                create_custom_svg_image(db, image_id, image, prompt)
+            else:
+                update_image_status(db, image_id, "failed")
+        except Exception as fallback_error:
+            print(f"Fallback also failed: {fallback_error}")
+            update_image_status(db, image_id, "failed")
     finally:
         db.close()
 
 
-def create_placeholder_image(db: Session, image_id: int, image: ImageModel):
-    """Create a placeholder SVG image and upload to GCS"""
-    # Create a simple SVG placeholder
+def create_custom_svg_image(db: Session, image_id: int, image: ImageModel, prompt: str):
+    """Create a custom SVG image based on the prompt and word"""
+    # Create a more engaging SVG with colors and styling
     svg_content = f'''<svg width="512" height="512" xmlns="http://www.w3.org/2000/svg">
-  <rect width="100%" height="100%" fill="#6690ff"/>
-  <text x="50%" y="50%" font-family="Arial, sans-serif" font-size="24" fill="white" text-anchor="middle" dy=".3em">
-    Generated Image for "{image.original_word}"
-  </text>
-  <text x="50%" y="70%" font-family="Arial, sans-serif" font-size="16" fill="white" text-anchor="middle">
-    {image.translated_word}
-  </text>
+<!-- Background gradient -->
+<defs>
+<linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+<stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+<stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+</linearGradient>
+</defs>
+
+<!-- Background -->
+<rect width="100%" height="100%" fill="url(#bg)"/>
+
+<!-- Decorative circles -->
+<circle cx="100" cy="100" r="30" fill="rgba(255,255,255,0.1)"/>
+<circle cx="412" cy="412" r="40" fill="rgba(255,255,255,0.1)"/>
+<circle cx="412" cy="100" r="25" fill="rgba(255,255,255,0.1)"/>
+<circle cx="100" cy="412" r="35" fill="rgba(255,255,255,0.1)"/>
+
+<!-- Main content -->
+<g transform="translate(256, 200)">
+<!-- Original word -->
+<text x="0" y="0" font-family="Arial, sans-serif" font-size="32" font-weight="bold" fill="white" text-anchor="middle">
+{image.original_word}
+</text>
+
+<!-- Arrow -->
+<text x="0" y="40" font-family="Arial, sans-serif" font-size="24" fill="rgba(255,255,255,0.8)" text-anchor="middle">
+↓
+</text>
+
+<!-- Translation -->
+<text x="0" y="80" font-family="Arial, sans-serif" font-size="28" fill="white" text-anchor="middle">
+{image.translated_word}
+</text>
+
+<!-- Language -->
+<text x="0" y="120" font-family="Arial, sans-serif" font-size="16" fill="rgba(255,255,255,0.7)" text-anchor="middle">
+{image.target_language}
+</text>
+</g>
+
+<!-- Bottom decoration -->
+<rect x="50" y="450" width="412" height="2" fill="rgba(255,255,255,0.3)"/>
+<text x="256" y="480" font-family="Arial, sans-serif" font-size="12" fill="rgba(255,255,255,0.6)" text-anchor="middle">
+Vocabloom Learning Card
+</text>
 </svg>'''
-    
+
     # Convert SVG to base64
-    import base64
     svg_encoded = base64.b64encode(svg_content.encode('utf-8')).decode('utf-8')
-    
+
     # Generate filename
-    filename = f"placeholder_{image_id}_{int(time.time())}.svg"
-    
+    filename = f"custom_svg_{image_id}_{int(time.time())}.svg"
+
     try:
         # Upload to Google Cloud Storage
         image_url = storage_manager.upload_image_from_base64(
-            svg_encoded, 
-            filename, 
+            svg_encoded,
+            filename,
             "image/svg+xml"
         )
-        
+
         # Update the image with the GCS URL
         update_image_status(db, image_id, "completed", image_url)
     except Exception as e:
-        print(f"Error uploading placeholder to GCS: {e}")
+        print(f"Error uploading custom SVG to GCS: {e}")
         # If GCS fails, update status to failed
         update_image_status(db, image_id, "failed")
 
@@ -190,7 +220,7 @@ async def generate_image(
         
         # Create the generation prompt
         base_prompt = f"""
-        Generate a colorful, engaging illustration of "{request.original_word}" (which means "{request.translated_word}" in {request.target_language}).
+        Generate a colorful, engaging illustration of "{request.original_word}" (which means "{request.translated_word}" in {request.target_language}), and also write a short, educational caption describing the image.
         
         Style requirements:
         - {age_guidance}

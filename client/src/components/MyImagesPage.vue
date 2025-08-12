@@ -68,9 +68,9 @@
               <div class="placeholder-spinner"></div>
               <p>Generation in progress...</p>
             </div>
-            <div v-else-if="image.status === 'failed'" class="image-placeholder failed">
+            <div v-else-if="image.status === 'failed'" class="image-placeholder failed" @click="showErrorNotification">
               <div class="failed-icon">❌</div>
-              <p>Generation failed</p>
+              <p>Generation failed (click for details)</p>
             </div>
             <img 
               v-else-if="image.image_url" 
@@ -154,9 +154,11 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useImageStore } from '../stores/images'
+import { useNotificationStore } from '../stores/notification'
 import { SUPPORTED_LANGUAGES } from '../constants/languages'
 
 const imageStore = useImageStore()
+const notificationStore = useNotificationStore()
 
 // State
 const searchTerm = ref('')
@@ -234,6 +236,10 @@ const handleImageError = (event: Event) => {
 const getLanguageDisplay = (languageCode: string) => {
   const language = languages.find(lang => lang.value === languageCode)
   return language ? language.label : languageCode
+}
+
+const showErrorNotification = () => {
+  notificationStore.error('Image generation failed. Check the server logs for details.')
 }
 
 // Watch for changes in filters and reset pagination
