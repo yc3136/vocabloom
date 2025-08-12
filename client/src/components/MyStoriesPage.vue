@@ -55,11 +55,6 @@
             <div class="story-info">
               <div class="story-header">
                 <div class="story-title">{{ story.story_title }}</div>
-                <div class="story-chips">
-                  <span v-if="story.story_theme" class="theme-badge">{{ story.story_theme }}</span>
-                  <span v-if="story.target_language" class="language-badge">{{ getLanguageDisplay(story.target_language) }}</span>
-                  <span v-if="story.target_age_range" class="age-badge">{{ getAgeDisplay(story.target_age_range) }} years old</span>
-                </div>
               </div>
               <div class="story-words">
                 <span class="words-label">Words:</span>
@@ -75,14 +70,21 @@
                 </div>
               </div>
             </div>
-            <div class="story-actions">
-              <button 
-                @click.stop="deleteStory(story.id)"
-                class="remove-btn"
-                title="Delete story"
-              >
-                ×
-              </button>
+            <div class="story-bottom">
+              <div class="story-chips">
+                <span v-if="story.story_theme" class="theme-badge">{{ story.story_theme }}</span>
+                <span v-if="story.target_language" class="language-badge">{{ getLanguageDisplay(story.target_language) }}</span>
+                <span v-if="story.target_age_range" class="age-badge">{{ getAgeDisplay(story.target_age_range) }} years old</span>
+              </div>
+              <div class="story-actions">
+                <button 
+                  @click.stop="deleteStory(story.id)"
+                  class="remove-btn"
+                  title="Delete story"
+                >
+                  ×
+                </button>
+              </div>
             </div>
           </div>
           
@@ -102,11 +104,11 @@
           class="pagination-btn"
           :class="{ 'disabled': currentPage === 1 }"
         >
-          ← Previous
+          ‹
         </button>
         
         <span class="page-info">
-          Page {{ currentPage }} of {{ totalPages }}
+          {{ currentPage }} / {{ totalPages }}
         </span>
         
         <button 
@@ -115,7 +117,7 @@
           class="pagination-btn"
           :class="{ 'disabled': currentPage === totalPages }"
         >
-          Next →
+          ›
         </button>
       </div>
     </div>
@@ -525,6 +527,13 @@ watch(stories, (newStories) => {
   font-weight: 500;
 }
 
+.story-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+}
+
 .story-actions {
   display: flex;
   align-items: center;
@@ -665,11 +674,48 @@ watch(stories, (newStories) => {
   .story-main {
     flex-direction: column;
     align-items: stretch;
+    gap: 12px;
+  }
+  
+  .story-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .story-bottom {
+    margin-top: 8px;
+  }
+  
+  .story-chips {
+    margin-left: 0;
   }
   
   .story-actions {
-    align-self: flex-end;
-    margin-top: 0.5rem;
+    margin-top: 0;
+  }
+  
+  .story-words {
+    margin-top: 8px;
+  }
+  
+  .pagination {
+    flex-direction: row;
+    gap: 8px;
+    padding: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .pagination-btn {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    min-width: 80px;
+  }
+  
+  .page-info {
+    font-size: 0.8rem;
+    white-space: nowrap;
   }
 }
 </style> 

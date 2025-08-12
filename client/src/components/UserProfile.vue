@@ -153,6 +153,50 @@ onUnmounted(() => {
   font-weight: 500;
   color: var(--text-primary);
   font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+@media (max-width: 768px) {
+  .user-email {
+    max-width: 80px;
+    font-size: 13px;
+  }
+  
+  .user-info {
+    padding: 6px 10px;
+    gap: 6px;
+  }
+  
+  .user-avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 13px;
+  }
+  
+  .dropdown-arrow {
+    font-size: 9px;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-email {
+    max-width: 60px;
+    font-size: 12px;
+  }
+  
+  .user-info {
+    padding: 5px 8px;
+    gap: 5px;
+  }
+  
+  .user-avatar {
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+  }
 }
 
 .dropdown-arrow {

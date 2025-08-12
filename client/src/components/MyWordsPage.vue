@@ -97,11 +97,11 @@
           class="pagination-btn"
           :class="{ 'disabled': currentPage === 1 }"
         >
-          ← Previous
+          ‹
         </button>
         
         <div class="page-info">
-          Page {{ currentPage }} of {{ totalPages }}
+          {{ currentPage }} / {{ totalPages }}
         </div>
         
         <button 
@@ -110,7 +110,7 @@
           class="pagination-btn"
           :class="{ 'disabled': currentPage === totalPages }"
         >
-          Next →
+          ›
         </button>
       </div>
     </div>
@@ -745,8 +745,22 @@ onMounted(() => {
   }
   
   .pagination {
-    flex-direction: column;
-    gap: 12px;
+    flex-direction: row;
+    gap: 8px;
+    padding: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .pagination-btn {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    min-width: 80px;
+  }
+  
+  .page-info {
+    font-size: 0.8rem;
+    white-space: nowrap;
   }
 }
 </style> 

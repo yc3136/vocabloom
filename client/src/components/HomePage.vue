@@ -291,9 +291,7 @@ watch(selectedLanguage, async (newLanguage) => {
 </script>
 
 <template>
-  <div class="home-container" @click="handleClickOutside">
-    <p class="subtitle">A simple tool to help you learn and understand new vocabulary with instant translations and explanations.</p>
-    
+  <div class="home-container" @click="handleClickOutside">    
     <div class="input-group">
       <input
         v-model="term"
@@ -325,47 +323,47 @@ watch(selectedLanguage, async (newLanguage) => {
     </div>
     
     <div v-if="renderedResponse" class="response-container">
-      <div class="response-box" v-html="renderedResponse"></div>
-      
-      <!-- Create Content Buttons -->
-      <div class="create-buttons-container">
-        <button 
-          @click="openStoryModal" 
-          class="create-btn story-btn"
-          title="Generate a story with this word"
-        >
-          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
-            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-          </svg>
-          <span class="btn-text">Story</span>
-        </button>
-        
-        <button @click="createFlashcard" class="create-btn flashcard-btn">
+      <div class="response-box">
+        <!-- Create Content Buttons -->
+        <div class="create-buttons-container">
+          <button 
+            @click="openStoryModal" 
+            class="create-btn story-btn"
+            title="Generate a story with this word"
+          >
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+            </svg>
+            <span class="btn-text">Story</span>
+          </button>
+          
+                  <button @click="createFlashcard" class="create-btn flashcard-btn">
           <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-            <line x1="8" y1="12" x2="16" y2="12"/>
-            <line x1="8" y1="16" x2="16" y2="16"/>
-            <line x1="8" y1="8" x2="16" y2="8"/>
+            <path d="M8 12h8"/>
+            <path d="M8 16h8"/>
+            <path d="M8 8h8"/>
           </svg>
           <span class="btn-text">Flashcard</span>
         </button>
+          
+          <button 
+            @click="openImageModal" 
+            class="create-btn image-btn"
+            title="Generate an image for this word"
+          >
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <polyline points="21,15 16,10 5,21"/>
+            </svg>
+            <span class="btn-text">Image</span>
+          </button>
+        </div>
         
-        <button 
-          @click="openImageModal" 
-          class="create-btn image-btn"
-          title="Generate an image for this word"
-        >
-          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-            <circle cx="8.5" cy="8.5" r="1.5"/>
-            <polyline points="21,15 16,10 5,21"/>
-          </svg>
-          <span class="btn-text">Image</span>
-        </button>
+        <div class="response-content" v-html="renderedResponse"></div>
       </div>
-      
-      
     </div>
 
     <!-- Story Generation Modal -->
@@ -416,6 +414,65 @@ watch(selectedLanguage, async (newLanguage) => {
   gap: 1rem;
   margin-top: 2rem;
   align-items: center;
+}
+
+@media (max-width: 768px) {
+  .input-group {
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+  }
+  
+  .term-input {
+    flex: none;
+    width: 100%;
+  }
+  
+  .language-select {
+    flex: none;
+    width: 100%;
+  }
+  
+  .home-container {
+    margin-top: 1rem;
+    padding: 1.5rem 1rem 2rem 1rem;
+    max-width: 100%;
+    margin-left: 1rem;
+    margin-right: 1rem;
+  }
+  
+  .subtitle {
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .lookup-btn {
+    margin-top: 1rem;
+    padding: 0.75rem 1.5rem;
+    width: 100%;
+  }
+  
+  .create-buttons-container {
+    flex-wrap: nowrap;
+    gap: 0.25rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .create-btn {
+    padding: 0.4rem 0.5rem;
+    font-size: 0.75rem;
+    min-width: 0;
+    flex: 0 0 auto;
+  }
+  
+  .btn-text {
+    font-size: 0.75rem;
+  }
+  
+  .btn-icon {
+    width: 14px;
+    height: 14px;
+  }
 }
 
 .term-input {
@@ -493,19 +550,24 @@ watch(selectedLanguage, async (newLanguage) => {
   color: var(--text-primary, #1e293b);
 }
 
+.response-content {
+  line-height: 1.6;
+  color: var(--text-primary, #1e293b);
+}
+
 .create-buttons-container {
-  position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
-  z-index: 10;
   display: flex;
   gap: 0.5rem;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
 }
 
 .create-btn {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.25rem;
   padding: 0.5rem 0.75rem;
   border: 1px solid var(--border-color, #e2e8f0);
   border-radius: 6px;
@@ -516,6 +578,8 @@ watch(selectedLanguage, async (newLanguage) => {
   font-size: 0.875rem;
   font-weight: 500;
   white-space: nowrap;
+  min-width: 0;
+  flex-shrink: 0;
 }
 
 .create-btn:hover {

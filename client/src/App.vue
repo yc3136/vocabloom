@@ -138,6 +138,13 @@ const handleOpenLogIn = () => {
   height: 64px;
   width: auto;
   display: block;
+  object-fit: contain;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  height: 64px;
 }
 
 .nav-links {
@@ -167,6 +174,7 @@ const handleOpenLogIn = () => {
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  height: 64px;
 }
 
 .auth-container {
@@ -174,6 +182,77 @@ const handleOpenLogIn = () => {
   display: flex;
   justify-content: flex-end;
   align-items: center;
+  height: 100%;
+}
+
+@media (max-width: 768px) {
+  .header-content {
+    padding: 0 16px;
+    flex-wrap: wrap;
+    height: auto;
+    padding: 12px 16px;
+  }
+  
+  .logo {
+    height: 48px;
+  }
+  
+  .nav-links {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+    margin-top: 12px;
+    gap: 24px;
+  }
+  
+  .auth-buttons {
+    gap: 8px;
+  }
+  
+  .auth-btn {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+  
+  .auth-container {
+    width: auto;
+    min-width: 120px;
+    height: auto;
+  }
+  
+  .auth-section {
+    height: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-content {
+    padding: 8px 12px;
+    gap: 8px;
+  }
+  
+  .logo-image {
+    height: 48px;
+  }
+  
+  .auth-container {
+    width: auto;
+    min-width: 100px;
+  }
+  
+  .auth-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+  
+  .nav-links {
+    gap: 16px;
+    margin-top: 8px;
+  }
+  
+  .nav-link {
+    font-size: 14px;
+  }
 }
 
 .auth-buttons {
@@ -228,31 +307,7 @@ const handleOpenLogIn = () => {
   background: #f8fafd;
 }
 
-@media (max-width: 768px) {
-  .header-content {
-    padding: 0 16px;
-    flex-wrap: wrap;
-    height: auto;
-    padding: 12px 16px;
-  }
-  
-  .nav-links {
-    order: 3;
-    width: 100%;
-    justify-content: center;
-    margin-top: 12px;
-    gap: 24px;
-  }
-  
-  .auth-buttons {
-    gap: 8px;
-  }
-  
-  .auth-btn {
-    padding: 6px 12px;
-    font-size: 13px;
-  }
-}
+
 </style>
 
 <style>
