@@ -43,12 +43,7 @@
             </div>
           </div>
           
-          <!-- Generation Status Section -->
-          <div v-if="generating" class="generation-status">
-            <div class="loading-spinner"></div>
-            <p>Starting image generation...</p>
-            <p class="status-note">You can close this modal and check the status in My Images page.</p>
-          </div>
+
           
           <!-- Error Section -->
           <div v-if="error" class="error-section">
@@ -64,7 +59,7 @@
             :disabled="generating"
             class="generate-btn"
           >
-            {{ generating ? 'Starting Generation...' : 'Generate Image' }}
+            {{ generating ? 'Starting...' : 'Generate Image' }}
           </button>
         </div>
       </div>
@@ -76,6 +71,7 @@
 import { ref, computed, watch } from 'vue'
 import { useImageStore } from '../stores/images'
 import { usePreferencesStore } from '../stores/preferences'
+import { useNotificationStore } from '../stores/notification'
 
 interface Props {
   show: boolean
@@ -91,6 +87,7 @@ const emit = defineEmits<{
 
 const imageStore = useImageStore()
 const preferencesStore = usePreferencesStore()
+const notificationStore = useNotificationStore()
 
 const imageParams = ref({
   customInstructions: ''
@@ -130,10 +127,12 @@ const generateImage = async () => {
     })
 
     if (result) {
-      // Success - close modal after a short delay
-      setTimeout(() => {
-        closeModal()
-      }, 2000)
+      // Success - close modal immediately and show toast
+      closeModal()
+      notificationStore.success(
+        `Image generation started for "${props.originalWord}"! Check My Images page for progress.`,
+        { duration: 4000 }
+      )
     } else {
       error.value = 'Failed to start image generation'
     }

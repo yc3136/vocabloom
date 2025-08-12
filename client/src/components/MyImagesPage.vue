@@ -108,10 +108,7 @@
               </div>
             </div>
 
-            <div v-if="image.custom_instructions" class="custom-instructions">
-              <p class="instructions-label">Custom Instructions:</p>
-              <p class="instructions-text">{{ image.custom_instructions }}</p>
-            </div>
+
 
             <div class="image-actions">
               <button 
@@ -565,26 +562,7 @@ onMounted(() => {
   color: white;
 }
 
-.custom-instructions {
-  margin-top: 12px;
-  padding: 8px;
-  background: #f9fafb;
-  border-radius: 6px;
-}
 
-.instructions-label {
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: #6b7280;
-  margin: 0 0 4px 0;
-}
-
-.instructions-text {
-  font-size: 0.875rem;
-  color: #374151;
-  margin: 0;
-  line-height: 1.4;
-}
 
 .image-actions {
   margin-top: 12px;
