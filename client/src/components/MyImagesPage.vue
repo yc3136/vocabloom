@@ -71,9 +71,9 @@
               <div class="placeholder-spinner"></div>
               <p>Generation in progress...</p>
             </div>
-            <div v-else-if="image.status === 'failed'" class="image-placeholder failed" @click="showErrorNotification">
+            <div v-else-if="image.status === 'failed'" class="image-placeholder failed">
               <div class="failed-icon">❌</div>
-              <p>Generation failed (click for details)</p>
+              <p>Generation failed</p>
             </div>
             <img 
               v-else-if="image.image_url" 
@@ -81,6 +81,8 @@
               :alt="`Generated image for ${image.original_word}`"
               class="generated-image"
               @error="handleImageError"
+              @click="openImageInNewTab(image.image_url)"
+              title="Click to open image in new tab"
             />
             <div v-else class="image-placeholder">
               <div class="placeholder-icon">🖼️</div>
@@ -104,7 +106,6 @@
               <div class="image-badges">
                 <span class="language-badge">{{ getLanguageDisplay(image.target_language) }}</span>
                 <span v-if="image.child_age" class="age-badge">{{ image.child_age }} years old</span>
-                <span class="status-badge" :class="image.status">{{ image.status }}</span>
               </div>
             </div>
 
@@ -238,9 +239,11 @@ const getLanguageDisplay = (languageCode: string) => {
   return language ? language.label : languageCode
 }
 
-const showErrorNotification = () => {
-  notificationStore.error('Image generation failed. Check the server logs for details.')
+const openImageInNewTab = (imageUrl: string) => {
+  window.open(imageUrl, '_blank')
 }
+
+
 
 // Watch for changes in filters and reset pagination
 watch([searchTerm, selectedLanguage, selectedStatus], () => {
@@ -472,6 +475,12 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.generated-image:hover {
+  transform: scale(1.02);
 }
 
 .image-metadata {

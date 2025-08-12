@@ -31,25 +31,31 @@ def generate_image_sync(image_id: int, prompt: str):
         import vertexai
         from vertexai.preview.vision_models import ImageGenerationModel
         
-        # Initialize Vertex AI
+        # Initialize Vertex AI with fresh connection
         project_id = os.getenv("GOOGLE_CLOUD_PROJECT", "vocabloom-467020")
         location = "us-central1"
         
-        vertexai.init(project=project_id, location=location)
+        # Reset and reinitialize Vertex AI to ensure clean state
+        try:
+            vertexai.init(project=project_id, location=location)
+            print(f"Vertex AI initialized for project: {project_id}")
+        except Exception as init_error:
+            print(f"Vertex AI init error: {init_error}")
+            update_image_status(db, image_id, "failed")
+            return
         
         print(f"Generating image with Imagen for: {image.original_word} -> {image.translated_word}")
         
-        # Load the ImageGenerationModel for Imagen 4 Standard
+        # Load the ImageGenerationModel for Imagen
         model = ImageGenerationModel.from_pretrained("imagen-4.0-generate-preview-06-06")
         
         # Generate images from the text prompt
+        print(f"Calling Imagen API with prompt: {prompt[:100]}...")
         images = model.generate_images(
             prompt=prompt,
-            number_of_images=1,
-            aspect_ratio="1:1",  # Square aspect ratio for consistent cards
-            safety_filter_level="block_some",  # Moderate safety filtering
-            person_generation="dont_allow"  # Don't generate people for safety
+            number_of_images=1
         )
+        print(f"API call completed successfully")
         
         print(f"Successfully generated {len(images.images)} image(s).")
         
@@ -155,32 +161,34 @@ async def generate_image(
         base_prompt = f"""
         Create a simple, colorful educational illustration for children learning {request.target_language}.
 
-        Requirements:
-        - Show a clear, simple illustration of "{request.original_word}" (which means "{request.translated_word}" in {request.target_language})
+        CRITICAL REQUIREMENTS:
+        - DO NOT include any text, words, letters, or writing in the image
+        - DO NOT include any labels, captions, or text overlays
+        - DO NOT include any metadata, instructions, or technical information
+        - The image should be completely text-free
+        - Show ONLY a visual illustration of "{request.original_word}" (which means "{request.translated_word}" in {request.target_language})
         - Use bright, child-friendly colors
         - Simple cartoon style with clean lines
         - White background
-        - No text, words, or letters in the image
-        - No metadata, technical information, or extra text
         - Focus only on the visual representation of the word/concept
         - Fill the entire canvas with the illustration
         - Use the full available space effectively
         - Make the illustration large and prominent
 
-        Style: Simple, educational, colorful, child-friendly, clean design, full canvas utilization, no text
+        Style: Simple, educational, colorful, child-friendly, clean design, full canvas utilization, ABSOLUTELY NO TEXT
         """
         
         # Add simple word type guidance
         original_word_lower = request.original_word.lower()
         
         if any(word in original_word_lower for word in ['run', 'jump', 'walk', 'eat', 'sleep', 'play', 'dance', 'sing', 'read', 'write']):
-            base_prompt += "\nShow the action being performed."
+            base_prompt += "\nShow the action being performed visually (no text)."
         elif any(word in original_word_lower for word in ['big', 'small', 'tall', 'short', 'fast', 'slow', 'hot', 'cold', 'happy', 'sad']):
-            base_prompt += "\nShow contrasting examples to illustrate the concept."
+            base_prompt += "\nShow contrasting examples to illustrate the concept visually (no text)."
         elif any(word in original_word_lower for word in ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown', 'black', 'white']):
-            base_prompt += "\nShow the color prominently."
+            base_prompt += "\nShow the color prominently (no text labels)."
         else:
-            base_prompt += "\nShow the object/concept clearly."
+            base_prompt += "\nShow the object/concept clearly (no text)."
         
         if request.custom_instructions:
             base_prompt += f"\nAdditional instructions: {request.custom_instructions}"
