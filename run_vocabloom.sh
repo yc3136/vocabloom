@@ -18,6 +18,8 @@ check_postgresql() {
         echo "🔄 Starting PostgreSQL service..."
         brew services start postgresql@14
         sleep 2
+    else
+        echo "✅ PostgreSQL is already running"
     fi
 }
 
