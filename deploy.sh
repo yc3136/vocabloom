@@ -73,6 +73,7 @@ echo "🚀 Vocabloom Deployment Script"
 echo "Targets:"
 echo "  ✅ Backend deployment"
 echo "  ✅ Frontend deployment"
+echo "  ✅ Redis setup"
 [ "$SETUP_DATABASE" = true ] && echo "  ✅ Database setup"
 echo ""
 
@@ -108,6 +109,32 @@ check_dependencies() {
     fi
     
     print_success "All required dependencies are installed"
+}
+
+# Setup production Redis
+setup_production_redis() {
+    print_status "Setting up production Redis (Memorystore)..."
+    
+    # Check if Redis instance already exists
+    if gcloud redis instances describe vocabloom-redis --region=us-central1 --quiet 2>/dev/null; then
+        print_status "Redis instance already exists"
+    else
+        # Create Redis instance
+        print_status "Creating Redis instance..."
+        gcloud redis instances create vocabloom-redis \
+            --size=1 \
+            --region=us-central1 \
+            --redis-version=redis_6_x \
+            --tier=BASIC \
+            --quiet
+    fi
+    
+    # Get Redis connection info
+    REDIS_HOST=$(gcloud redis instances describe vocabloom-redis --region=us-central1 --format="value(host)")
+    REDIS_PORT=$(gcloud redis instances describe vocabloom-redis --region=us-central1 --format="value(port)")
+    
+    print_success "Redis setup completed!"
+    print_status "Redis Host: $REDIS_HOST:$REDIS_PORT"
 }
 
 # Setup production database
@@ -165,6 +192,10 @@ deploy_backend() {
         exit 1
     fi
     
+    # Get Redis connection info
+    REDIS_HOST=$(gcloud redis instances describe vocabloom-redis --region=us-central1 --format="value(host)")
+    REDIS_PORT=$(gcloud redis instances describe vocabloom-redis --region=us-central1 --format="value(port)")
+    
     # Deploy to Cloud Run with Cloud SQL Auth Proxy
     print_status "Building and deploying backend..."
     gcloud run deploy vocabloom-api \
@@ -173,7 +204,7 @@ deploy_backend() {
         --allow-unauthenticated \
         --platform=managed \
         --add-cloudsql-instances=vocabloom-467020:us-central1:vocabloom-db \
-        --set-env-vars="GOOGLE_CLOUD_PROJECT=vocabloom-467020,ENVIRONMENT=production,DB_USER=vocabloom-app,DB_NAME=vocabloom,DB_HOST=/cloudsql/vocabloom-467020:us-central1:vocabloom-db" \
+        --set-env-vars="GOOGLE_CLOUD_PROJECT=vocabloom-467020,ENVIRONMENT=production,DB_USER=vocabloom-app,DB_NAME=vocabloom,DB_HOST=/cloudsql/vocabloom-467020:us-central1:vocabloom-db,REDIS_HOST=$REDIS_HOST,REDIS_PORT=$REDIS_PORT" \
         --set-secrets="DB_PASSWORD=database-password:latest" \
         --quiet
     
@@ -291,7 +322,8 @@ main() {
         run_production_migrations
     fi
     
-    # Always deploy backend and frontend
+    # Always setup Redis and deploy backend and frontend
+    setup_production_redis
     deploy_backend
     deploy_frontend
     
@@ -313,6 +345,7 @@ main() {
     
     print_status "📊 Firebase Console: https://console.firebase.google.com/project/vocabloom-467020/hosting"
     print_status "☁️  Cloud Run Console: https://console.cloud.google.com/run/detail/us-central1/vocabloom-api"
+    print_status "🔴 Redis Console: https://console.cloud.google.com/memorystore/redis/instances"
 }
 
 # Run the main function

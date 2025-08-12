@@ -5,6 +5,8 @@ import { useAuthStore } from '../stores/auth'
 import { useFlashcardStore } from '../stores/flashcards'
 import { usePreferencesStore } from '../stores/preferences'
 import { useTranslationStore } from '../stores/translations'
+import { useQuotaStore } from '../stores/quota'
+import { useNotificationStore } from '../stores/notification'
 import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE } from '../constants/languages'
 import StoryGenerationModal from './StoryGenerationModal.vue'
 import ImageGenerationModal from './ImageGenerationModal.vue'
@@ -23,6 +25,8 @@ const authStore = useAuthStore()
 const flashcardStore = useFlashcardStore()
 const preferencesStore = usePreferencesStore()
 const translationStore = useTranslationStore()
+const quotaStore = useQuotaStore()
+const notificationStore = useNotificationStore()
 
 // Use the shared language constants
 const languages = SUPPORTED_LANGUAGES
@@ -127,13 +131,30 @@ async function lookup() {
 }
 
 function openStoryModal() {
+  // Check if user is authenticated
+  if (!authStore.isAuthenticated) {
+    notificationStore.error('Please sign in to generate stories!')
+    return
+  }
+  
   if (!term?.value?.trim()) {
-    alert('Please enter a word first to generate a story!')
+    notificationStore.error('Please enter a word first to generate a story!')
     return
   }
   
   if (!selectedLanguage.value) {
-    alert('Please select a language first to generate a story!')
+    notificationStore.error('Please select a language first to generate a story!')
+    return
+  }
+  
+  // Check quota before opening modal
+  if (!quotaStore.hasQuota('story')) {
+    const quota = quotaStore.getQuota('story')
+    if (quota) {
+      notificationStore.warning(`Daily story generation limit reached! You have used ${quota.used}/${quota.limit} stories today. Please try again tomorrow.`)
+    } else {
+      notificationStore.warning('Daily story generation limit reached. Please try again tomorrow.')
+    }
     return
   }
   
@@ -179,13 +200,30 @@ async function createFlashcard() {
 }
 
 function openImageModal() {
+  // Check if user is authenticated
+  if (!authStore.isAuthenticated) {
+    notificationStore.error('Please sign in to generate images!')
+    return
+  }
+  
   if (!term?.value?.trim()) {
-    alert('Please enter a word first to generate an image!')
+    notificationStore.error('Please enter a word first to generate an image!')
     return
   }
   
   if (!selectedLanguage.value) {
-    alert('Please select a language first to generate an image!')
+    notificationStore.error('Please select a language first to generate an image!')
+    return
+  }
+  
+  // Check quota before opening modal
+  if (!quotaStore.hasQuota('image')) {
+    const quota = quotaStore.getQuota('image')
+    if (quota) {
+      notificationStore.warning(`Daily image generation limit reached! You have used ${quota.used}/${quota.limit} images today. Please try again tomorrow.`)
+    } else {
+      notificationStore.warning('Daily image generation limit reached. Please try again tomorrow.')
+    }
     return
   }
   
@@ -207,6 +245,7 @@ onMounted(async () => {
   console.log('HomePage mounted, initial selectedLanguage:', selectedLanguage.value)
   if (authStore.isAuthenticated) {
     await preferencesStore.loadPreferences()
+    await quotaStore.loadQuotas()
     // Set the selected language to user's preferred language if available
     if (preferencesStore.preferredLanguage) {
       selectedLanguage.value = preferencesStore.preferredLanguage
@@ -220,10 +259,13 @@ onMounted(async () => {
 watch(() => authStore.isAuthenticated, async (isAuthenticated) => {
   if (isAuthenticated) {
     await preferencesStore.loadPreferences()
+    await quotaStore.loadQuotas()
     // Set the selected language to user's preferred language if available
     if (preferencesStore.preferredLanguage) {
       selectedLanguage.value = preferencesStore.preferredLanguage
     }
+  } else {
+    quotaStore.clearQuotas()
   }
 })
 
@@ -322,6 +364,8 @@ watch(selectedLanguage, async (newLanguage) => {
           <span class="btn-text">Image</span>
         </button>
       </div>
+      
+      
     </div>
 
     <!-- Story Generation Modal -->
@@ -518,4 +562,6 @@ watch(selectedLanguage, async (newLanguage) => {
   border-color: #f59e0b;
   background: #f59e0b;
 }
+
+
 </style>

@@ -11,6 +11,7 @@ from app.schemas import Image, ImageCreate, ImageUpdate, ImageGenerationRequest
 from app.crud import create_image, get_image, update_image, delete_image, update_image_status, get_images
 from app.auth import get_current_user
 from app.storage import storage_manager
+from app.redis_quota import check_and_increment_quota, get_remaining_quota
 
 router = APIRouter(prefix="/images", tags=["images"])
 
@@ -141,6 +142,13 @@ async def generate_image(
 ):
     """Start image generation process"""
     try:
+        # Check quota before starting generation
+        if not check_and_increment_quota(current_user.id, 'image'):
+            quota_info = get_remaining_quota(current_user.id, 'image')
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail=f"Daily image generation limit reached. You have used {quota_info['used']}/{quota_info['limit']} images today. Please try again tomorrow."
+            )
         # Build the generation prompt
         age_guidance = ""
         if request.child_age:
@@ -215,6 +223,9 @@ async def generate_image(
             "message": "Image generation started. You can check the status in My Images page."
         }
         
+    except HTTPException:
+        # Re-raise HTTP exceptions (like quota limits) without modification
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

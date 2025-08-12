@@ -8,6 +8,7 @@ from ..schemas import Story as StorySchema, StoryCreate, StoryGenerationRequest
 from ..crud import create_story, get_stories, get_story, delete_story
 from ..auth import get_current_user
 from ..models import User
+from ..redis_quota import check_and_increment_quota, get_remaining_quota
 import httpx
 import os
 import json
@@ -22,6 +23,13 @@ async def generate_story(
 ):
     """Generate a story using Gemini 2.0 Flash API"""
     try:
+        # Check quota before starting generation
+        if not check_and_increment_quota(current_user.id, 'story'):
+            quota_info = get_remaining_quota(current_user.id, 'story')
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail=f"Daily story generation limit reached. You have used {quota_info['used']}/{quota_info['limit']} stories today. Please try again tomorrow."
+            )
         # Validate required fields
         if not request.words or len(request.words) == 0:
             raise HTTPException(
@@ -169,6 +177,9 @@ async def generate_story(
             status_code=status.HTTP_504_GATEWAY_TIMEOUT,
             detail="Story generation timed out"
         )
+    except HTTPException:
+        # Re-raise HTTP exceptions (like quota limits) without modification
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

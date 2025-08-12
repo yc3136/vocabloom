@@ -369,7 +369,14 @@ const generateStory = async () => {
     console.log('Raw story content received:', data.story_content)
     generatedStory.value = data.story_content
   } catch (e) {
-    error.value = 'Failed to generate story. Please try again.'
+    const errorMessage = e instanceof Error ? e.message : 'Failed to generate story. Please try again.'
+    
+    // Check if it's a quota error and show as warning
+    if (errorMessage.includes('limit reached') || errorMessage.includes('quota')) {
+      error.value = `⚠️ ${errorMessage}`
+    } else {
+      error.value = errorMessage
+    }
     console.error('Story generation error:', e)
   } finally {
     generating.value = false

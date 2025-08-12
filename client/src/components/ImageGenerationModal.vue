@@ -137,7 +137,14 @@ const generateImage = async () => {
       error.value = 'Failed to start image generation'
     }
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Failed to generate image'
+    const errorMessage = err instanceof Error ? err.message : 'Failed to generate image'
+    
+    // Check if it's a quota error and show as warning
+    if (errorMessage.includes('limit reached') || errorMessage.includes('quota')) {
+      error.value = `⚠️ ${errorMessage}`
+    } else {
+      error.value = errorMessage
+    }
   } finally {
     generating.value = false
   }

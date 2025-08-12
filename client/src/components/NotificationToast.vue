@@ -22,7 +22,7 @@ import { computed, watch, ref } from 'vue';
 interface Props {
   show: boolean;
   message: string;
-  type: 'success' | 'error' | 'info';
+  type: 'success' | 'error' | 'warning' | 'info';
   duration?: number;
   allowHtml?: boolean;
 }
@@ -44,6 +44,7 @@ const icon = computed(() => {
   switch (props.type) {
     case 'success': return '✅';
     case 'error': return '❌';
+    case 'warning': return '⚠️';
     case 'info': return 'ℹ️';
     default: return 'ℹ️';
   }
@@ -110,6 +111,12 @@ watch(() => props.show, (newShow) => {
   background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   color: white;
   box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
+}
+
+.notification-toast.warning {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  box-shadow: 0 8px 32px rgba(245, 158, 11, 0.3);
 }
 
 .notification-content {

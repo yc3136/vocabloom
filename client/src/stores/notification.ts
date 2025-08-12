@@ -3,7 +3,7 @@ import { ref } from 'vue';
 
 export interface NotificationOptions {
   message: string;
-  type?: 'success' | 'error' | 'info';
+  type?: 'success' | 'error' | 'warning' | 'info';
   duration?: number;
   allowHtml?: boolean;
 }
@@ -11,7 +11,7 @@ export interface NotificationOptions {
 export const useNotificationStore = defineStore('notification', () => {
   const show = ref(false);
   const message = ref('');
-  const type = ref<'success' | 'error' | 'info'>('info');
+  const type = ref<'success' | 'error' | 'warning' | 'info'>('info');
   const allowHtml = ref(false);
   const duration = ref(5000); // Default 5 seconds
 
@@ -70,6 +70,14 @@ export const useNotificationStore = defineStore('notification', () => {
     });
   };
 
+  const warning = (message: string, options?: Partial<NotificationOptions>) => {
+    showNotification({
+      message,
+      type: 'warning',
+      ...options
+    });
+  };
+
   return {
     show,
     message,
@@ -80,6 +88,7 @@ export const useNotificationStore = defineStore('notification', () => {
     hide,
     success,
     error,
+    warning,
     info
   };
 }); 

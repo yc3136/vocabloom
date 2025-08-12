@@ -105,6 +105,11 @@ export const useImageStore = defineStore('images', () => {
       })
 
       if (!response.ok) {
+        // Handle quota exceeded error
+        if (response.status === 429) {
+          const errorData = await response.json().catch(() => ({}))
+          throw new Error(errorData.detail || 'Daily image generation limit reached. Please try again tomorrow.')
+        }
         throw new Error(`HTTP error! status: ${response.status}`)
       }
 
