@@ -1,7 +1,7 @@
 # Vocabloom
 
-**Document Version:** 1.3  
-**Last Updated:** Aug 1, 2025
+**Document Version:** 2.0  
+**Last Updated:** Jan 15, 2025
 
 ---
 
@@ -25,8 +25,8 @@ Vocabloom will support all major world languages, leveraging the capabilities of
 
 ## Roadmap
 
-### Milestone 1: MVP Launch
-- **Purpose:** Deliver a core generative AI experience where users can create unique language learning content via text translation. This MVP will validate the core value proposition for multilingual families and lay the foundation for future product enhancements.
+### Milestone 1: MVP Launch ✅ COMPLETED
+- **Purpose:** Deliver a core generative AI experience where users can create unique language learning content via text translation. This MVP validated the core value proposition for multilingual families and laid the foundation for future product enhancements.
 
 #### Functional Requirements
 1. Users can input an English term (e.g., "dinosaur," "galaxy") into a dedicated field.
@@ -44,7 +44,7 @@ Vocabloom will support all major world languages, leveraging the capabilities of
 
 ---
 
-### Milestone 2: User Account Management & Content Organization
+### Milestone 2: User Account Management & Content Organization ✅ COMPLETED
 
 #### Functional Requirements (User Stories)
 
@@ -90,7 +90,7 @@ Vocabloom will support all major world languages, leveraging the capabilities of
 
 ---
 
-### Milestone 3: Story Generation & Content Discovery
+### Milestone 3: Story Generation & Content Discovery ✅ COMPLETED
 
 #### Functional Requirements (User Stories)
 
@@ -124,7 +124,7 @@ Vocabloom will support all major world languages, leveraging the capabilities of
 
 ---
 
-### Milestone 4: Image Generation & Visual Content
+### Milestone 4: Image Generation & Visual Content ✅ COMPLETED
 
 #### Functional Requirements (User Stories)
 - **FR-4.1:** As a user, I can request an image to be generated alongside my text translation for visual context.

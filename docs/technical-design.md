@@ -1,14 +1,14 @@
 # Vocabloom Technical Design
 
-**Document Version:** 1.6
-**Last Updated:** Dec 19, 2024
-**Status:** MVP Complete ✅ | Milestone 2 Complete ✅ | Milestone 3 Complete ✅ | Story Generation Complete ✅ | Image Generation Complete ✅ | Content Discovery Complete ✅
+**Document Version:** 2.0
+**Last Updated:** Jan 15, 2025
+**Status:** MVP Complete ✅ | Milestone 2 Complete ✅ | Milestone 3 Complete ✅ | Milestone 4 Complete ✅ | Content Discovery Complete ✅ | Advanced Features Complete ✅
 
 ---
 
 ## 1. Overview
 
-This document outlines the technical architecture, technology choices, and infrastructure for Vocabloom. The MVP has been successfully implemented and deployed to production. Milestone 2 focuses on user account management, content organization, and flashcard features. Milestone 3 includes AI-powered story generation with age-appropriate content and related word recommendations.
+This document outlines the technical architecture, technology choices, and infrastructure for Vocabloom. All major milestones have been successfully implemented and deployed to production. The platform now includes comprehensive AI-powered features including translations, story generation, image generation, content discovery, and advanced user management capabilities.
 
 **Production URLs:**
 - **Frontend**: https://vocabloom.app (custom domain) / https://vocabloom-467020.web.app (Firebase)
@@ -42,11 +42,12 @@ This document outlines the technical architecture, technology choices, and infra
 
 ### 2.3. AI/ML Integration
 
-- **Provider:** Gemini 2.0 Flash API (primary for LLM-powered translation and explanation)
-- **Image Generation:** Imagen 4.0 Standard via Vertex AI (Milestone 4)
+- **Provider:** Gemini 2.0 Flash API (primary for LLM-powered translation, explanation, and story generation)
+- **Image Generation:** Imagen 4.0 Standard via Vertex AI (Milestone 4) ✅
 - **Integration:** Direct REST API calls using httpx (Gemini), Vertex AI SDK (Imagen)
-- **Response Format:** JSON with translation and explanation fields
+- **Response Format:** JSON with translation, explanation, and story fields
 - **Error Handling:** Graceful fallback with user-friendly error messages and custom SVG generation
+- **Quota Management:** Redis-based quota tracking and management system ✅
 
 ### 2.4. Cloud & Infrastructure
 
@@ -56,10 +57,11 @@ This document outlines the technical architecture, technology choices, and infra
   - **Frontend Hosting:** Firebase Hosting
   - **Authentication:** Firebase Auth (user management, OAuth providers)
   - **Database:** Cloud SQL (PostgreSQL) (relational database for user data and content)
-  - **Object Storage:** Google Cloud Storage (GCS) (for static assets and generated images)
-  - **Secrets Management:** Secret Manager (for API keys and database credentials)
-  - **Monitoring:** Cloud Monitoring, Error Reporting
-  - **CI/CD:** GitHub Actions, manual deployment scripts
+  - **Object Storage:** Google Cloud Storage (GCS) (for static assets and generated images) ✅
+- **Secrets Management:** Secret Manager (for API keys and database credentials)
+- **Monitoring:** Cloud Monitoring, Error Reporting
+- **CI/CD:** GitHub Actions, manual deployment scripts
+- **Caching:** Redis (for quota management and session data) ✅
 
 ### 2.5. DevOps & Tooling
 
