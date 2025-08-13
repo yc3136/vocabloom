@@ -150,7 +150,7 @@ watch(() => props.frontContent, () => {
 .flip-card-container {
   perspective: 1000px;
   width: 100%;
-  height: 300px;
+  height: 100%;
   cursor: pointer;
   /* Remove tap highlight and focus effects */
   -webkit-tap-highlight-color: transparent;
@@ -194,10 +194,23 @@ watch(() => props.frontContent, () => {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   background: var(--bg-surface, #ffffff);
   border: 2px solid var(--border-color, #e2e8f0);
+  /* Enhanced contrast for dark mode */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1), 
+              0 0 0 1px rgba(255, 255, 255, 0.1);
 }
 
 .card-back {
   transform: rotateY(180deg);
+}
+
+/* Dark mode specific enhancements */
+[data-theme="dark"] .card-front,
+[data-theme="dark"] .card-back {
+  background: #2a2a2a;
+  border: 2px solid #404040;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4),
+              0 0 0 1px rgba(255, 255, 255, 0.1),
+              0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .card-content {
@@ -397,10 +410,6 @@ watch(() => props.frontContent, () => {
 
 /* Responsive design */
 @media (max-width: 768px) {
-  .flip-card-container {
-    height: 250px;
-  }
-  
   .card-content {
     padding: 1.5rem;
   }
@@ -418,6 +427,27 @@ watch(() => props.frontContent, () => {
   .example-input,
   .example-text {
     font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .card-content {
+    padding: 1rem;
+  }
+  
+  .word-input,
+  .word-text {
+    font-size: 1.3rem;
+  }
+  
+  .translation-input,
+  .translation-text {
+    font-size: 1.1rem;
+  }
+  
+  .example-input,
+  .example-text {
+    font-size: 0.85rem;
   }
 }
 </style> 

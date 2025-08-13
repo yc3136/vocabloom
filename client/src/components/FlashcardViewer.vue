@@ -1,14 +1,16 @@
 <template>
   <div class="flashcard-viewer-overlay" v-if="show" @click="closeViewer">
-    <FlipCard
-      :front-content="flashcard.original_word"
-      :back-content="{
-        translation: flashcard.translated_word,
-        examples: flashcard.example_sentences || []
-      }"
-      :editable="false"
-      @click.stop
-    />
+    <div class="flashcard-container">
+      <FlipCard
+        :front-content="flashcard.original_word"
+        :back-content="{
+          translation: flashcard.translated_word,
+          examples: flashcard.example_sentences || []
+        }"
+        :editable="false"
+        @click.stop
+      />
+    </div>
   </div>
 </template>
 
@@ -64,6 +66,21 @@ const closeViewer = () => {
   user-select: none;
 }
 
+/* Enhanced overlay for dark mode */
+[data-theme="dark"] .flashcard-viewer-overlay {
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+}
+
+.flashcard-container {
+  width: 90vw;
+  max-width: 35rem;
+  height: 60vh;
+  max-height: 25rem;
+  min-width: 20rem;
+  min-height: 15rem;
+}
+
 /* Remove focus outline from the overlay */
 .flashcard-viewer-overlay:focus {
   outline: none;
@@ -76,5 +93,23 @@ const closeViewer = () => {
 
 .flashcard-viewer-overlay *:focus {
   outline: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .flashcard-container {
+    width: 95vw;
+    height: 50vh;
+    max-width: none;
+    max-height: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .flashcard-container {
+    width: 98vw;
+    height: 60vh;
+    min-height: 18rem;
+  }
 }
 </style> 
