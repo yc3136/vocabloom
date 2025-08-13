@@ -152,6 +152,18 @@ watch(() => props.frontContent, () => {
   width: 100%;
   height: 300px;
   cursor: pointer;
+  /* Remove tap highlight and focus effects */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.flip-card-container:focus {
+  outline: none;
 }
 
 .flip-card {
@@ -160,6 +172,12 @@ watch(() => props.frontContent, () => {
   height: 100%;
   transform-style: preserve-3d;
   transition: transform 0.6s ease-in-out;
+  /* Remove any potential flash effects */
+  -webkit-tap-highlight-color: transparent;
+}
+
+.flip-card:focus {
+  outline: none;
 }
 
 .flip-card.flipped {

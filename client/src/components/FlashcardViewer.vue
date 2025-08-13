@@ -54,5 +54,27 @@ const closeViewer = () => {
   justify-content: center;
   z-index: 1000;
   cursor: pointer;
+  /* Remove any potential flash effects */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Remove focus outline from the overlay */
+.flashcard-viewer-overlay:focus {
+  outline: none;
+}
+
+/* Ensure no blue flash on any child elements */
+.flashcard-viewer-overlay * {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.flashcard-viewer-overlay *:focus {
+  outline: none;
 }
 </style> 

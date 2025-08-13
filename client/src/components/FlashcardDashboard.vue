@@ -16,39 +16,92 @@
       <p>Create your first flashcard from the homepage!</p>
     </div>
 
-    <div v-else class="flashcards-grid">
-      <div 
-        v-for="flashcard in flashcards" 
-        :key="flashcard.id" 
-        class="flashcard-item"
-        @click="selectFlashcard(flashcard)"
-      >
-        <div class="flashcard-content">
-          <div class="flashcard-header">
-            <h3>{{ flashcard.original_word }}</h3>
-            <div class="flashcard-actions">
-              <button 
-                @click.stop="deleteFlashcard(flashcard.id)" 
-                class="remove-btn"
-                title="Delete flashcard"
-              >
-                ×
-              </button>
-            </div>
+    <div v-else class="flashcards-content">
+      <div class="flashcards-header">
+        <div class="search-filters">
+          <div class="search-box">
+            <input 
+              v-model="searchTerm" 
+              type="text" 
+              placeholder="Search by word, translation, or examples..."
+              class="search-input"
+            />
           </div>
-          <div class="flashcard-translation">{{ flashcard.translated_word }}</div>
-          <div v-if="flashcard.example_sentences?.length" class="flashcard-examples">
-            <div v-for="sentence in flashcard.example_sentences.slice(0, 2)" :key="sentence" class="example-sentence">
-              {{ sentence }}
-            </div>
-            <div v-if="flashcard.example_sentences.length > 2" class="more-examples">
-              +{{ flashcard.example_sentences.length - 2 }} more
-            </div>
-          </div>
-          <div class="flashcard-meta">
-            <span class="badge badge--language">{{ flashcard.target_language || 'Language' }}</span>
+          <div class="language-filter">
+            <select v-model="selectedLanguage" class="language-select">
+              <option value="">All Languages</option>
+              <option v-for="lang in languages" :key="lang.value" :value="lang.value">
+                {{ lang.label }}
+              </option>
+            </select>
           </div>
         </div>
+        <div class="stats">
+          <span class="stat-item">
+            <strong>{{ filteredFlashcards.length }}</strong> flashcards
+          </span>
+        </div>
+      </div>
+
+      <div class="flashcards-grid">
+        <div 
+          v-for="flashcard in paginatedFlashcards" 
+          :key="flashcard.id" 
+          class="flashcard-item"
+          @click="selectFlashcard(flashcard)"
+        >
+          <div class="flashcard-content">
+            <div class="flashcard-header">
+              <h3>{{ flashcard.original_word }}</h3>
+              <div class="flashcard-actions">
+                <button 
+                  @click.stop="deleteFlashcard(flashcard.id)" 
+                  class="remove-btn"
+                  title="Delete flashcard"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+            <div class="flashcard-translation">{{ flashcard.translated_word }}</div>
+            <div v-if="flashcard.example_sentences?.length" class="flashcard-examples">
+              <div v-for="sentence in flashcard.example_sentences.slice(0, 2)" :key="sentence" class="example-sentence">
+                {{ sentence }}
+              </div>
+              <div v-if="flashcard.example_sentences.length > 2" class="more-examples">
+                +{{ flashcard.example_sentences.length - 2 }} more
+              </div>
+            </div>
+            <div class="flashcard-meta">
+              <span class="badge badge--language">{{ getLanguageDisplay(flashcard.target_language) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div v-if="totalPages > 1" class="pagination">
+        <button 
+          @click="currentPage = Math.max(1, currentPage - 1)"
+          :disabled="currentPage === 1"
+          class="pagination-btn"
+          :class="{ 'disabled': currentPage === 1 }"
+        >
+          ‹
+        </button>
+        
+        <div class="page-info">
+          {{ currentPage }} / {{ totalPages }}
+        </div>
+        
+        <button 
+          @click="currentPage = Math.min(totalPages, currentPage + 1)"
+          :disabled="currentPage === totalPages"
+          class="pagination-btn"
+          :class="{ 'disabled': currentPage === totalPages }"
+        >
+          ›
+        </button>
       </div>
     </div>
 
@@ -67,6 +120,7 @@ import { ref, onMounted, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useFlashcardStore } from '../stores/flashcards';
 import { useAuthStore } from '../stores/auth';
+import { SUPPORTED_LANGUAGES } from '../constants/languages';
 import FlashcardViewer from './FlashcardViewer.vue';
 
 const route = useRoute();
@@ -75,10 +129,62 @@ const authStore = useAuthStore();
 const showViewer = ref(false);
 const viewingFlashcard = ref<any>(null);
 
+// Search and filter state
+const searchTerm = ref('');
+const selectedLanguage = ref('');
+const currentPage = ref(1);
+const itemsPerPage = 12;
+
+// Use the shared language constants
+const languages = SUPPORTED_LANGUAGES;
+
 // Computed property to ensure reactivity
 const flashcards = computed(() => {
   return flashcardStore.flashcards;
 });
+
+// Filtered flashcards based on search and language
+const filteredFlashcards = computed(() => {
+  let filtered = flashcards.value;
+  
+  // Filter by search term
+  if (searchTerm.value) {
+    const term = searchTerm.value.toLowerCase();
+    filtered = filtered.filter(flashcard => 
+      flashcard.original_word.toLowerCase().includes(term) ||
+      flashcard.translated_word.toLowerCase().includes(term) ||
+      (flashcard.example_sentences && flashcard.example_sentences.some(sentence => 
+        sentence.toLowerCase().includes(term)
+      ))
+    );
+  }
+  
+  // Filter by language
+  if (selectedLanguage.value) {
+    filtered = filtered.filter(flashcard => 
+      flashcard.target_language === selectedLanguage.value
+    );
+  }
+  
+  return filtered;
+});
+
+// Pagination
+const totalPages = computed(() => {
+  return Math.ceil(filteredFlashcards.value.length / itemsPerPage);
+});
+
+const paginatedFlashcards = computed(() => {
+  const startIndex = (currentPage.value - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  return filteredFlashcards.value.slice(startIndex, endIndex);
+});
+
+// Helper function to get language display name
+const getLanguageDisplay = (languageCode: string) => {
+  const language = languages.find(lang => lang.value === languageCode);
+  return language ? language.label : languageCode;
+};
 
 // Simple function to load flashcards
 const loadFlashcards = async () => {
@@ -106,6 +212,11 @@ watch(() => authStore.isAuthenticated, (isAuthenticated) => {
     loadFlashcards();
   }
 }, { immediate: true });
+
+// Watch for filter changes to reset pagination
+watch([searchTerm, selectedLanguage], () => {
+  currentPage.value = 1;
+});
 
 // Also load on mount as backup
 onMounted(() => {
@@ -139,7 +250,6 @@ const closeModal = () => {
   viewingFlashcard.value = null;
 };
 
-
 </script>
 
 <style scoped>
@@ -149,18 +259,62 @@ const closeModal = () => {
   padding: 24px;
 }
 
-.dashboard-header {
+.flashcards-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
-.dashboard-header h2 {
-  margin: 0;
+.search-filters {
+  display: flex;
+  gap: 12px;
+  flex: 1;
+}
+
+.search-box {
+  flex: 1;
+  max-width: 300px;
+}
+
+.language-filter {
+  min-width: 120px;
+}
+
+.search-input, .language-select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+  background: var(--bg-surface);
   color: var(--text-primary);
-  font-size: 28px;
-  font-weight: 700;
+}
+
+.search-input:focus, .language-select:focus {
+  border-color: var(--primary-blue);
+}
+
+.language-select {
+  cursor: pointer;
+}
+
+.stats {
+  display: flex;
+  gap: 24px;
+}
+
+.stat-item {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.stat-item strong {
+  color: var(--text-primary);
 }
 
 .loading-state,
@@ -218,6 +372,7 @@ const closeModal = () => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 24px;
+  margin-bottom: 24px;
 }
 
 .flashcard-item {
@@ -304,6 +459,19 @@ const closeModal = () => {
   font-size: 12px;
 }
 
+.badge {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.badge--language {
+  background: var(--primary-blue);
+  color: var(--bg-surface);
+}
+
 .template-badge {
   background: rgba(102, 144, 255, 0.1);
   color: var(--primary-blue);
@@ -313,5 +481,86 @@ const closeModal = () => {
   text-transform: capitalize;
 }
 
+/* Pagination styles */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 24px;
+  padding: 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+}
 
+.pagination-btn {
+  background: var(--primary-blue);
+  color: var(--bg-surface);
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.pagination-btn:hover:not(.disabled) {
+  background: var(--blue-hover);
+}
+
+.pagination-btn.disabled {
+  background: var(--border-color);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+}
+
+.page-info {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .flashcards-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .search-filters {
+    flex-direction: column;
+  }
+  
+  .search-box {
+    max-width: none;
+  }
+  
+  .stats {
+    justify-content: center;
+  }
+  
+  .flashcards-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .pagination {
+    flex-direction: row;
+    gap: 8px;
+    padding: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .pagination-btn {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    min-width: 80px;
+  }
+  
+  .page-info {
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+}
 </style> 
