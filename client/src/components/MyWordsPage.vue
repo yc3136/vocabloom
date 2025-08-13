@@ -60,7 +60,7 @@
               </div>
             </div>
             <div class="word-meta">
-              <span class="language-badge">{{ word.target_language }}</span>
+              <span class="badge badge--language">{{ word.target_language }}</span>
               <button 
                 @click.stop="removeWord(word.original_word)"
                 class="remove-btn"

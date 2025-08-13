@@ -1,34 +1,35 @@
 <template>
-  <div class="auth-modal-overlay" v-if="show" @click="closeModal">
-    <div class="auth-modal" @click.stop>
-      <div class="auth-modal-header">
+  <div class="modal-overlay" v-if="show" @click="closeModal">
+    <div class="modal-content" @click.stop>
+      <div class="modal-header">
         <h2>Sign Up</h2>
         <button class="close-btn" @click="closeModal">&times;</button>
       </div>
       
       <form @submit.prevent="handleSubmit" class="auth-form">
         <div class="form-group">
-          <label for="email">Email</label>
+          <label for="email" class="form-label">Email</label>
           <input 
             type="email" 
             id="email" 
             v-model="email" 
             required 
             placeholder="Enter your email"
+            class="form-input"
           />
         </div>
         
         <div class="form-group">
-          <label for="password">Password</label>
+          <label for="password" class="form-label">Password</label>
           <div class="password-input-container">
-            <input 
-              :type="showPassword ? 'text' : 'password'"
-              id="password" 
-              v-model="password" 
-              required 
-              placeholder="Create a password (min 6 characters)"
-              class="password-input"
-            />
+                          <input 
+                :type="showPassword ? 'text' : 'password'"
+                id="password" 
+                v-model="password" 
+                required 
+                placeholder="Create a password (min 6 characters)"
+                class="form-input password-input"
+              />
             <button 
               type="button"
               @click="showPassword = !showPassword"
@@ -41,7 +42,7 @@
         </div>
         
         <div class="form-group">
-          <label for="confirmPassword">Confirm Password</label>
+          <label for="confirmPassword" class="form-label">Confirm Password</label>
           <div class="password-input-container">
             <input 
               :type="showConfirmPassword ? 'text' : 'password'"
@@ -49,7 +50,7 @@
               v-model="confirmPassword" 
               required 
               placeholder="Confirm your password"
-              class="password-input"
+              class="form-input password-input"
             />
             <button 
               type="button"
@@ -72,7 +73,7 @@
           <small>See env.example for the required variables.</small>
         </div>
         
-        <button type="submit" class="submit-btn" :disabled="authStore.loading || !authStore.isFirebaseConfigured || !canSubmit">
+        <button type="submit" class="btn btn--primary" :disabled="authStore.loading || !authStore.isFirebaseConfigured || !canSubmit">
           {{ authStore.loading ? 'Creating Account...' : 'Create Account' }}
         </button>
       </form>
@@ -85,7 +86,7 @@
       <!-- Google Sign Up Button -->
       <button 
         @click="handleGoogleSignIn" 
-        class="google-signin-btn" 
+        class="btn btn--google" 
         :disabled="authStore.loading || !authStore.isFirebaseConfigured"
         type="button"
       >

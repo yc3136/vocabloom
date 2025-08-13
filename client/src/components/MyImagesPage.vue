@@ -103,9 +103,9 @@
                 <p class="title-text">{{ image.title }}</p>
               </div>
               
-              <div class="image-badges">
-                <span class="language-badge">{{ getLanguageDisplay(image.target_language) }}</span>
-                <span v-if="image.child_age" class="age-badge">{{ image.child_age }} years old</span>
+                      <div class="image-badges">
+          <span class="badge badge--language">{{ getLanguageDisplay(image.target_language) }}</span>
+          <span v-if="image.child_age" class="badge badge--age">{{ image.child_age }} years old</span>
               </div>
             </div>
 

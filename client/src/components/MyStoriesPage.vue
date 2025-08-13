@@ -72,9 +72,9 @@
             </div>
             <div class="story-bottom">
               <div class="story-chips">
-                <span v-if="story.story_theme" class="theme-badge">{{ story.story_theme }}</span>
-                <span v-if="story.target_language" class="language-badge">{{ getLanguageDisplay(story.target_language) }}</span>
-                <span v-if="story.target_age_range" class="age-badge">{{ getAgeDisplay(story.target_age_range) }} years old</span>
+                        <span v-if="story.story_theme" class="badge badge--theme">{{ story.story_theme }}</span>
+        <span v-if="story.target_language" class="badge badge--language">{{ getLanguageDisplay(story.target_language) }}</span>
+        <span v-if="story.target_age_range" class="badge badge--age">{{ getAgeDisplay(story.target_age_range) }} years old</span>
               </div>
               <div class="story-actions">
                 <button 

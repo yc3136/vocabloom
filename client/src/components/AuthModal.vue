@@ -1,7 +1,7 @@
 <template>
-  <div class="auth-modal-overlay" v-if="show" @click="closeModal">
-    <div class="auth-modal" @click.stop>
-      <div class="auth-modal-header">
+  <div class="modal-overlay" v-if="show" @click="closeModal">
+    <div class="modal-content" @click.stop>
+      <div class="modal-header">
         <h2>Sign In</h2>
         <button class="close-btn" @click="closeModal">&times;</button>
       </div>
@@ -9,7 +9,7 @@
               <!-- Google Log In Button -->
         <button 
           @click="handleGoogleSignIn" 
-          class="google-signin-btn" 
+          class="btn btn--google" 
           :disabled="authStore.loading || !authStore.isFirebaseConfigured"
           type="button"
         >
@@ -29,18 +29,19 @@
         
         <form @submit.prevent="handleSubmit" class="auth-form">
           <div class="form-group">
-            <label for="email">Email</label>
+            <label for="email" class="form-label">Email</label>
             <input 
               type="email" 
               id="email" 
               v-model="email" 
               required 
               placeholder="Enter your email"
+              class="form-input"
             />
           </div>
           
           <div class="form-group">
-            <label for="password">Password</label>
+            <label for="password" class="form-label">Password</label>
             <div class="password-input-container">
               <input 
                 :type="showPassword ? 'text' : 'password'"
@@ -48,7 +49,7 @@
                 v-model="password" 
                 required 
                 placeholder="Enter your password"
-                class="password-input"
+                class="form-input password-input"
               />
               <button 
                 type="button"
@@ -76,7 +77,7 @@
             <small>See env.example for the required variables.</small>
           </div>
           
-          <button type="submit" class="submit-btn" :disabled="authStore.loading || !authStore.isFirebaseConfigured">
+          <button type="submit" class="btn btn--primary" :disabled="authStore.loading || !authStore.isFirebaseConfigured">
             {{ authStore.loading ? 'Loading...' : 'Continue' }}
           </button>
         </form>
@@ -177,39 +178,11 @@ const openSignUpModal = () => {
 </script>
 
 <style scoped>
-.auth-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+/* Custom styles for auth-specific elements */
+.auth-form {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.auth-modal {
-  background: var(--bg-surface);
-  border-radius: 8px;
-  padding: 24px;
-  width: 100%;
-  max-width: 400px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-}
-
-.auth-modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
-
-.auth-modal-header h2 {
-  margin: 0;
-  color: var(--text-primary);
-  font-size: 24px;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .auth-subtitle {
@@ -223,57 +196,6 @@ const openSignUpModal = () => {
   line-height: 1.5;
 }
 
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  color: var(--text-secondary);
-  padding: 0;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.close-btn:hover {
-  color: var(--text-primary);
-}
-
-.auth-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.form-group label {
-  font-weight: 500;
-  color: var(--text-primary);
-  font-size: 14px;
-}
-
-.form-group input {
-  padding: 12px;
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  font-size: 16px;
-  transition: border-color 0.2s;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.form-group input:focus {
-  outline: none;
-  border-color: var(--primary-blue);
-}
-
 .password-input-container {
   position: relative;
   display: flex;
@@ -283,8 +205,6 @@ const openSignUpModal = () => {
 
 .password-input {
   padding-right: 40px; /* Make room for the toggle button */
-  width: 100%;
-  box-sizing: border-box;
 }
 
 .password-toggle-btn {
@@ -344,27 +264,6 @@ const openSignUpModal = () => {
   border-radius: 4px;
 }
 
-.submit-btn {
-  background: var(--primary-blue);
-  color: white;
-  border: none;
-  padding: 12px;
-  border-radius: 4px;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.submit-btn:hover:not(:disabled) {
-  background: var(--blue-hover);
-}
-
-.submit-btn:disabled {
-  background: var(--text-secondary);
-  cursor: not-allowed;
-}
-
 
 
 .divider {
@@ -387,32 +286,7 @@ const openSignUpModal = () => {
   padding: 0 16px;
 }
 
-.google-signin-btn {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 12px;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  background: white;
-  color: var(--text-primary);
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
 
-.google-signin-btn:hover:not(:disabled) {
-  background: var(--bg-primary);
-  border-color: var(--text-secondary);
-}
-
-.google-signin-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
 
 .google-icon {
   width: 20px;

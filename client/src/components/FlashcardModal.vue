@@ -1,12 +1,12 @@
 <template>
-  <div class="flashcard-modal-overlay" v-if="show" @click="closeModal">
-    <div class="flashcard-modal" @click.stop>
+  <div class="modal-overlay" v-if="show" @click="closeModal">
+    <div class="modal-content" @click.stop>
       <div class="modal-header">
         <h2>{{ props.initialData?.id ? 'Edit Flashcard' : 'Create Flashcard' }}</h2>
         <button class="close-btn" @click="closeModal">&times;</button>
       </div>
       
-      <div class="modal-content">
+      <div class="modal-body">
         <!-- Flashcard Preview/Editor -->
         <div class="flashcard-section">
           <FlipCard
@@ -21,24 +21,25 @@
           />
         </div>
         
-        <!-- Action Buttons -->
-        <div class="action-buttons">
-          <button 
-            type="button" 
-            class="btn-secondary" 
-            @click="closeModal"
-          >
-            Cancel
-          </button>
-          <button 
-            type="button" 
-            class="btn-primary" 
-            @click="handleSubmit"
-            :disabled="flashcardStore.loading || !authStore.isFirebaseConfigured || !isValid"
-          >
-            {{ flashcardStore.loading ? 'Loading...' : (props.initialData?.id ? 'Update Flashcard' : 'Create Flashcard') }}
-          </button>
-        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button 
+          type="button" 
+          class="btn btn--secondary" 
+          @click="closeModal"
+        >
+          Cancel
+        </button>
+        <button 
+          type="button" 
+          class="btn btn--primary" 
+          @click="handleSubmit"
+          :disabled="flashcardStore.loading || !authStore.isFirebaseConfigured || !isValid"
+        >
+          {{ flashcardStore.loading ? 'Loading...' : (props.initialData?.id ? 'Update Flashcard' : 'Create Flashcard') }}
+        </button>
+      </div>
         
         <!-- Error Message -->
         <div class="error-message" v-if="flashcardStore.error">

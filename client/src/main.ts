@@ -2,8 +2,9 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 
-// Import global design tokens
+// Import global design tokens and design system
 import './design-tokens.css'
+import './design-system.css'
 
 // Import Vuetify and styles
 // import 'vuetify/styles'

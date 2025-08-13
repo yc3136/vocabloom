@@ -11,7 +11,7 @@
         <div class="input-section">
           <div class="form-row">
             <div class="form-group">
-              <label for="theme">Theme (Optional)</label>
+              <label for="theme" class="form-label">Theme (Optional)</label>
               <select v-model="storyParams.theme" id="theme" class="form-input">
                 <option value="adventure">Adventure</option>
                 <option value="educational">Educational</option>
@@ -24,7 +24,7 @@
             </div>
             
             <div class="form-group">
-              <label for="maxWords">Max Words</label>
+              <label for="maxWords" class="form-label">Max Words</label>
               <input 
                 v-model.number="storyParams.maxWords" 
                 id="maxWords" 
@@ -38,7 +38,7 @@
           </div>
           
           <div v-if="storyParams.theme === 'custom'" class="form-group">
-            <label for="customTheme">Custom Theme</label>
+            <label for="customTheme" class="form-label">Custom Theme</label>
             <input 
               v-model="storyParams.customTheme" 
               id="customTheme" 
@@ -48,7 +48,7 @@
           </div>
           
           <div class="form-group">
-            <label for="customPrompt">Custom Instructions (Optional)</label>
+            <label for="customPrompt" class="form-label">Custom Instructions (Optional)</label>
             <textarea 
               v-model="storyParams.customPrompt" 
               id="customPrompt" 
@@ -59,13 +59,15 @@
           </div>
           
           <div class="form-group">
-            <label>Words to Include</label>
+            <label class="form-label">Words to Include</label>
             
             <!-- Original word (always selected) -->
             <div class="words-display">
-              <span v-for="word in props.words" :key="word" class="word-chip selected">
-                {{ word }} / {{ props.translation || 'Loading...' }}
-              </span>
+              <div v-for="word in props.words" :key="word" class="word-pair">
+                <span class="word-pair__original">{{ word }}</span>
+                <span class="word-pair__divider">/</span>
+                <span class="word-pair__translation">{{ props.translation || 'Loading...' }}</span>
+              </div>
             </div>
             
             <!-- Related words section -->
@@ -91,7 +93,7 @@
           
           <!-- Age-appropriate indicator -->
           <div v-if="childAge" class="age-indicator">
-            <span class="age-badge">
+            <span class="badge badge--age">
               For {{ childAge }} year old
             </span>
           </div>
@@ -119,7 +121,7 @@
         <button 
           @click="generateStory" 
           :disabled="generating || !canGenerate"
-          class="btn btn-primary"
+          class="btn btn--primary"
         >
           {{ generatedStory ? 'Regenerate' : 'Generate Story' }}
         </button>
@@ -128,12 +130,12 @@
           v-if="generatedStory" 
           @click="saveStory" 
           :disabled="saving"
-          class="btn btn-secondary"
+          class="btn btn--secondary"
         >
           {{ saving ? 'Saving...' : 'Save Story' }}
         </button>
         
-        <button @click="closeModal" class="btn btn-cancel">
+        <button @click="closeModal" class="btn btn--secondary">
           Close
         </button>
       </div>

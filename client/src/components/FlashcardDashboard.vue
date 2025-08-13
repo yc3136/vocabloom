@@ -42,7 +42,7 @@
             </div>
           </div>
           <div class="flashcard-meta">
-            <span class="template-badge">{{ flashcard.target_language || 'Language' }}</span>
+            <span class="badge badge--language">{{ flashcard.target_language || 'Language' }}</span>
             <span class="date">{{ formatDate(flashcard.created_at) }}</span>
           </div>
         </div>

@@ -10,7 +10,7 @@
         <!-- Input Section -->
         <div class="input-section">
           <div class="form-group">
-            <label for="customInstructions">Custom Instructions (Optional)</label>
+            <label for="customInstructions" class="form-label">Custom Instructions (Optional)</label>
             <textarea 
               v-model="imageParams.customInstructions" 
               id="customInstructions" 
@@ -26,17 +26,19 @@
             <div class="info-row">
               <!-- Word pair display -->
               <div class="words-display">
-                <span class="word-chip selected">
-                  {{ props.originalWord }} / {{ props.translatedWord }}
-                </span>
+                <div class="word-pair">
+                  <span class="word-pair__original">{{ props.originalWord }}</span>
+                  <span class="word-pair__divider">/</span>
+                  <span class="word-pair__translation">{{ props.translatedWord }}</span>
+                </div>
               </div>
               
               <!-- Language badge -->
-              <div class="language-badge">{{ props.targetLanguage }}</div>
+              <div class="badge badge--language">{{ props.targetLanguage }}</div>
               
               <!-- Age-appropriate indicator -->
               <div v-if="childAge" class="age-indicator">
-                <span class="age-badge">
+                <span class="badge badge--age">
                   For {{ childAge }} year old
                 </span>
               </div>
@@ -53,11 +55,11 @@
         </div>
         
         <div class="modal-footer">
-          <button @click="closeModal" class="cancel-btn">Cancel</button>
+          <button @click="closeModal" class="btn btn--secondary">Cancel</button>
           <button 
             @click="generateImage" 
             :disabled="generating"
-            class="generate-btn"
+            class="btn btn--primary"
           >
             {{ generating ? 'Starting...' : 'Generate Image' }}
           </button>

@@ -106,10 +106,10 @@
               </div>
             </div>
             <div class="card-footer">
-              <div class="card-badges">
-                <span class="content-type-badge">📚 Flashcard</span>
-                <span class="language-badge">{{ item.target_language }}</span>
-              </div>
+                        <div class="card-badges">
+            <span class="badge badge--content-type">📚 Flashcard</span>
+            <span class="badge badge--language">{{ item.target_language }}</span>
+          </div>
               <span class="date">{{ formatDate(item.created_at) }}</span>
             </div>
           </div>
@@ -121,11 +121,11 @@
               <div class="card-subtitle" v-html="renderMarkdown(item.story_content)"></div>
             </div>
             <div class="card-footer">
-              <div class="card-badges">
-                <span class="content-type-badge">📖 Story</span>
-                <span class="language-badge">{{ item.target_language }}</span>
-                <span v-if="item.target_age_range" class="age-badge">{{ formatAgeGroup(item.target_age_range) }}</span>
-              </div>
+                          <div class="card-badges">
+              <span class="badge badge--content-type">📖 Story</span>
+              <span class="badge badge--language">{{ item.target_language }}</span>
+              <span v-if="item.target_age_range" class="badge badge--age">{{ formatAgeGroup(item.target_age_range) }}</span>
+            </div>
               <span class="date">{{ formatDate(item.created_at) }}</span>
             </div>
           </div>
@@ -140,10 +140,10 @@
               <p class="card-subtitle">{{ item.translated_word }}</p>
             </div>
             <div class="card-footer">
-              <div class="card-badges">
-                <span class="content-type-badge">🖼️ Image</span>
-                <span class="language-badge">{{ item.target_language }}</span>
-              </div>
+                          <div class="card-badges">
+              <span class="badge badge--content-type">🖼️ Image</span>
+              <span class="badge badge--language">{{ item.target_language }}</span>
+            </div>
               <span class="date">{{ formatDate(item.created_at) }}</span>
             </div>
           </div>
@@ -151,8 +151,8 @@
           <!-- Translation Card -->
           <div v-else-if="item.content_type === 'translation'" class="card-content">
             <div class="card-header">
-              <span class="content-type-badge">🌐 Translation</span>
-              <span class="language-badge">{{ item.target_language }}</span>
+              <span class="badge badge--content-type">🌐 Translation</span>
+              <span class="badge badge--language">{{ item.target_language }}</span>
             </div>
             <div class="card-body">
               <h3 class="card-title">{{ item.original_word }}</h3>
