@@ -24,6 +24,10 @@ export const useAuthStore = defineStore('auth', () => {
   const error = ref<string | null>(null);
   const isFirebaseConfigured = ref(true);
   
+  // Global auth modal management
+  const showAuthModal = ref(false);
+  const showSignUpModal = ref(false);
+  
   const notificationStore = useNotificationStore();
 
   const initAuth = () => {
@@ -279,12 +283,66 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isAuthenticated = computed(() => !!user.value);
 
+  // Global auth modal management functions
+  const openAuthModal = () => {
+    showAuthModal.value = true;
+  };
+
+  const closeAuthModal = () => {
+    showAuthModal.value = false;
+  };
+
+  const openSignUpModal = () => {
+    showSignUpModal.value = true;
+  };
+
+  const closeSignUpModal = () => {
+    showSignUpModal.value = false;
+  };
+
+  const handleAuthSuccess = () => {
+    showAuthModal.value = false;
+    showSignUpModal.value = false;
+    notificationStore.success('Successfully signed in!');
+  };
+
+  const handleOpenSignUp = () => {
+    showAuthModal.value = false;
+    showSignUpModal.value = true;
+  };
+
+  const handleOpenLogIn = () => {
+    showSignUpModal.value = false;
+    showAuthModal.value = true;
+  };
+
+  // Function to require authentication - shows auth modal if not authenticated
+  const requireAuth = (action: string = 'continue'): boolean => {
+    if (!isAuthenticated.value) {
+      notificationStore.info(`Please sign in to ${action}.`);
+      openAuthModal();
+      return false;
+    }
+    return true;
+  };
+
   return {
     user,
     loading,
     error,
     isAuthenticated,
     isFirebaseConfigured,
+    // Auth modal management
+    showAuthModal,
+    showSignUpModal,
+    openAuthModal,
+    closeAuthModal,
+    openSignUpModal,
+    closeSignUpModal,
+    handleAuthSuccess,
+    handleOpenSignUp,
+    handleOpenLogIn,
+    requireAuth,
     signIn,
     signUp,
     signInWithGoogle,

@@ -9,40 +9,6 @@ import NotificationToast from './components/NotificationToast.vue';
 
 const authStore = useAuthStore();
 const notificationStore = useNotificationStore();
-const showAuthModal = ref(false);
-const showSignUpModal = ref(false);
-
-const openAuthModal = () => {
-  showAuthModal.value = true;
-};
-
-const closeAuthModal = () => {
-  showAuthModal.value = false;
-};
-
-// const openSignUpModal = () => {
-//   showSignUpModal.value = true;
-// };
-
-const closeSignUpModal = () => {
-  showSignUpModal.value = false;
-};
-
-const handleAuthSuccess = () => {
-  showAuthModal.value = false;
-  showSignUpModal.value = false;
-  notificationStore.success('Successfully signed in!');
-};
-
-const handleOpenSignUp = () => {
-  showAuthModal.value = false;
-  showSignUpModal.value = true;
-};
-
-const handleOpenLogIn = () => {
-  showSignUpModal.value = false;
-  showAuthModal.value = true;
-};
 </script>
 
 <template>
@@ -69,7 +35,7 @@ const handleOpenLogIn = () => {
             </div>
             <!-- Show single sign in/sign up button when not loading and not authenticated -->
             <div v-else-if="!authStore.isAuthenticated" class="auth-buttons">
-              <button @click="openAuthModal()" class="auth-btn signin-btn">Sign In / Sign Up</button>
+              <button @click="authStore.openAuthModal()" class="auth-btn signin-btn">Sign In / Sign Up</button>
             </div>
             <!-- Show user profile when authenticated -->
             <UserProfile v-else />
@@ -84,18 +50,18 @@ const handleOpenLogIn = () => {
 
     <!-- Auth Modal -->
     <AuthModal 
-      :show="showAuthModal" 
-      @close="closeAuthModal"
-      @success="handleAuthSuccess"
-      @openSignUp="handleOpenSignUp"
+      :show="authStore.showAuthModal" 
+      @close="authStore.closeAuthModal"
+      @success="authStore.handleAuthSuccess"
+      @openSignUp="authStore.handleOpenSignUp"
     />
     
     <!-- Sign Up Modal -->
     <SignUpModal 
-      :show="showSignUpModal" 
-      @close="closeSignUpModal"
-      @success="handleAuthSuccess"
-      @openLogIn="handleOpenLogIn"
+      :show="authStore.showSignUpModal" 
+      @close="authStore.closeSignUpModal"
+      @success="authStore.handleAuthSuccess"
+      @openLogIn="authStore.handleOpenLogIn"
     />
 
     <!-- Global Notifications -->

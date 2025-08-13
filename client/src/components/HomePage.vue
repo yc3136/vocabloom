@@ -132,8 +132,7 @@ async function lookup() {
 
 function openStoryModal() {
   // Check if user is authenticated
-  if (!authStore.isAuthenticated) {
-    notificationStore.error('Please sign in to generate stories!')
+  if (!authStore.requireAuth('generate stories')) {
     return
   }
   
@@ -171,38 +170,9 @@ function handleStorySave(story: any) {
   console.log('Story saved:', story)
 }
 
-async function createFlashcard() {
-  if (!authStore.isAuthenticated) {
-            alert('Please sign in to create flashcards!')
-    return
-  }
-
-  loading.value = true
-  error.value = ''
-
-  try {
-    const flashcardData = {
-      original_word: term.value,
-      translated_word: translation.value,
-      target_language: selectedLanguage.value,
-      example_sentences: examples.value,
-      colors: { primary: '#6690ff', secondary: '#64748b' }
-    }
-
-    await flashcardStore.createFlashcard(flashcardData)
-    // Flashcard created successfully
-  } catch (e) {
-    error.value = 'Error creating flashcard. Please try again.'
-    console.error('Flashcard creation error:', e)
-  } finally {
-    loading.value = false
-  }
-}
-
 function openImageModal() {
   // Check if user is authenticated
-  if (!authStore.isAuthenticated) {
-    notificationStore.error('Please sign in to generate images!')
+  if (!authStore.requireAuth('generate images')) {
     return
   }
   
@@ -234,6 +204,40 @@ function openImageModal() {
 function closeImageModal() {
   showImageModal.value = false
 }
+
+function handleImageSave(image: any) {
+  // Image saved successfully
+  console.log('Image saved:', image)
+}
+
+async function createFlashcard() {
+  if (!authStore.requireAuth('create flashcards')) {
+    return
+  }
+
+  loading.value = true
+  error.value = ''
+
+  try {
+    const flashcardData = {
+      original_word: term.value,
+      translated_word: translation.value,
+      target_language: selectedLanguage.value,
+      example_sentences: examples.value,
+      colors: { primary: '#6690ff', secondary: '#64748b' }
+    }
+
+    await flashcardStore.createFlashcard(flashcardData)
+    // Flashcard created successfully
+  } catch (e) {
+    error.value = 'Error creating flashcard. Please try again.'
+    console.error('Flashcard creation error:', e)
+  } finally {
+    loading.value = false
+  }
+}
+
+
 
 // Close dropdown when clicking outside
 function handleClickOutside(event: Event) {

@@ -146,6 +146,7 @@ import { ref, computed, watch, watchEffect, nextTick } from 'vue'
 import { marked } from 'marked'
 import { usePreferencesStore } from '../stores/preferences'
 import { useStoriesStore } from '../stores/stories'
+import { useAuthStore } from '../stores/auth'
 
 interface StoryParams {
   theme: string
@@ -176,6 +177,7 @@ const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 const preferencesStore = usePreferencesStore()
 const storiesStore = useStoriesStore()
+const authStore = useAuthStore()
 
 const storyParams = ref<StoryParams>({
   theme: 'educational',
@@ -351,11 +353,15 @@ const generateStory = async () => {
     console.log('Generating story with params:', requestBody)
     console.log('Target language being sent:', props.targetLanguage)
     
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    
+    // Add auth token
+    const token = await authStore.getIdToken();
+    headers['Authorization'] = `Bearer ${token}`;
+    
     const response = await fetch(`${API_BASE}/api/stories/generate`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers,
       body: JSON.stringify(requestBody)
     })
     

@@ -19,6 +19,7 @@ router = APIRouter(prefix="/stories", tags=["stories"])
 @router.post("/generate")
 async def generate_story(
     request: StoryGenerationRequest,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Generate a story using Gemini 2.0 Flash API"""
