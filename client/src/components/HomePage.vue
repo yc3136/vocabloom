@@ -123,8 +123,12 @@ async function lookup() {
       }
     }
   } catch (e) {
-    error.value = 'Error contacting backend. Please try again.'
+    error.value = 'Generation failed, please try again later. You can explore content in <a href="/discover" class="error-link">Discover</a>.'
     console.error('Translation error:', e)
+    // Clear any partial data to avoid showing misleading content
+    translation.value = ''
+    explanation.value = ''
+    examples.value = []
   } finally {
     loading.value = false
   }
@@ -329,10 +333,10 @@ watch(selectedLanguage, async (newLanguage) => {
     </button>
     
     <div v-if="error" class="error-box">
-      <p>{{ error }}</p>
+      <p v-html="error"></p>
     </div>
     
-    <div v-if="renderedResponse" class="response-container">
+    <div v-if="renderedResponse && !error" class="response-container">
       <div class="response-box">
         <!-- Create Content Buttons -->
         <div class="create-buttons-container">
@@ -637,5 +641,15 @@ watch(selectedLanguage, async (newLanguage) => {
   background: var(--warning-amber);
 }
 
+.error-link {
+  color: var(--primary-blue);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.error-link:hover {
+  text-decoration: underline;
+  color: var(--blue-hover);
+}
 
 </style>

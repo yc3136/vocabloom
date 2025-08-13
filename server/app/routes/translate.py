@@ -152,13 +152,9 @@ async def translate(
             
             if response.status_code != 200:
                 print(f"Gemini API error: {response.status_code} - {response.text}")
-                # Fallback to mock response on API error
-                return TranslateResponse(
-                    translation=f"[{request.language}] {request.term}",
-                    explanation=f"Translation service temporarily unavailable. This is a fallback response for '{request.term}' to {request.language}.",
-                    examples=get_age_appropriate_examples(request.term, request.language, request.child_age),
-                    cached=False,
-                    cache_hit_count=None
+                raise HTTPException(
+                    status_code=503,
+                    detail="Translation service temporarily unavailable. Please try again later."
                 )
             
             data = response.json()
@@ -230,31 +226,22 @@ async def translate(
                             cache_hit_count=None
                         )
             
-            # Fallback if response format is unexpected
+            # Unexpected response format
             print(f"Unexpected Gemini response format: {data}")
-            return TranslateResponse(
-                translation=f"[{request.language}] {request.term}",
-                explanation=f"Unexpected response format from translation service. This is a fallback for '{request.term}' to {request.language}.",
-                examples=get_age_appropriate_examples(request.term, request.language, request.child_age),
-                cached=False,
-                cache_hit_count=None
+            raise HTTPException(
+                status_code=500,
+                detail="Translation service returned an unexpected response format. Please try again later."
             )
             
     except httpx.TimeoutException:
         print("Gemini API request timed out")
-        return TranslateResponse(
-            translation=f"[{request.language}] {request.term}",
-            explanation=f"Translation request timed out. This is a fallback response for '{request.term}' to {request.language}.",
-            examples=get_age_appropriate_examples(request.term, request.language, request.child_age),
-            cached=False,
-            cache_hit_count=None
+        raise HTTPException(
+            status_code=504,
+            detail="Translation request timed out. Please try again later."
         )
     except Exception as e:
         print(f"Translation error: {str(e)}")
-        return TranslateResponse(
-            translation=f"[{request.language}] {request.term}",
-            explanation=f"Translation service error: {str(e)}. This is a fallback response for '{request.term}' to {request.language}.",
-            examples=get_age_appropriate_examples(request.term, request.language, request.child_age),
-            cached=False,
-            cache_hit_count=None
+        raise HTTPException(
+            status_code=500,
+            detail="Translation service error. Please try again later."
         ) 
