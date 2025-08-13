@@ -186,9 +186,15 @@ function openImageModal() {
     return
   }
   
+  // Debug quota check
+  console.log('Quota check - quotas:', quotaStore.quotas)
+  console.log('Quota check - hasQuota image:', quotaStore.hasQuota('image'))
+  console.log('Quota check - getQuota image:', quotaStore.getQuota('image'))
+  
   // Check quota before opening modal
   if (!quotaStore.hasQuota('image')) {
     const quota = quotaStore.getQuota('image')
+    console.log('Quota exceeded - quota:', quota)
     if (quota) {
       notificationStore.warning(`Daily image generation limit reached! You have used ${quota.used}/${quota.limit} images today. Please try again tomorrow.`)
     } else {

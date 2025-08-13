@@ -11,12 +11,12 @@ from app.schemas import Image, ImageCreate, ImageUpdate, ImageGenerationRequest
 from app.crud import create_image, get_image, update_image, delete_image, update_image_status, get_images
 from app.auth import get_current_user
 from app.storage import storage_manager
-from app.redis_quota import check_and_increment_quota, get_remaining_quota
+from app.redis_quota import check_and_increment_quota, check_quota_only, get_remaining_quota, has_pending_generation, start_generation, end_generation
 
 router = APIRouter(prefix="/images", tags=["images"])
 
 
-def generate_image_sync(image_id: int, prompt: str):
+def generate_image_sync(image_id: int, prompt: str, user_id: str):
     """Synchronous background task to generate image using Imagen API"""
     # Create a new database session for the background task
     db = Session(engine)
@@ -26,6 +26,8 @@ def generate_image_sync(image_id: int, prompt: str):
         if not image:
             print(f"Image record not found for ID: {image_id}")
             update_image_status(db, image_id, "failed")
+            # Mark generation as ended
+            end_generation(user_id, 'image')
             return
         
         # Import Vertex AI
@@ -43,6 +45,8 @@ def generate_image_sync(image_id: int, prompt: str):
         except Exception as init_error:
             print(f"Vertex AI init error: {init_error}")
             update_image_status(db, image_id, "failed")
+            # Mark generation as ended
+            end_generation(user_id, 'image')
             return
         
         print(f"Generating image with Imagen for: {image.original_word} -> {image.translated_word}")
@@ -93,14 +97,21 @@ def generate_image_sync(image_id: int, prompt: str):
                     update_image_status(db, image_id, "completed", image_url, generated_title)
                 else:
                     update_image_status(db, image_id, "completed", image_url)
+                
+                # Mark generation as ended
+                end_generation(user_id, 'image')
                 return
             except Exception as e:
                 print(f"Error uploading to GCS: {e}")
                 update_image_status(db, image_id, "failed")
+                # Mark generation as ended
+                end_generation(user_id, 'image')
                 return
         else:
             print("No images generated")
             update_image_status(db, image_id, "failed")
+            # Mark generation as ended
+            end_generation(user_id, 'image')
             return
                 
     except Exception as e:
@@ -109,6 +120,8 @@ def generate_image_sync(image_id: int, prompt: str):
         traceback.print_exc()
         # Mark as failed
         update_image_status(db, image_id, "failed")
+        # Mark generation as ended
+        end_generation(user_id, 'image')
     finally:
         db.close()
 
@@ -142,8 +155,15 @@ async def generate_image(
 ):
     """Start image generation process"""
     try:
+        # Check if user has pending generations
+        if has_pending_generation(current_user.id, 'image'):
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="You already have an image generation in progress. Please wait for it to complete before starting another one."
+            )
+        
         # Check quota before starting generation
-        if not check_and_increment_quota(current_user.id, 'image'):
+        if not check_quota_only(current_user.id, 'image'):
             quota_info = get_remaining_quota(current_user.id, 'image')
             raise HTTPException(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
@@ -215,7 +235,13 @@ async def generate_image(
         db_image = create_image(db, image_data, current_user.id)
         
         # Start background task for image generation
-        background_tasks.add_task(generate_image_sync, db_image.id, base_prompt)
+        background_tasks.add_task(generate_image_sync, db_image.id, base_prompt, current_user.id)
+        
+        # Mark generation as started
+        start_generation(current_user.id, 'image')
+        
+        # Increment quota now that we're starting generation
+        check_and_increment_quota(current_user.id, 'image')
         
         return {
             "id": db_image.id,
