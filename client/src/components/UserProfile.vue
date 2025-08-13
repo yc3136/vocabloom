@@ -55,6 +55,8 @@ const userInitial = computed(() => {
   return email.charAt(0).toUpperCase();
 });
 
+
+
 const toggleDropdown = () => {
   showDropdown.value = !showDropdown.value;
 };
@@ -94,6 +96,8 @@ const handleLogout = async () => {
     console.error('Logout error:', error);
   }
 };
+
+
 
 // Close dropdown when clicking outside
 const closeDropdown = (event: Event) => {
@@ -242,4 +246,6 @@ onUnmounted(() => {
   margin: 4px 12px;
   width: calc(100% - 24px);
 }
+
+
 </style> 

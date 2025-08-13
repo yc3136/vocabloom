@@ -100,7 +100,10 @@ app.use(router);
 
 // Initialize Firebase auth
 import { useAuthStore } from './stores/auth';
+import { useThemeStore } from './stores/theme';
+
 const authStore = useAuthStore();
+const themeStore = useThemeStore();
 authStore.initAuth();
 
 // Watch for authentication state changes and redirect if needed

@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useAuthStore } from './stores/auth';
+import { useThemeStore } from './stores/theme';
 import { useNotificationStore } from './stores/notification';
 import AuthModal from './components/AuthModal.vue';
 import SignUpModal from './components/SignUpModal.vue';
@@ -8,7 +9,20 @@ import UserProfile from './components/UserProfile.vue';
 import NotificationToast from './components/NotificationToast.vue';
 
 const authStore = useAuthStore();
+const themeStore = useThemeStore();
 const notificationStore = useNotificationStore();
+
+// Theme toggle computed properties
+const themeToggleTitle = computed(() => {
+  console.log('App.vue - current theme in computed:', themeStore.currentTheme);
+  return themeStore.currentTheme === 'light' ? 'Light Mode' : 'Dark Mode';
+});
+
+const toggleTheme = () => {
+  console.log('Current theme before toggle:', themeStore.currentTheme);
+  themeStore.toggleTheme();
+  console.log('Current theme after toggle:', themeStore.currentTheme);
+};
 </script>
 
 <template>
@@ -17,7 +31,11 @@ const notificationStore = useNotificationStore();
       <div class="header-content">
         <div class="logo">
           <router-link to="/" class="logo-link">
-            <img src="/assets/vocabloom-logo-light.png" alt="Vocabloom" class="logo-image" />
+            <img 
+              :src="themeStore.currentTheme === 'light' ? '/assets/vocabloom-logo-light.png' : '/assets/vocabloom-logo-dark.png'" 
+              alt="Vocabloom" 
+              class="logo-image" 
+            />
           </router-link>
         </div>
         
@@ -28,6 +46,24 @@ const notificationStore = useNotificationStore();
         </nav>
         
         <div class="auth-section">
+          <!-- Theme toggle button -->
+          <button @click="toggleTheme" class="theme-toggle-btn" :title="themeToggleTitle">
+            <svg v-if="themeStore.currentTheme === 'light'" class="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+            <svg v-else class="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+          </button>
+          
           <div class="auth-container">
             <!-- Show loading state while Firebase is initializing -->
             <div v-if="authStore.loading" class="auth-loading">
@@ -77,8 +113,8 @@ const notificationStore = useNotificationStore();
 
 <style scoped>
 .app-header {
-  background: white;
-  border-bottom: 1px solid #e9ecef;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-color);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 0;
@@ -105,6 +141,7 @@ const notificationStore = useNotificationStore();
   width: auto;
   display: block;
   object-fit: contain;
+  transition: opacity 0.2s ease-in-out;
 }
 
 .logo {
@@ -121,19 +158,19 @@ const notificationStore = useNotificationStore();
 
 .nav-link {
   text-decoration: none;
-  color: #5a6270;
+  color: var(--text-secondary);
   font-weight: 500;
   transition: color 0.2s;
   padding: 8px 0;
 }
 
 .nav-link:hover {
-  color: #2a3a5e;
+  color: var(--text-primary);
 }
 
 .nav-link.router-link-active {
-  color: #3b5bdb;
-  border-bottom: 2px solid #3b5bdb;
+  color: var(--primary-blue);
+  border-bottom: 2px solid var(--primary-blue);
 }
 
 .auth-section {
@@ -141,6 +178,33 @@ const notificationStore = useNotificationStore();
   align-items: center;
   justify-content: flex-end;
   height: 64px;
+  gap: 12px;
+}
+
+.theme-toggle-btn {
+  background: none;
+  border: none;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 20px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+}
+
+.theme-toggle-btn:hover {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transform: scale(1.1);
+}
+
+.theme-icon {
+  display: block;
+  width: 20px;
+  height: 20px;
 }
 
 .auth-container {
@@ -188,6 +252,16 @@ const notificationStore = useNotificationStore();
   
   .auth-section {
     height: auto;
+    gap: 8px;
+  }
+  
+  .theme-toggle-btn {
+    padding: 6px;
+  }
+  
+  .theme-icon {
+    width: 18px;
+    height: 18px;
   }
 }
 
@@ -209,6 +283,15 @@ const notificationStore = useNotificationStore();
   .auth-btn {
     padding: 6px 10px;
     font-size: 12px;
+  }
+  
+  .theme-toggle-btn {
+    padding: 5px;
+  }
+  
+  .theme-icon {
+    width: 16px;
+    height: 16px;
   }
   
   .nav-links {
@@ -237,14 +320,14 @@ const notificationStore = useNotificationStore();
 }
 
 .signin-btn {
-  background: #3b5bdb;
+  background: var(--primary-blue);
   color: white;
-  border: 1px solid #3b5bdb;
+  border: 1px solid var(--primary-blue);
 }
 
 .signin-btn:hover {
-  background: #2a3a5e;
-  border-color: #2a3a5e;
+  background: var(--blue-hover);
+  border-color: var(--blue-hover);
 }
 
 .auth-loading {
@@ -257,8 +340,8 @@ const notificationStore = useNotificationStore();
 .loading-spinner {
   width: 20px;
   height: 20px;
-  border: 2px solid #e9ecef;
-  border-top: 2px solid #3b5bdb;
+  border: 2px solid var(--border-color);
+  border-top: 2px solid var(--primary-blue);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -270,7 +353,7 @@ const notificationStore = useNotificationStore();
 
 .app-main {
   min-height: calc(100vh - 64px);
-  background: #f8fafd;
+  background: var(--bg-primary);
 }
 
 
@@ -281,7 +364,7 @@ const notificationStore = useNotificationStore();
 
 body, #app {
   font-family: 'Nunito', 'Segoe UI', Arial, sans-serif;
-  background: #f4f6fb;
+  background: var(--bg-primary);
   margin: 0;
   padding: 0;
 }

@@ -475,7 +475,7 @@ onMounted(() => {
 }
 
 .container {
-  background: white;
+  background: var(--bg-surface);
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
@@ -568,11 +568,11 @@ onMounted(() => {
 }
 
 .form-input.error {
-  border-color: #dc3545;
+  border-color: var(--error-red);
 }
 
 .form-input.success {
-  border-color: #28a745;
+  border-color: var(--success-green);
 }
 
 .form-input.disabled {
@@ -633,7 +633,7 @@ onMounted(() => {
 }
 
 .validation-errors .error-message {
-  color: #dc3545;
+  color: var(--error-red);
   font-size: 12px;
   margin-bottom: 4px;
   display: flex;
@@ -651,18 +651,18 @@ onMounted(() => {
 }
 
 .validation-success .success-message {
-  color: #28a745;
+  color: var(--success-green);
   font-size: 12px;
   font-weight: 500;
 }
 
 .verified-badge {
-  color: #28a745;
+  color: var(--success-green);
   font-weight: 500;
 }
 
 .unverified-badge {
-  color: #dc3545;
+  color: var(--error-red);
   font-weight: 500;
   display: flex;
   align-items: center;
@@ -736,12 +736,13 @@ onMounted(() => {
 }
 
 .btn-danger {
-  background: #dc3545;
+  background: var(--error-red);
   color: white;
 }
 
 .btn-danger:hover:not(:disabled) {
-  background: #c82333;
+  background: var(--error-red);
+  opacity: 0.8;
 }
 
 
@@ -761,7 +762,7 @@ onMounted(() => {
 }
 
 .modal-content {
-  background: white;
+  background: var(--bg-surface);
   border-radius: 8px;
   max-width: 500px;
   width: 90%;
@@ -777,7 +778,7 @@ onMounted(() => {
 .modal-title {
   font-size: 20px;
   font-weight: 600;
-  color: #dc3545;
+  color: var(--error-red);
   margin: 0;
 }
 

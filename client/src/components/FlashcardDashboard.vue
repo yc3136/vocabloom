@@ -257,7 +257,7 @@ const closeModal = () => {
 .remove-btn {
   background: none;
   border: none;
-  color: #a0aec0;
+  color: var(--text-secondary);
   font-size: 1.2rem;
   font-weight: bold;
   cursor: pointer;
@@ -268,8 +268,8 @@ const closeModal = () => {
 }
 
 .remove-btn:hover {
-  background: #e2e8f0;
-  color: #e53e3e;
+  background: var(--border-color);
+  color: var(--error-red);
 }
 
 .flashcard-translation {

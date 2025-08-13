@@ -88,7 +88,7 @@ a:hover {
 .stats-section {
   margin: 2rem 0;
   padding: 1.5rem;
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
   border-radius: 12px;
 }
 
@@ -102,7 +102,7 @@ a:hover {
 .stat-item {
   text-align: center;
   padding: 16px;
-  background: white;
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);

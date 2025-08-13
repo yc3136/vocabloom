@@ -32,11 +32,11 @@
 
 /* Dark Mode Overrides */
 [data-theme="dark"] {
-  --bg-primary: #0f172a;
-  --bg-surface: #1e293b;
-  --text-primary: #e2e8f0;
-  --text-secondary: #cbd5e1;
-  --border-color: #334155;
+  --bg-primary: #0f0f0f;
+  --bg-surface: #1a1a1a;
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0a0;
+  --border-color: #333333;
   --blue-hover: #6366f1;
 }
 
@@ -57,4 +57,17 @@ html, body, #app, * {
   --text-secondary: #64748b;
   --border-color: #e2e8f0;
   --blue-hover: #4a7aff;
+}
+
+/* Dark mode overrides for all elements */
+[data-theme="dark"] html, 
+[data-theme="dark"] body, 
+[data-theme="dark"] #app, 
+[data-theme="dark"] * {
+  --bg-primary: #0f0f0f;
+  --bg-surface: #1a1a1a;
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0a0;
+  --border-color: #333333;
+  --blue-hover: #6366f1;
 } 

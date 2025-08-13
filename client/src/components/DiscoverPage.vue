@@ -359,6 +359,8 @@ watch(() => discoverStore.filters, (newFilters) => {
   border-radius: 8px;
   font-size: 16px;
   transition: border-color 0.2s;
+  background: var(--bg-surface);
+  color: var(--text-primary);
 }
 
 .search-input:focus {
@@ -405,13 +407,13 @@ watch(() => discoverStore.filters, (newFilters) => {
 }
 
 .filters-toggle-btn:hover {
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
   border-color: var(--text-secondary);
 }
 
 .filters-toggle-btn.active {
   background: var(--text-secondary);
-  color: white;
+  color: var(--bg-surface);
   border-color: var(--text-secondary);
 }
 
@@ -464,7 +466,8 @@ watch(() => discoverStore.filters, (newFilters) => {
   border: 1px solid var(--border-color);
   border-radius: 6px;
   font-size: 14px;
-  background: white;
+  background: var(--bg-surface);
+  color: var(--text-primary);
   min-width: 120px;
   height: 40px;
 }
@@ -483,7 +486,7 @@ watch(() => discoverStore.filters, (newFilters) => {
 }
 
 .clear-filters-btn:hover {
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
   border-color: var(--text-secondary);
 }
 
@@ -521,7 +524,7 @@ watch(() => discoverStore.filters, (newFilters) => {
 .retry-btn {
   padding: 8px 16px;
   background: var(--primary-blue);
-  color: white;
+  color: var(--bg-surface);
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -731,7 +734,7 @@ watch(() => discoverStore.filters, (newFilters) => {
 .load-more-btn {
   padding: 12px 24px;
   background: var(--primary-blue);
-  color: white;
+  color: var(--bg-surface);
   border: none;
   border-radius: 8px;
   font-size: 16px;

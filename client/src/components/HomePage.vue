@@ -510,7 +510,7 @@ watch(selectedLanguage, async (newLanguage) => {
   margin-top: 1.5rem;
   padding: 0.75rem 2rem;
   background: var(--primary-blue, #6690ff);
-  color: #fff;
+  color: var(--bg-surface);
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -534,7 +534,7 @@ watch(selectedLanguage, async (newLanguage) => {
   margin-top: 1.5rem;
   padding: 1rem;
   background: var(--error-red, #f87171);
-  color: #fff;
+  color: var(--bg-surface);
   border-radius: 8px;
   text-align: left;
 }
@@ -589,7 +589,7 @@ watch(selectedLanguage, async (newLanguage) => {
 .create-btn:hover {
   border-color: var(--primary-blue, #6690ff);
   background: var(--primary-blue, #6690ff);
-  color: white;
+  color: var(--bg-surface);
 }
 
 .create-btn:disabled {
@@ -617,18 +617,18 @@ watch(selectedLanguage, async (newLanguage) => {
 
 /* Button-specific hover colors */
 .story-btn:hover {
-  border-color: #8b5cf6;
-  background: #8b5cf6;
+  border-color: var(--premium-purple);
+  background: var(--premium-purple);
 }
 
 .flashcard-btn:hover {
-  border-color: #10b981;
-  background: #10b981;
+  border-color: var(--success-green);
+  background: var(--success-green);
 }
 
 .image-btn:hover {
-  border-color: #f59e0b;
-  background: #f59e0b;
+  border-color: var(--warning-amber);
+  background: var(--warning-amber);
 }
 
 

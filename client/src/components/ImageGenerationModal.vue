@@ -186,7 +186,7 @@ watch(() => props.show, (show) => {
 }
 
 .modal-content {
-  background: white;
+  background: var(--bg-surface);
   border-radius: 12px;
   width: 90%;
   max-width: 600px;
@@ -200,7 +200,7 @@ watch(() => props.show, (show) => {
   justify-content: space-between;
   align-items: center;
   padding: 24px 24px 0 24px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border-color);
   padding-bottom: 16px;
 }
 
@@ -208,7 +208,7 @@ watch(() => props.show, (show) => {
   margin: 0;
   font-size: 1.5rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--text-primary);
 }
 
 .close-btn {
@@ -216,14 +216,14 @@ watch(() => props.show, (show) => {
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
-  color: #6b7280;
+  color: var(--text-secondary);
   padding: 4px;
   border-radius: 4px;
   transition: color 0.2s;
 }
 
 .close-btn:hover {
-  color: #374151;
+  color: var(--text-primary);
 }
 
 .modal-body {
@@ -242,23 +242,25 @@ watch(() => props.show, (show) => {
   display: block;
   margin-bottom: 8px;
   font-weight: 500;
-  color: #374151;
+  color: var(--text-primary);
   font-size: 0.875rem;
 }
 
 .form-input {
   width: 100%;
   padding: 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   font-size: 0.875rem;
   transition: border-color 0.2s, box-shadow 0.2s;
   box-sizing: border-box;
+  background: var(--bg-surface);
+  color: var(--text-primary);
 }
 
 .form-input:focus {
   outline: none;
-  border-color: #6690ff;
+  border-color: var(--primary-blue);
   box-shadow: 0 0 0 3px rgba(102, 144, 255, 0.1);
 }
 
@@ -285,8 +287,8 @@ textarea.form-input {
   display: inline-block;
   padding: 0.5rem 0.75rem;
   background: transparent;
-  color: var(--text-primary, #1e293b);
-  border: 1px solid var(--border-color, #e2e8f0);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   font-size: 0.875rem;
   font-weight: 500;
@@ -298,16 +300,16 @@ textarea.form-input {
 }
 
 .word-chip.selected {
-  background: var(--primary-blue, #6690ff);
-  color: white;
-  border-color: var(--primary-blue, #6690ff);
+  background: var(--primary-blue);
+  color: var(--bg-surface);
+  border-color: var(--primary-blue);
 }
 
 .language-badge {
   display: inline-flex;
   align-items: center;
-  background: #6690ff;
-  color: white;
+  background: var(--primary-blue);
+  color: var(--bg-surface);
   padding: 6px 12px;
   border-radius: 6px;
   font-size: 0.75rem;
@@ -327,8 +329,8 @@ textarea.form-input {
   gap: 0.25rem;
   padding: 0.25rem 0.5rem;
   background: transparent;
-  color: var(--text-secondary, #64748b);
-  border: 1px solid var(--border-color, #e2e8f0);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   font-size: 0.75rem;
   font-weight: 400;
@@ -342,8 +344,8 @@ textarea.form-input {
 .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid #e5e7eb;
-  border-top: 4px solid #6690ff;
+  border: 4px solid var(--border-color);
+  border-top: 4px solid var(--primary-blue);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 16px;
@@ -355,7 +357,7 @@ textarea.form-input {
 }
 
 .status-note {
-  color: #6b7280;
+  color: var(--text-secondary);
   font-size: 0.875rem;
   margin-top: 8px;
 }
@@ -363,20 +365,20 @@ textarea.form-input {
 .error-section {
   text-align: center;
   padding: 24px;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
+  background: var(--bg-primary);
+  border: 1px solid var(--error-red);
   border-radius: 8px;
   margin-bottom: 16px;
 }
 
 .error-message {
-  color: #dc2626;
+  color: var(--error-red);
   margin-bottom: 16px;
 }
 
 .retry-btn {
-  background: #dc2626;
-  color: white;
+  background: var(--error-red);
+  color: var(--bg-surface);
   border: none;
   padding: 8px 16px;
   border-radius: 6px;
@@ -386,7 +388,8 @@ textarea.form-input {
 }
 
 .retry-btn:hover {
-  background: #b91c1c;
+  background: var(--error-red);
+  opacity: 0.8;
 }
 
 .modal-footer {
@@ -394,13 +397,13 @@ textarea.form-input {
   justify-content: flex-end;
   gap: 12px;
   padding: 16px 24px 24px 24px;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--border-color);
 }
 
 .cancel-btn {
-  background: white;
-  color: #374151;
-  border: 1px solid #d1d5db;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
   padding: 10px 20px;
   border-radius: 6px;
   cursor: pointer;
@@ -409,13 +412,13 @@ textarea.form-input {
 }
 
 .cancel-btn:hover {
-  background: #f9fafb;
-  border-color: #9ca3af;
+  background: var(--bg-primary);
+  border-color: var(--text-secondary);
 }
 
 .generate-btn {
-  background: #6690ff;
-  color: white;
+  background: var(--primary-blue);
+  color: var(--bg-surface);
   border: none;
   padding: 10px 20px;
   border-radius: 6px;
@@ -426,11 +429,11 @@ textarea.form-input {
 }
 
 .generate-btn:hover:not(:disabled) {
-  background: #5a7cff;
+  background: var(--blue-hover);
 }
 
 .generate-btn:disabled {
-  background: #9ca3af;
+  background: var(--text-secondary);
   cursor: not-allowed;
 }
 

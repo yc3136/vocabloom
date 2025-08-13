@@ -276,7 +276,7 @@ watch(stories, (newStories) => {
   margin: 0 auto;
   padding: 2rem;
   min-height: 100vh;
-  background: #f7fafc;
+  background: var(--bg-primary);
 }
 
 .loading, .error, .empty-state {
@@ -287,8 +287,8 @@ watch(stories, (newStories) => {
 .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid #e2e8f0;
-  border-top: 3px solid #4299e1;
+  border: 3px solid var(--border-color);
+  border-top: 3px solid var(--primary-blue);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 1rem;
@@ -300,12 +300,12 @@ watch(stories, (newStories) => {
 }
 
 .error {
-  color: #e53e3e;
+  color: var(--error-red);
 }
 
 .retry-btn {
-  background: #4299e1;
-  color: white;
+  background: var(--primary-blue);
+  color: var(--bg-surface);
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 6px;
@@ -314,7 +314,7 @@ watch(stories, (newStories) => {
 }
 
 .empty-state {
-  color: #718096;
+  color: var(--text-secondary);
 }
 
 .empty-icon {
@@ -324,8 +324,8 @@ watch(stories, (newStories) => {
 
 .cta-btn {
   display: inline-block;
-  background: #4299e1;
-  color: white;
+  background: var(--primary-blue);
+  color: var(--bg-surface);
   text-decoration: none;
   padding: 0.75rem 1.5rem;
   border-radius: 6px;
@@ -334,7 +334,7 @@ watch(stories, (newStories) => {
 }
 
 .cta-btn:hover {
-  background: #3182ce;
+  background: var(--blue-hover);
 }
 
 .stories-header {
@@ -360,16 +360,17 @@ watch(stories, (newStories) => {
 .search-input, .language-select {
   width: 100%;
   padding: 0.5rem;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--border-color);
   border-radius: 8px;
   font-size: 1rem;
   outline: none;
   transition: border-color 0.2s;
-  background: white;
+  background: var(--bg-surface);
+  color: var(--text-primary);
 }
 
 .search-input:focus, .language-select:focus {
-  border-color: #4299e1;
+  border-color: var(--primary-blue);
 }
 
 .language-select {
@@ -382,24 +383,24 @@ watch(stories, (newStories) => {
 }
 
 .stat-item {
-  color: #718096;
+  color: var(--text-secondary);
   font-size: 0.9rem;
 }
 
 .stat-item strong {
-  color: #2d3748;
+  color: var(--text-primary);
 }
 
 .stories-list {
-  background: white;
-  border: 1px solid #e2e8f0;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   overflow: hidden;
   margin-bottom: 24px;
 }
 
 .story-row {
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--border-color);
   transition: all 0.2s;
 }
 
@@ -408,11 +409,11 @@ watch(stories, (newStories) => {
 }
 
 .story-row:hover {
-  background: #f8fafc;
+  background: var(--bg-primary);
 }
 
 .story-row.expanded {
-  background: #f8fafc;
+  background: var(--bg-primary);
 }
 
 .story-main {
@@ -425,7 +426,7 @@ watch(stories, (newStories) => {
 }
 
 .story-main:hover {
-  background: #f1f5f9;
+  background: var(--bg-primary);
 }
 
 .story-info {
@@ -443,7 +444,7 @@ watch(stories, (newStories) => {
 .story-title {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #1a202c;
+  color: var(--text-primary);
   flex: 1;
   min-width: 0;
 }
@@ -457,8 +458,8 @@ watch(stories, (newStories) => {
 }
 
 .theme-badge {
-  background: #e19f5d;
-  color: white;
+  background: var(--primary-orange);
+  color: var(--bg-surface);
   padding: 4px 8px;
   border-radius: 6px;
   font-size: 0.7rem;
@@ -470,8 +471,8 @@ watch(stories, (newStories) => {
 }
 
 .language-badge {
-  background: #4299e1;
-  color: white;
+  background: var(--primary-blue);
+  color: var(--bg-surface);
   padding: 4px 8px;
   border-radius: 6px;
   font-size: 0.7rem;
@@ -489,8 +490,8 @@ watch(stories, (newStories) => {
   gap: 0.25rem;
   padding: 0.25rem 0.5rem;
   background: transparent;
-  color: #64748b;
-  border: 1px solid #e2e8f0;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   font-size: 0.75rem;
   font-weight: 400;
@@ -508,7 +509,7 @@ watch(stories, (newStories) => {
 
 .words-label {
   font-size: 0.8rem;
-  color: #718096;
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
@@ -519,8 +520,8 @@ watch(stories, (newStories) => {
 }
 
 .word-chip {
-  background: #f1f5f9;
-  color: #374151;
+  background: var(--bg-primary);
+  color: var(--text-primary);
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 0.75rem;
@@ -544,7 +545,7 @@ watch(stories, (newStories) => {
 .remove-btn {
   background: none;
   border: none;
-  color: #a0aec0;
+  color: var(--text-secondary);
   font-size: 1.2rem;
   font-weight: bold;
   cursor: pointer;
@@ -555,14 +556,14 @@ watch(stories, (newStories) => {
 }
 
 .remove-btn:hover {
-  background: #e2e8f0;
-  color: #e53e3e;
+  background: var(--border-color);
+  color: var(--error-red);
 }
 
 .story-details {
   padding: 0 20px 20px;
-  border-top: 1px solid #e2e8f0;
-  background: #fafbfc;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-primary);
 }
 
 .story-content {
@@ -572,7 +573,7 @@ watch(stories, (newStories) => {
 .story-content h4 {
   font-size: 0.9rem;
   font-weight: 600;
-  color: #2d3748;
+  color: var(--text-primary);
   margin-bottom: 8px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -580,7 +581,7 @@ watch(stories, (newStories) => {
 
 .markdown-content {
   font-size: 0.9rem;
-  color: #4a5568;
+  color: var(--text-secondary);
   line-height: 1.6;
 }
 
@@ -590,7 +591,7 @@ watch(stories, (newStories) => {
 .markdown-content :deep(h4),
 .markdown-content :deep(h5),
 .markdown-content :deep(h6) {
-  color: #2d3748;
+  color: var(--text-primary);
   margin-top: 16px;
   margin-bottom: 8px;
   font-weight: 600;
@@ -618,10 +619,10 @@ watch(stories, (newStories) => {
 }
 
 .markdown-content :deep(blockquote) {
-  border-left: 4px solid #4299e1;
+  border-left: 4px solid var(--primary-blue);
   padding-left: 16px;
   margin: 16px 0;
-  color: #4a5568;
+  color: var(--text-secondary);
   font-style: italic;
 }
 
@@ -634,8 +635,8 @@ watch(stories, (newStories) => {
 }
 
 .pagination-btn {
-  background: #4299e1;
-  color: white;
+  background: var(--primary-blue);
+  color: var(--bg-surface);
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 6px;
@@ -644,16 +645,16 @@ watch(stories, (newStories) => {
 }
 
 .pagination-btn:hover:not(.disabled) {
-  background: #3182ce;
+  background: var(--blue-hover);
 }
 
 .pagination-btn.disabled {
-  background: #a0aec0;
+  background: var(--text-secondary);
   cursor: not-allowed;
 }
 
 .page-info {
-  color: #718096;
+  color: var(--text-secondary);
   font-size: 0.9rem;
 }
 

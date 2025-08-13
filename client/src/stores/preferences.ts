@@ -7,6 +7,7 @@ export interface UserPreferences {
   child_name?: string;
   child_age?: number;
   preferred_languages?: string[];
+  theme?: 'light' | 'dark';
 }
 
 export const usePreferencesStore = defineStore('preferences', () => {
@@ -50,6 +51,14 @@ export const usePreferencesStore = defineStore('preferences', () => {
 
       const userData = await response.json();
       preferences.value = userData.preferences || {};
+      
+      // Apply theme if it exists in preferences
+      if (preferences.value.theme) {
+        // Import theme store dynamically to avoid circular dependency
+        const { useThemeStore } = await import('./theme');
+        const themeStore = useThemeStore();
+        themeStore.setTheme(preferences.value.theme);
+      }
     } catch (err: any) {
       error.value = err.message;
       console.error('Error loading preferences:', err);
