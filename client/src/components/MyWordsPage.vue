@@ -115,6 +115,19 @@
       </div>
     </div>
   </div>
+
+  <!-- Confirmation Modal -->
+  <ConfirmationModal
+    :show="showDeleteModal"
+    title="Remove Word"
+    :message="`Remove '${wordToDelete}' from your history?`"
+    type="danger"
+    confirm-text="Remove"
+    cancel-text="Cancel"
+    @confirm="handleDeleteConfirm"
+    @cancel="handleDeleteCancel"
+    @close="handleDeleteCancel"
+  />
 </template>
 
 <script setup lang="ts">
@@ -123,6 +136,7 @@ import { marked } from 'marked';
 import { useAuthStore } from '../stores/auth';
 import { useNotificationStore } from '../stores/notification';
 import { SUPPORTED_LANGUAGES } from '../constants/languages';
+import ConfirmationModal from './ConfirmationModal.vue';
 
 interface WordSummary {
   original_word: string;
@@ -147,6 +161,10 @@ const selectedLanguage = ref('');
 const expandedWords = ref<string[]>([]);
 const currentPage = ref(1);
 const itemsPerPage = 20;
+
+// Confirmation modal state
+const showDeleteModal = ref(false);
+const wordToDelete = ref<string | null>(null);
 
 const filteredWords = computed(() => {
   let filtered = words.value;
@@ -239,34 +257,44 @@ const toggleExpand = (wordKey: string) => {
 };
 
 const removeWord = async (originalWord: string) => {
-  if (!confirm(`Remove "${originalWord}" from your history?`)) {
-    return;
-  }
+  wordToDelete.value = originalWord;
+  showDeleteModal.value = true;
+};
 
-  try {
-    const token = await authStore.getIdToken();
-    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
-    const response = await fetch(`${API_BASE}/api/words/my/${encodeURIComponent(originalWord)}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
+const handleDeleteConfirm = async () => {
+  if (wordToDelete.value) {
+    try {
+      const token = await authStore.getIdToken();
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+      const response = await fetch(`${API_BASE}/api/words/my/${encodeURIComponent(wordToDelete.value)}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-    });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      // Remove from local state
+      words.value = words.value.filter(word => word.original_word !== wordToDelete.value);
+      // Also remove from expanded words
+      expandedWords.value = expandedWords.value.filter(word => !word.startsWith(wordToDelete.value + '-'));
+      notificationStore.success(`Removed "${wordToDelete.value}" from history`);
+    } catch (err) {
+      console.error('Error removing word:', err);
+      notificationStore.error('Failed to remove word from history');
     }
-
-    // Remove from local state
-    words.value = words.value.filter(word => word.original_word !== originalWord);
-    // Also remove from expanded words
-    expandedWords.value = expandedWords.value.filter(word => !word.startsWith(originalWord + '-'));
-    notificationStore.success(`Removed "${originalWord}" from history`);
-  } catch (err) {
-    console.error('Error removing word:', err);
-    notificationStore.error('Failed to remove word from history');
+    showDeleteModal.value = false;
+    wordToDelete.value = null;
   }
+};
+
+const handleDeleteCancel = () => {
+  showDeleteModal.value = false;
+  wordToDelete.value = null;
 };
 
 

@@ -122,6 +122,19 @@
       </div>
     </div>
   </div>
+
+  <!-- Confirmation Modal -->
+  <ConfirmationModal
+    :show="showDeleteModal"
+    title="Delete Story"
+    message="Are you sure you want to delete this story?"
+    type="danger"
+    confirm-text="Delete"
+    cancel-text="Cancel"
+    @confirm="handleDeleteConfirm"
+    @cancel="handleDeleteCancel"
+    @close="handleDeleteCancel"
+  />
 </template>
 
 <script setup lang="ts">
@@ -130,6 +143,7 @@ import { marked } from 'marked'
 import { useStoriesStore } from '../stores/stories'
 import { useAuthStore } from '../stores/auth'
 import { SUPPORTED_LANGUAGES } from '../constants/languages'
+import ConfirmationModal from './ConfirmationModal.vue'
 
 const storiesStore = useStoriesStore()
 const authStore = useAuthStore()
@@ -144,6 +158,10 @@ const selectedLanguage = ref('')
 const currentPage = ref(1)
 const itemsPerPage = 10
 const expandedStories = ref<number[]>([])
+
+// Confirmation modal state
+const showDeleteModal = ref(false)
+const storyToDelete = ref<number | null>(null)
 
 const languages = SUPPORTED_LANGUAGES
 
@@ -197,13 +215,25 @@ const toggleExpand = (storyId: number) => {
 }
 
 const deleteStory = async (storyId: number) => {
-  if (confirm('Are you sure you want to delete this story?')) {
+  storyToDelete.value = storyId
+  showDeleteModal.value = true
+}
+
+const handleDeleteConfirm = async () => {
+  if (storyToDelete.value) {
     try {
-      await storiesStore.deleteStory(storyId)
+      await storiesStore.deleteStory(storyToDelete.value)
     } catch (error) {
       console.error('Failed to delete story:', error)
     }
+    showDeleteModal.value = false
+    storyToDelete.value = null
   }
+}
+
+const handleDeleteCancel = () => {
+  showDeleteModal.value = false
+  storyToDelete.value = null
 }
 
 const renderMarkdown = (content: string) => {

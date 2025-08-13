@@ -112,6 +112,19 @@
       :flashcard="viewingFlashcard"
       @close="closeModal"
     />
+
+    <!-- Confirmation Modal -->
+    <ConfirmationModal
+      :show="showDeleteModal"
+      title="Delete Flashcard"
+      message="Are you sure you want to delete this flashcard?"
+      type="danger"
+      confirm-text="Delete"
+      cancel-text="Cancel"
+      @confirm="handleDeleteConfirm"
+      @cancel="handleDeleteCancel"
+      @close="handleDeleteCancel"
+    />
   </div>
 </template>
 
@@ -122,6 +135,7 @@ import { useFlashcardStore } from '../stores/flashcards';
 import { useAuthStore } from '../stores/auth';
 import { SUPPORTED_LANGUAGES } from '../constants/languages';
 import FlashcardViewer from './FlashcardViewer.vue';
+import ConfirmationModal from './ConfirmationModal.vue';
 
 const route = useRoute();
 const flashcardStore = useFlashcardStore();
@@ -134,6 +148,10 @@ const searchTerm = ref('');
 const selectedLanguage = ref('');
 const currentPage = ref(1);
 const itemsPerPage = 12;
+
+// Confirmation modal state
+const showDeleteModal = ref(false);
+const flashcardToDelete = ref<number | null>(null);
 
 // Use the shared language constants
 const languages = SUPPORTED_LANGUAGES;
@@ -236,13 +254,25 @@ const selectFlashcard = (flashcard: any) => {
 };
 
 const deleteFlashcard = async (id: number) => {
-  if (confirm('Are you sure you want to delete this flashcard?')) {
+  flashcardToDelete.value = id;
+  showDeleteModal.value = true;
+};
+
+const handleDeleteConfirm = async () => {
+  if (flashcardToDelete.value) {
     try {
-      await flashcardStore.deleteFlashcard(id);
+      await flashcardStore.deleteFlashcard(flashcardToDelete.value);
     } catch (error) {
       console.error('Failed to delete flashcard:', error);
     }
+    showDeleteModal.value = false;
+    flashcardToDelete.value = null;
   }
+};
+
+const handleDeleteCancel = () => {
+  showDeleteModal.value = false;
+  flashcardToDelete.value = null;
 };
 
 const closeModal = () => {

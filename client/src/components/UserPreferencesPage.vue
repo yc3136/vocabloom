@@ -181,36 +181,20 @@
       </div>
     </div>
 
-    <!-- Delete Account Warning Modal -->
-    <div v-if="showDeleteModal" class="modal-overlay" @click="closeDeleteModal">
-      <div class="modal-content" @click.stop>
-        <div class="modal-header">
-          <h3 class="modal-title">⚠️ Delete Account</h3>
-        </div>
-        <div class="modal-body">
-          <p class="warning-text">
-            <strong>This action cannot be undone.</strong> Deleting your account will permanently remove:
-          </p>
-          <ul class="warning-list">
-            <li>All your flashcards</li>
-            <li>All your translation history</li>
-            <li>All your preferences and settings</li>
-            <li>Your account data</li>
-          </ul>
-          <p class="warning-text">
-            Are you absolutely sure you want to delete your account?
-          </p>
-        </div>
-        <div class="modal-actions">
-          <button @click="closeDeleteModal" class="btn btn-secondary">
-            Cancel
-          </button>
-          <button @click="confirmDeleteAccount" class="btn btn-danger">
-            Yes, Delete My Account
-          </button>
-        </div>
-      </div>
-    </div>
+    <!-- Delete Account Confirmation Modal -->
+    <ConfirmationModal
+      :show="showDeleteModal"
+      title="Delete Account"
+      message="This action cannot be undone. Deleting your account will permanently remove all your flashcards, translation history, preferences, and account data."
+      details="Are you absolutely sure you want to delete your account?"
+      type="danger"
+      confirm-text="Yes, Delete My Account"
+      cancel-text="Cancel"
+      :loading="loading"
+      @confirm="confirmDeleteAccount"
+      @cancel="closeDeleteModal"
+      @close="closeDeleteModal"
+    />
   </div>
 </template>
 
@@ -221,6 +205,7 @@ import { useAuthStore } from '../stores/auth';
 import { useNotificationStore } from '../stores/notification';
 import { usePreferencesStore } from '../stores/preferences';
 import { SUPPORTED_LANGUAGES } from '../constants/languages';
+import ConfirmationModal from './ConfirmationModal.vue';
 
 const authStore = useAuthStore();
 const notificationStore = useNotificationStore();
@@ -747,68 +732,7 @@ onMounted(() => {
 
 
 
-/* Modal Styles */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
 
-.modal-content {
-  background: var(--bg-surface);
-  border-radius: 8px;
-  max-width: 500px;
-  width: 90%;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-}
-
-.modal-header {
-  padding: 20px 24px 0 24px;
-}
-
-.modal-title {
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--error-red);
-  margin: 0;
-}
-
-.modal-body {
-  padding: 20px 24px;
-}
-
-.warning-text {
-  color: var(--text-primary);
-  margin: 0 0 16px 0;
-  line-height: 1.5;
-}
-
-.warning-list {
-  margin: 16px 0;
-  padding-left: 20px;
-  color: var(--text-primary);
-}
-
-.warning-list li {
-  margin-bottom: 8px;
-  line-height: 1.4;
-}
-
-.modal-actions {
-  padding: 0 24px 24px 24px;
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-}
 
 @media (max-width: 768px) {
   .user-preferences-page {
@@ -828,13 +752,6 @@ onMounted(() => {
     margin-top: 8px;
   }
 
-  .modal-content {
-    width: 95%;
-    margin: 20px;
-  }
 
-  .modal-actions {
-    flex-direction: column;
-  }
 }
 </style>

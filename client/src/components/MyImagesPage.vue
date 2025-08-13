@@ -150,6 +150,19 @@
       </div>
     </div>
   </div>
+
+  <!-- Confirmation Modal -->
+  <ConfirmationModal
+    :show="showDeleteModal"
+    title="Delete Image"
+    message="Are you sure you want to delete this image?"
+    type="danger"
+    confirm-text="Delete"
+    cancel-text="Cancel"
+    @confirm="handleDeleteConfirm"
+    @cancel="handleDeleteCancel"
+    @close="handleDeleteCancel"
+  />
 </template>
 
 <script setup lang="ts">
@@ -157,6 +170,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useImageStore } from '../stores/images'
 import { useNotificationStore } from '../stores/notification'
 import { SUPPORTED_LANGUAGES } from '../constants/languages'
+import ConfirmationModal from './ConfirmationModal.vue'
 
 const imageStore = useImageStore()
 const notificationStore = useNotificationStore()
@@ -168,6 +182,10 @@ const selectedStatus = ref('')
 const currentPage = ref(1)
 const itemsPerPage = ref(12)
 const refreshing = ref(false)
+
+// Confirmation modal state
+const showDeleteModal = ref(false)
+const imageToDelete = ref<number | null>(null)
 
 // Use the shared language constants
 const languages = SUPPORTED_LANGUAGES
@@ -223,9 +241,21 @@ const refreshImages = async () => {
 }
 
 const deleteImage = async (imageId: number) => {
-  if (confirm('Are you sure you want to delete this image?')) {
-    await imageStore.deleteImage(imageId)
+  imageToDelete.value = imageId
+  showDeleteModal.value = true
+}
+
+const handleDeleteConfirm = async () => {
+  if (imageToDelete.value) {
+    await imageStore.deleteImage(imageToDelete.value)
+    showDeleteModal.value = false
+    imageToDelete.value = null
   }
+}
+
+const handleDeleteCancel = () => {
+  showDeleteModal.value = false
+  imageToDelete.value = null
 }
 
 const handleImageError = (event: Event) => {
