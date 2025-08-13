@@ -45,7 +45,7 @@ except Exception as e:
 
 # Quota limits configuration
 QUOTA_LIMITS = {
-    'image': 2,  # 2 images per day for signed-in users
+    'image': 10,  # 10 images per day for signed-in users
     'story': -1,  # -1 means unlimited
     'translation': -1,  # -1 means unlimited
 }
