@@ -1,5 +1,6 @@
 import redis
 import os
+import time
 from datetime import date
 from typing import Dict, Any, Optional
 
@@ -12,7 +13,8 @@ try:
         decode_responses=True,
         socket_connect_timeout=5,
         socket_timeout=5,
-        retry_on_timeout=True
+        retry_on_timeout=True,
+        health_check_interval=30
     )
     # Test connection
     redis_client.ping()
@@ -40,6 +42,12 @@ except Exception as e:
                 def execute(self):
                     return [1]
             return MockPipeline()
+        def setex(self, key, time, value):
+            pass
+        def delete(self, key):
+            pass
+        def eval(self, script, numkeys, *args):
+            return 1
     
     redis_client = MockRedis()
 
@@ -49,6 +57,9 @@ QUOTA_LIMITS = {
     'story': -1,  # -1 means unlimited
     'translation': -1,  # -1 means unlimited
 }
+
+# Pending generation timeout (in seconds)
+PENDING_GENERATION_TIMEOUT = 300  # 5 minutes
 
 def get_quota_key(user_id: str, content_type: str, quota_date: date = None) -> str:
     """Generate Redis key for quota tracking"""
@@ -193,30 +204,123 @@ def get_pending_generations_key(user_id: str, content_type: str) -> str:
     return f"pending:{user_id}:{content_type}"
 
 def has_pending_generation(user_id: str, content_type: str) -> bool:
-    """Check if user has any pending generations"""
+    """Check if user has any pending generations with improved error handling"""
     try:
         key = get_pending_generations_key(user_id, content_type)
-        return bool(redis_client.get(key))
+        pending = redis_client.get(key)
+        
+        # If there's a pending generation, check if it's stale
+        if pending:
+            # Get the timestamp when it was set
+            timestamp_key = f"{key}:timestamp"
+            timestamp = redis_client.get(timestamp_key)
+            
+            if timestamp:
+                # Check if it's been more than the timeout period
+                if time.time() - float(timestamp) > PENDING_GENERATION_TIMEOUT:
+                    # Clear stale pending generation
+                    print(f"Clearing stale pending generation for user {user_id}, content_type {content_type}")
+                    clear_pending_generation(user_id, content_type)
+                    return False
+            
+            return True
+        
+        return False
+        
     except Exception as e:
         print(f"Error checking pending generations: {e}")
+        # In case of Redis error, assume no pending generation (fail open)
         return False
 
 def start_generation(user_id: str, content_type: str) -> bool:
-    """Mark that a generation has started (with 5-minute timeout)"""
+    """Mark that a generation has started with timestamp and timeout"""
     try:
         key = get_pending_generations_key(user_id, content_type)
-        redis_client.setex(key, 300, "1")  # 5 minutes timeout
+        timestamp_key = f"{key}:timestamp"
+        current_time = str(time.time())
+        
+        # Use pipeline for atomic operation
+        with redis_client.pipeline() as pipe:
+            pipe.setex(key, PENDING_GENERATION_TIMEOUT, "1")
+            pipe.setex(timestamp_key, PENDING_GENERATION_TIMEOUT, current_time)
+            pipe.execute()
+        
+        print(f"Started generation for user {user_id}, content_type {content_type}")
         return True
+        
     except Exception as e:
         print(f"Error starting generation: {e}")
-        return False
+        # In case of error, don't block the user (fail open)
+        return True
 
 def end_generation(user_id: str, content_type: str) -> bool:
     """Mark that a generation has ended"""
     try:
         key = get_pending_generations_key(user_id, content_type)
-        redis_client.delete(key)
+        timestamp_key = f"{key}:timestamp"
+        
+        # Use pipeline for atomic operation
+        with redis_client.pipeline() as pipe:
+            pipe.delete(key)
+            pipe.delete(timestamp_key)
+            pipe.execute()
+        
+        print(f"Ended generation for user {user_id}, content_type {content_type}")
         return True
+        
     except Exception as e:
         print(f"Error ending generation: {e}")
-        return False 
+        return False
+
+def clear_pending_generation(user_id: str, content_type: str) -> bool:
+    """Clear a pending generation (useful for cleanup)"""
+    try:
+        key = get_pending_generations_key(user_id, content_type)
+        timestamp_key = f"{key}:timestamp"
+        
+        # Use pipeline for atomic operation
+        with redis_client.pipeline() as pipe:
+            pipe.delete(key)
+            pipe.delete(timestamp_key)
+            pipe.execute()
+        
+        print(f"Cleared pending generation for user {user_id}, content_type {content_type}")
+        return True
+        
+    except Exception as e:
+        print(f"Error clearing pending generation: {e}")
+        return False
+
+def cleanup_stale_pending_generations() -> int:
+    """Clean up all stale pending generations across all users"""
+    try:
+        # This is a more complex operation that would require scanning all keys
+        # For now, we'll just log that this function exists
+        print("Cleanup of stale pending generations would require Redis SCAN operation")
+        return 0
+        
+    except Exception as e:
+        print(f"Error cleaning up stale pending generations: {e}")
+        return 0
+
+def get_redis_health() -> Dict[str, Any]:
+    """Check Redis connection health"""
+    try:
+        # Test basic operations
+        test_key = "health_check"
+        redis_client.setex(test_key, 10, "test")
+        value = redis_client.get(test_key)
+        redis_client.delete(test_key)
+        
+        return {
+            "status": "healthy",
+            "connected": True,
+            "timestamp": time.time()
+        }
+    except Exception as e:
+        return {
+            "status": "unhealthy",
+            "connected": False,
+            "error": str(e),
+            "timestamp": time.time()
+        } 

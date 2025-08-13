@@ -18,6 +18,23 @@
     </div>
 
     <div v-else class="images-content">
+      <!-- Clear Pending Generation Button -->
+      <div v-if="hasPendingImages" class="pending-warning">
+        <div class="warning-content">
+          <div class="warning-icon">⚠️</div>
+          <div class="warning-text">
+            <p>You have pending image generations. If you're experiencing issues, you can clear them.</p>
+          </div>
+          <button 
+            @click="clearPendingGeneration" 
+            class="clear-pending-btn"
+            :disabled="clearingPending"
+          >
+            {{ clearingPending ? 'Clearing...' : 'Clear Pending Generation' }}
+          </button>
+        </div>
+      </div>
+
       <div class="images-header">
         <div class="search-filters">
           <div class="search-box">
@@ -171,6 +188,8 @@ import { useImageStore } from '../stores/images'
 
 import { SUPPORTED_LANGUAGES } from '../constants/languages'
 import ConfirmationModal from './ConfirmationModal.vue'
+import { useAuthStore } from '../stores/auth'
+import { useNotificationStore } from '../stores/notification'
 
 const imageStore = useImageStore()
 
@@ -181,6 +200,7 @@ const selectedStatus = ref('')
 const currentPage = ref(1)
 const itemsPerPage = ref(12)
 const refreshing = ref(false)
+const clearingPending = ref(false)
 
 // Confirmation modal state
 const showDeleteModal = ref(false)
@@ -193,6 +213,10 @@ const languages = SUPPORTED_LANGUAGES
 const images = computed(() => imageStore.images)
 const loading = computed(() => imageStore.loading)
 const error = computed(() => imageStore.error)
+
+const hasPendingImages = computed(() => {
+  return images.value.some(image => image.status === 'pending')
+})
 
 const filteredImages = computed(() => {
   let filtered = images.value
@@ -272,6 +296,53 @@ const openImageInNewTab = (imageUrl: string) => {
   window.open(imageUrl, '_blank')
 }
 
+const clearPendingGeneration = async () => {
+  clearingPending.value = true
+  try {
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
+    const authStore = useAuthStore()
+    
+    if (!authStore.isAuthenticated) {
+      throw new Error('User not authenticated')
+    }
+    
+    const token = await authStore.getIdToken()
+    const response = await fetch(`${API_BASE}/api/quota/image/clear-pending`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    })
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(errorData.detail || 'Failed to clear pending generation')
+    }
+    
+    const result = await response.json()
+    
+    if (result.cleared) {
+      // Show success message
+      const notificationStore = useNotificationStore()
+      notificationStore.success('Pending generation cleared successfully! You can now generate new images.')
+      
+      // Refresh images to update the UI
+      await refreshImages()
+    } else {
+      // Show info message if nothing was cleared
+      const notificationStore = useNotificationStore()
+      notificationStore.info('No pending generation found to clear.')
+    }
+    
+  } catch (err) {
+    console.error('Error clearing pending generation:', err)
+    const notificationStore = useNotificationStore()
+    notificationStore.error('Failed to clear pending generation. Please try again.')
+  } finally {
+    clearingPending.value = false
+  }
+}
 
 
 // Watch for changes in filters and reset pagination
@@ -659,6 +730,74 @@ onMounted(() => {
 .page-info {
   color: var(--text-secondary);
   font-size: 0.875rem;
+}
+
+/* Pending Warning Section */
+.pending-warning {
+  background: var(--warning-amber);
+  border: 1px solid var(--warning-amber);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.warning-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.warning-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.warning-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.warning-text p {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.clear-pending-btn {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.clear-pending-btn:hover:not(:disabled) {
+  background: var(--bg-primary);
+  border-color: var(--text-secondary);
+}
+
+.clear-pending-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .warning-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .clear-pending-btn {
+    align-self: stretch;
+  }
 }
 
 @media (max-width: 768px) {

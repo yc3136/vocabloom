@@ -155,20 +155,32 @@ async def generate_image(
 ):
     """Start image generation process"""
     try:
-        # Check if user has pending generations
-        if has_pending_generation(current_user.id, 'image'):
-            raise HTTPException(
-                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                detail="You already have an image generation in progress. Please wait for it to complete before starting another one."
-            )
+        # Check if user has pending generations with better error handling
+        try:
+            has_pending = has_pending_generation(current_user.id, 'image')
+            if has_pending:
+                raise HTTPException(
+                    status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                    detail="You already have an image generation in progress. Please wait for it to complete before starting another one. If this persists, try clearing your pending generation in the My Images page."
+                )
+        except Exception as redis_error:
+            print(f"Redis error during pending generation check: {redis_error}")
+            # If Redis fails, we'll continue but log the issue
+            # This prevents Redis issues from blocking users completely
         
         # Check quota before starting generation
-        if not check_quota_only(current_user.id, 'image'):
-            quota_info = get_remaining_quota(current_user.id, 'image')
-            raise HTTPException(
-                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                detail=f"Daily image generation limit reached. You have used {quota_info['used']}/{quota_info['limit']} images today. Please try again tomorrow."
-            )
+        try:
+            if not check_quota_only(current_user.id, 'image'):
+                quota_info = get_remaining_quota(current_user.id, 'image')
+                raise HTTPException(
+                    status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                    detail=f"Daily image generation limit reached. You have used {quota_info['used']}/{quota_info['limit']} images today. Please try again tomorrow."
+                )
+        except Exception as quota_error:
+            print(f"Redis error during quota check: {quota_error}")
+            # If Redis fails during quota check, we'll continue but log the issue
+            # This prevents Redis issues from blocking users completely
+        
         # Build the generation prompt
         age_guidance = ""
         if request.child_age:
@@ -237,11 +249,19 @@ async def generate_image(
         # Start background task for image generation
         background_tasks.add_task(generate_image_sync, db_image.id, base_prompt, current_user.id)
         
-        # Mark generation as started
-        start_generation(current_user.id, 'image')
+        # Mark generation as started (with error handling)
+        try:
+            start_generation(current_user.id, 'image')
+        except Exception as start_error:
+            print(f"Error starting generation tracking: {start_error}")
+            # Continue even if Redis fails for generation tracking
         
-        # Increment quota now that we're starting generation
-        check_and_increment_quota(current_user.id, 'image')
+        # Increment quota now that we're starting generation (with error handling)
+        try:
+            check_and_increment_quota(current_user.id, 'image')
+        except Exception as quota_error:
+            print(f"Error incrementing quota: {quota_error}")
+            # Continue even if Redis fails for quota tracking
         
         return {
             "id": db_image.id,
