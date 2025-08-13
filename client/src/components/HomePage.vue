@@ -215,10 +215,7 @@ function closeImageModal() {
   showImageModal.value = false
 }
 
-function handleImageSave(image: any) {
-  // Image saved successfully
-  console.log('Image saved:', image)
-}
+
 
 async function createFlashcard() {
   if (!authStore.requireAuth('create flashcards')) {
@@ -249,10 +246,7 @@ async function createFlashcard() {
 
 
 
-// Close dropdown when clicking outside
-function handleClickOutside(event: Event) {
-  // No longer needed since we removed the dropdown
-}
+
 
 // Load user preferences and set default language
 onMounted(async () => {
@@ -305,7 +299,7 @@ watch(selectedLanguage, async (newLanguage) => {
 </script>
 
 <template>
-  <div class="home-container" @click="handleClickOutside">    
+  <div class="home-container">    
     <div class="input-group">
       <input
         v-model="term"

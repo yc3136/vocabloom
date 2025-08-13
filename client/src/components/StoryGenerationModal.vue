@@ -144,7 +144,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, watchEffect, nextTick } from 'vue'
+import { ref, computed, watchEffect } from 'vue'
 import { marked } from 'marked'
 import { usePreferencesStore } from '../stores/preferences'
 import { useStoriesStore } from '../stores/stories'
@@ -202,11 +202,7 @@ const canGenerate = computed(() => {
   return props.words.length > 0
 })
 
-// Debug computed property
-const debugShow = computed(() => {
-  console.log('Debug: show prop is', props.show)
-  return props.show
-})
+
 
 const renderedStory = computed(() => {
   if (!generatedStory.value) return ''

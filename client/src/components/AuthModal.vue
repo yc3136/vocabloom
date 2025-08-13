@@ -98,7 +98,9 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
-import { useNotificationStore } from '../stores/notification';
+
+
+
 
 interface Props {
   show: boolean;
@@ -110,13 +112,11 @@ interface Emits {
   (e: 'openSignUp'): void;
 }
 
-const props = defineProps<Props>();
-
+defineProps<Props>();
 const emit = defineEmits<Emits>();
 
 const router = useRouter();
 const authStore = useAuthStore();
-const notificationStore = useNotificationStore();
 const email = ref('');
 const password = ref('');
 const showPassword = ref(false);

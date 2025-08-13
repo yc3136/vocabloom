@@ -47,10 +47,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useAuthStore } from '../stores/auth';
-import { useNotificationStore } from '../stores/notification';
+
 
 const authStore = useAuthStore();
-const notificationStore = useNotificationStore();
 const email = ref('');
 
 const handleSubmit = async () => {

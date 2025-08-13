@@ -168,12 +168,11 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useImageStore } from '../stores/images'
-import { useNotificationStore } from '../stores/notification'
+
 import { SUPPORTED_LANGUAGES } from '../constants/languages'
 import ConfirmationModal from './ConfirmationModal.vue'
 
 const imageStore = useImageStore()
-const notificationStore = useNotificationStore()
 
 // State
 const searchTerm = ref('')

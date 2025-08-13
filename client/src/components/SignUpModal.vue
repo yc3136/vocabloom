@@ -116,6 +116,8 @@ import { ref, computed } from 'vue';
 import { useAuthStore } from '../stores/auth';
 import { useNotificationStore } from '../stores/notification';
 
+
+
 interface Props {
   show: boolean;
 }
@@ -126,7 +128,8 @@ interface Emits {
   (e: 'openLogIn'): void;
 }
 
-const props = defineProps<Props>();
+
+defineProps<Props>();
 const emit = defineEmits<Emits>();
 
 const authStore = useAuthStore();

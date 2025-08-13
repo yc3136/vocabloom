@@ -122,7 +122,7 @@
           <div v-else-if="item.content_type === 'story'" class="card-content">
             <div class="card-body">
               <h3 class="card-title">{{ item.story_title }}</h3>
-              <div class="card-subtitle" v-html="renderMarkdown(item.story_content)"></div>
+              <div class="card-subtitle" v-html="renderMarkdown(item.story_content || '')"></div>
             </div>
             <div class="card-footer">
               <div class="user-section">
@@ -230,7 +230,7 @@ const showFlashcardViewer = ref(false);
 const selectedFlashcard = ref<any>(null);
 
 // Debounced search
-let searchTimeout: NodeJS.Timeout | null = null;
+let searchTimeout: number | null = null;
 
 // Computed properties
 const supportedLanguages = computed(() => {
