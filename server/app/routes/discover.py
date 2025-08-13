@@ -69,7 +69,10 @@ async def discover_content(
                     "target_age_range": None,
                     "image_url": None,
                     "translation": None,
-                    "explanation": None
+                    "explanation": None,
+                    "user": {
+                        "email": flashcard.user.email if flashcard.user else None
+                    }
                 })
         
         # Get stories
@@ -111,7 +114,10 @@ async def discover_content(
                     "target_age_range": story.target_age_range,
                     "image_url": None,
                     "translation": None,
-                    "explanation": None
+                    "explanation": None,
+                    "user": {
+                        "email": story.user.email if story.user else None
+                    }
                 })
         
         # Get images
@@ -149,7 +155,10 @@ async def discover_content(
                     "target_age_range": None,
                     "image_url": image.image_url,
                     "translation": None,
-                    "explanation": None
+                    "explanation": None,
+                    "user": {
+                        "email": image.user.email if image.user else None
+                    }
                 })
         
         # Sort all content by creation date (newest first)

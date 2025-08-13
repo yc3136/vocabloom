@@ -106,11 +106,15 @@
               </div>
             </div>
             <div class="card-footer">
-                        <div class="card-badges">
-            <span class="badge badge--content-type">📚 Flashcard</span>
-            <span class="badge badge--language">{{ item.target_language }}</span>
-          </div>
-              <span class="date">{{ formatDate(item.created_at) }}</span>
+              <div class="user-section">
+                <UserAvatar :email="item.user?.email" size="small" />
+                <span class="user-email">{{ item.user?.email }}</span>
+                <span class="date">{{ formatDate(item.created_at) }}</span>
+              </div>
+              <div class="card-badges">
+                <span class="badge badge--content-type">📚 Flashcard</span>
+                <span class="badge badge--language">{{ item.target_language }}</span>
+              </div>
             </div>
           </div>
 
@@ -121,12 +125,16 @@
               <div class="card-subtitle" v-html="renderMarkdown(item.story_content)"></div>
             </div>
             <div class="card-footer">
-                          <div class="card-badges">
-              <span class="badge badge--content-type">📖 Story</span>
-              <span class="badge badge--language">{{ item.target_language }}</span>
-              <span v-if="item.target_age_range" class="badge badge--age">{{ formatAgeGroup(item.target_age_range) }}</span>
-            </div>
-              <span class="date">{{ formatDate(item.created_at) }}</span>
+              <div class="user-section">
+                <UserAvatar :email="item.user?.email" size="small" />
+                <span class="user-email">{{ item.user?.email }}</span>
+                <span class="date">{{ formatDate(item.created_at) }}</span>
+              </div>
+              <div class="card-badges">
+                <span class="badge badge--content-type">📖 Story</span>
+                <span class="badge badge--language">{{ item.target_language }}</span>
+                <span v-if="item.target_age_range" class="badge badge--age">{{ formatAgeGroup(item.target_age_range) }}</span>
+              </div>
             </div>
           </div>
 
@@ -140,19 +148,30 @@
               <p class="card-subtitle">{{ item.translated_word }}</p>
             </div>
             <div class="card-footer">
-                          <div class="card-badges">
-              <span class="badge badge--content-type">🖼️ Image</span>
-              <span class="badge badge--language">{{ item.target_language }}</span>
-            </div>
-              <span class="date">{{ formatDate(item.created_at) }}</span>
+              <div class="user-section">
+                <UserAvatar :email="item.user?.email" size="small" />
+                <span class="user-email">{{ item.user?.email }}</span>
+                <span class="date">{{ formatDate(item.created_at) }}</span>
+              </div>
+              <div class="card-badges">
+                <span class="badge badge--content-type">🖼️ Image</span>
+                <span class="badge badge--language">{{ item.target_language }}</span>
+              </div>
             </div>
           </div>
 
           <!-- Translation Card -->
           <div v-else-if="item.content_type === 'translation'" class="card-content">
             <div class="card-header">
-              <span class="badge badge--content-type">🌐 Translation</span>
-              <span class="badge badge--language">{{ item.target_language }}</span>
+              <div class="user-section">
+                <UserAvatar :email="item.user?.email" size="small" />
+                <span class="user-email">{{ item.user?.email }}</span>
+                <span class="date">{{ formatDate(item.created_at) }}</span>
+              </div>
+              <div class="card-badges">
+                <span class="badge badge--content-type">🌐 Translation</span>
+                <span class="badge badge--language">{{ item.target_language }}</span>
+              </div>
             </div>
             <div class="card-body">
               <h3 class="card-title">{{ item.original_word }}</h3>
@@ -162,7 +181,7 @@
               </div>
             </div>
             <div class="card-footer">
-              <span class="date">{{ formatDate(item.created_at) }}</span>
+              <!-- Date is now in the header -->
             </div>
           </div>
         </div>
@@ -195,6 +214,7 @@ import { marked } from 'marked';
 import { useDiscoverStore } from '../stores/discover';
 import { SUPPORTED_LANGUAGES } from '../constants/languages';
 import FlashcardViewer from './FlashcardViewer.vue';
+import UserAvatar from './UserAvatar.vue';
 
 const discoverStore = useDiscoverStore();
 
@@ -675,19 +695,62 @@ watch(() => discoverStore.filters, (newFilters) => {
   transform: scale(1.02);
 }
 
+.card-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 16px;
+}
+
 .card-footer {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 12px; /* Increased from 8px to 12px for more space */
   padding-top: 12px;
   border-top: 1px solid var(--border-color);
   margin-top: auto;
+  width: 100%;
+  min-width: 0; /* Allow container to shrink */
+}
+
+.user-section {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  min-width: 0; /* Allow container to shrink */
+}
+
+.user-section :deep(.user-avatar) {
+  flex-shrink: 0; /* Prevent avatar from shrinking */
+}
+
+.user-email {
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1 1 200px; /* flex-grow: 1, flex-shrink: 1, flex-basis: 200px */
+  min-width: 0; /* Allows text to shrink */
+  max-width: none; /* Remove any max-width constraints */
+}
+
+.date {
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: fit-content;
 }
 
 .card-badges {
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
+  justify-content: flex-start;
 }
 
 .content-type-badge {
@@ -718,12 +781,6 @@ watch(() => discoverStore.filters, (newFilters) => {
   font-size: 11px;
   font-weight: 500;
   background: transparent;
-}
-
-.date {
-  font-size: 12px;
-  color: var(--text-secondary);
-  white-space: nowrap;
 }
 
 .load-more-section {
@@ -807,6 +864,39 @@ watch(() => discoverStore.filters, (newFilters) => {
   
   .card-subtitle {
     font-size: 13px;
+  }
+  
+  .card-footer {
+    gap: 10px; /* Slightly less than desktop but still more than before */
+  }
+  
+  .user-section {
+    flex-direction: row; /* Keep on same row */
+    align-items: center; /* Center align items */
+    gap: 4px; /* Same reduced gap as desktop */
+    width: 100%;
+  }
+  
+  .user-email {
+    white-space: nowrap; /* Keep on one line */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .date {
+    flex-shrink: 0;
+    min-width: fit-content;
+  }
+  
+  .card-badges {
+    justify-content: flex-start;
+    width: 100%;
+  }
+  
+  .card-header {
+    gap: 6px;
   }
 }
 

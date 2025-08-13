@@ -16,6 +16,9 @@ export interface DiscoverItem {
   image_url?: string;
   translation?: string;
   explanation?: string;
+  user?: {
+    email?: string;
+  };
 }
 
 export interface DiscoverFilters {
