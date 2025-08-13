@@ -185,11 +185,12 @@ watch(() => props.frontContent, () => {
 .card-content {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   height: 100%;
   padding: 2rem;
   text-align: center;
+  position: relative;
 }
 
 /* Front card styles */
@@ -259,10 +260,12 @@ watch(() => props.frontContent, () => {
 .examples-section {
   width: 100%;
   max-width: 400px;
-  height: 120px;
+  min-height: 120px;
+  max-height: 160px;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-bottom: 1rem;
 }
 
 .example-navigation {
@@ -311,7 +314,8 @@ watch(() => props.frontContent, () => {
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 0 1rem;
+  padding: 0 0.5rem;
+  overflow: hidden;
 }
 
 .example-input,
@@ -319,11 +323,33 @@ watch(() => props.frontContent, () => {
   font-size: 1rem;
   color: var(--text-primary, #1e293b);
   text-align: center;
-  line-height: 1.5;
+  line-height: 1.6;
   font-style: italic;
   width: 100%;
-  max-height: 100px;
+  max-height: 140px;
   overflow-y: auto;
+  padding: 0.5rem;
+  word-wrap: break-word;
+  hyphens: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--text-secondary, #64748b) transparent;
+}
+
+.example-text::-webkit-scrollbar {
+  width: 4px;
+}
+
+.example-text::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.example-text::-webkit-scrollbar-thumb {
+  background: var(--text-secondary, #64748b);
+  border-radius: 2px;
+}
+
+.example-text::-webkit-scrollbar-thumb:hover {
+  background: var(--text-primary, #1e293b);
 }
 
 .example-input {
@@ -342,10 +368,13 @@ watch(() => props.frontContent, () => {
 
 .flip-hint {
   position: absolute;
-  bottom: 1rem;
+  bottom: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
   font-size: 0.8rem;
   color: var(--text-secondary, #64748b);
   opacity: 0.7;
+  white-space: nowrap;
 }
 
 /* Responsive design */

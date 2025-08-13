@@ -27,8 +27,12 @@
           <div class="flashcard-header">
             <h3>{{ flashcard.original_word }}</h3>
             <div class="flashcard-actions">
-              <button @click.stop="deleteFlashcard(flashcard.id)" class="action-btn delete-btn">
-                🗑️
+              <button 
+                @click.stop="deleteFlashcard(flashcard.id)" 
+                class="remove-btn"
+                title="Delete flashcard"
+              >
+                ×
               </button>
             </div>
           </div>
@@ -43,7 +47,6 @@
           </div>
           <div class="flashcard-meta">
             <span class="badge badge--language">{{ flashcard.target_language || 'Language' }}</span>
-            <span class="date">{{ formatDate(flashcard.created_at) }}</span>
           </div>
         </div>
       </div>
@@ -136,9 +139,7 @@ const closeModal = () => {
   viewingFlashcard.value = null;
 };
 
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString();
-};
+
 </script>
 
 <style scoped>
@@ -253,22 +254,22 @@ const formatDate = (dateString: string) => {
   gap: 8px;
 }
 
-.action-btn {
+.remove-btn {
   background: none;
   border: none;
-  font-size: 16px;
+  color: #a0aec0;
+  font-size: 1.2rem;
+  font-weight: bold;
   cursor: pointer;
-  padding: 4px;
+  padding: 4px 8px;
   border-radius: 4px;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
+  line-height: 1;
 }
 
-.edit-btn:hover {
-  background: rgba(102, 144, 255, 0.1);
-}
-
-.delete-btn:hover {
-  background: rgba(248, 113, 113, 0.1);
+.remove-btn:hover {
+  background: #e2e8f0;
+  color: #e53e3e;
 }
 
 .flashcard-translation {
@@ -312,7 +313,5 @@ const formatDate = (dateString: string) => {
   text-transform: capitalize;
 }
 
-.date {
-  color: var(--text-secondary);
-}
+
 </style> 
