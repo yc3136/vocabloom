@@ -149,7 +149,6 @@ import { marked } from 'marked'
 import { usePreferencesStore } from '../stores/preferences'
 import { useStoriesStore } from '../stores/stories'
 import { useAuthStore } from '../stores/auth'
-import { useNotificationStore } from '../stores/notification'
 
 interface StoryParams {
   theme: string
@@ -181,7 +180,7 @@ const emit = defineEmits<Emits>()
 const preferencesStore = usePreferencesStore()
 const storiesStore = useStoriesStore()
 const authStore = useAuthStore()
-const notificationStore = useNotificationStore()
+// const notificationStore = useNotificationStore()
 
 const storyParams = ref<StoryParams>({
   theme: 'educational',

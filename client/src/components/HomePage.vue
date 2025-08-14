@@ -168,7 +168,7 @@ function closeStoryModal() {
   showStoryModal.value = false
 }
 
-function handleStorySave(story: any) {
+function handleStorySave(_story: any) {
   // Story saved successfully
 }
 
