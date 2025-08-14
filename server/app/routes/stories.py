@@ -9,6 +9,7 @@ from ..crud import create_story, get_stories, get_story, delete_story
 from ..auth import get_current_user
 from ..models import User
 from ..redis_quota import check_and_increment_quota, check_quota_only, get_remaining_quota, has_pending_generation, start_generation, end_generation
+from ..secrets import get_gemini_api_key
 import httpx
 import os
 import json
@@ -73,9 +74,9 @@ async def generate_story(
         # Log the request for debugging
         print(f"Story generation request: words={request.words}, theme={request.theme}, max_words={request.max_words}")
         
-        # Get Gemini API key from environment
-        gemini_api_key = os.getenv("GEMINI_API_KEY")
-        if not gemini_api_key:
+        # Get Gemini API key from Secret Manager or environment
+        gemini_api_key = get_gemini_api_key()
+        if not gemini_api_key or gemini_api_key == "your_gemini_api_key_here":
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Gemini API key not configured"
@@ -325,9 +326,9 @@ async def get_related_words(
 ):
     """Generate related words for story creation using AI"""
     try:
-        # Get Gemini API key from environment
-        gemini_api_key = os.getenv("GEMINI_API_KEY")
-        if not gemini_api_key:
+        # Get Gemini API key from Secret Manager or environment
+        gemini_api_key = get_gemini_api_key()
+        if not gemini_api_key or gemini_api_key == "your_gemini_api_key_here":
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Gemini API key not configured"

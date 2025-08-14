@@ -205,7 +205,7 @@ deploy_backend() {
         --platform=managed \
         --add-cloudsql-instances=vocabloom-467020:us-central1:vocabloom-db \
         --set-env-vars="GOOGLE_CLOUD_PROJECT=vocabloom-467020,ENVIRONMENT=production,DB_USER=vocabloom-app,DB_NAME=vocabloom,DB_HOST=/cloudsql/vocabloom-467020:us-central1:vocabloom-db,REDIS_HOST=$REDIS_HOST,REDIS_PORT=$REDIS_PORT" \
-        --set-secrets="DB_PASSWORD=database-password:latest" \
+        --set-secrets="DB_PASSWORD=database-password:latest,GEMINI_API_KEY=gemini-api-key:latest" \
         --quiet
     
     print_success "Backend deployed successfully!"

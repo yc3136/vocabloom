@@ -11,10 +11,11 @@ try:
         port=int(os.getenv('REDIS_PORT', 6379)),
         db=int(os.getenv('REDIS_DB', 0)),
         decode_responses=True,
-        socket_connect_timeout=5,
-        socket_timeout=5,
+        socket_connect_timeout=10,
+        socket_timeout=10,
         retry_on_timeout=True,
-        health_check_interval=30
+        health_check_interval=30,
+        retry=3
     )
     # Test connection
     redis_client.ping()
