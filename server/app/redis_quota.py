@@ -29,6 +29,12 @@ except Exception as e:
             return 1
         def expire(self, key, time):
             pass
+        def setex(self, key, time, value):
+            pass
+        def delete(self, key):
+            pass
+        def eval(self, script, numkeys, *args):
+            return 1
         def pipeline(self):
             class MockPipeline:
                 def __enter__(self):
@@ -39,17 +45,15 @@ except Exception as e:
                     return self
                 def expire(self, key, time):
                     return self
+                def setex(self, key, time, value):
+                    return self
+                def delete(self, key):
+                    return self
+                def eval(self, script, numkeys, *args):
+                    return self
                 def execute(self):
                     return [1]
             return MockPipeline()
-        def setex(self, key, time, value):
-            pass
-        def delete(self, key):
-            pass
-        def eval(self, script, numkeys, *args):
-            return 1
-    
-    redis_client = MockRedis()
 
 # Quota limits configuration
 QUOTA_LIMITS = {

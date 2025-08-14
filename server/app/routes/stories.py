@@ -24,26 +24,44 @@ async def generate_story(
 ):
     """Generate a story using Gemini 2.0 Flash API"""
     try:
-        # Check if user has pending generations
-        if has_pending_generation(current_user.id, 'story'):
-            raise HTTPException(
-                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                detail="You already have a story generation in progress. Please wait for it to complete before starting another one."
-            )
+        # Check if user has pending generations with better error handling
+        try:
+            if has_pending_generation(current_user.id, 'story'):
+                raise HTTPException(
+                    status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                    detail="You already have a story generation in progress. Please wait for it to complete before starting another one."
+                )
+        except Exception as redis_error:
+            print(f"Redis error during pending generation check: {redis_error}")
+            # If Redis fails, we'll continue but log the issue
+            # This prevents Redis issues from blocking users completely
         
         # Check quota before starting generation
-        if not check_quota_only(current_user.id, 'story'):
-            quota_info = get_remaining_quota(current_user.id, 'story')
-            raise HTTPException(
-                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                detail=f"Daily story generation limit reached. You have used {quota_info['used']}/{quota_info['limit']} stories today. Please try again tomorrow."
-            )
+        try:
+            if not check_quota_only(current_user.id, 'story'):
+                quota_info = get_remaining_quota(current_user.id, 'story')
+                raise HTTPException(
+                    status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                    detail=f"Daily story generation limit reached. You have used {quota_info['used']}/{quota_info['limit']} stories today. Please try again tomorrow."
+                )
+        except Exception as quota_error:
+            print(f"Redis error during quota check: {quota_error}")
+            # If Redis fails during quota check, we'll continue but log the issue
+            # This prevents Redis issues from blocking users completely
         
-        # Mark generation as started
-        start_generation(current_user.id, 'story')
+        # Mark generation as started (with error handling)
+        try:
+            start_generation(current_user.id, 'story')
+        except Exception as start_error:
+            print(f"Error starting generation tracking: {start_error}")
+            # Continue even if Redis fails for generation tracking
         
-        # Increment quota now that we're starting generation
-        check_and_increment_quota(current_user.id, 'story')
+        # Increment quota now that we're starting generation (with error handling)
+        try:
+            check_and_increment_quota(current_user.id, 'story')
+        except Exception as quota_error:
+            print(f"Error incrementing quota: {quota_error}")
+            # Continue even if Redis fails for quota tracking
         
         # Validate required fields
         if not request.words or len(request.words) == 0:
