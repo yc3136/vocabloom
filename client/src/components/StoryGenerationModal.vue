@@ -149,6 +149,7 @@ import { marked } from 'marked'
 import { usePreferencesStore } from '../stores/preferences'
 import { useStoriesStore } from '../stores/stories'
 import { useAuthStore } from '../stores/auth'
+import { useNotificationStore } from '../stores/notification'
 
 interface StoryParams {
   theme: string
@@ -180,6 +181,7 @@ const emit = defineEmits<Emits>()
 const preferencesStore = usePreferencesStore()
 const storiesStore = useStoriesStore()
 const authStore = useAuthStore()
+const notificationStore = useNotificationStore()
 
 const storyParams = ref<StoryParams>({
   theme: 'educational',
@@ -211,7 +213,6 @@ const renderedStory = computed(() => {
       breaks: true,
       gfm: true
     })
-    console.log('Markdown rendering:', { original: generatedStory.value, rendered })
     return rendered
   } catch (error) {
     console.error('Markdown rendering error:', error)
@@ -240,13 +241,7 @@ const closeModal = () => {
 }
 
 const fetchRelatedWords = async () => {
-  console.log('fetchRelatedWords called with:', {
-    word: props.words[0],
-    targetLanguage: props.targetLanguage
-  })
-  
   if (!props.words[0] || !props.targetLanguage) {
-    console.log('Missing word or targetLanguage, skipping related words fetch')
     return
   }
   
@@ -264,8 +259,6 @@ const fetchRelatedWords = async () => {
       child_age: childAge.value || null
     }
     
-    console.log('Sending related words request:', requestBody)
-    
     const response = await fetch(`${API_BASE}/api/stories/related-words`, {
       method: 'POST',
       headers: {
@@ -274,23 +267,17 @@ const fetchRelatedWords = async () => {
       body: JSON.stringify(requestBody)
     })
     
-    console.log('Related words response status:', response.status)
-    
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
+      throw new Error('Failed to fetch related words')
     }
     
     const data = await response.json()
-    console.log('Related words response data:', data)
-    
     relatedWords.value = data.related_words || []
-    console.log('Set relatedWords to:', relatedWords.value)
-  } catch (e) {
-    console.error('Failed to fetch related words:', e)
-    // Don't show error to user as this is not critical
+  } catch (error) {
+    console.error('Error fetching related words:', error)
+    relatedWords.value = []
   } finally {
     loadingRelatedWords.value = false
-    console.log('Loading finished, relatedWords count:', relatedWords.value.length)
   }
 }
 
@@ -348,9 +335,6 @@ const generateStory = async () => {
       translated_word: props.translation || null
     }
     
-    console.log('Generating story with params:', requestBody)
-    console.log('Target language being sent:', props.targetLanguage)
-    
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     
     // Add auth token
@@ -366,12 +350,11 @@ const generateStory = async () => {
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
       console.error('Server error details:', errorData)
-      throw new Error(`HTTP error! status: ${response.status}`)
+      throw new Error(errorData.detail || 'Failed to generate story')
     }
     
     const data = await response.json()
-    console.log('Raw story content received:', data.story_content)
-    generatedStory.value = data.story_content
+    generatedStory.value = data.story_content || 'No story content received'
   } catch (e) {
     const errorMessage = e instanceof Error ? e.message : 'Failed to generate story. Please try again.'
     
@@ -420,11 +403,6 @@ const saveStory = async () => {
       target_language: props.targetLanguage || 'English' // Provide default if null
     }
     
-    console.log('Saving story with data:', storyData)
-    console.log('Target language being saved:', props.targetLanguage)
-    
-
-    
     const data = await storiesStore.createStory(storyData)
     emit('save', data)
     closeModal()
@@ -450,14 +428,7 @@ const generateStoryTitle = () => {
 
 // Reset form when modal opens and fetch related words
 watchEffect(() => {
-  console.log('WatchEffect triggered - props.show is:', props.show)
   if (props.show) {
-    console.log('StoryGenerationModal opened with props:', {
-      targetLanguage: props.targetLanguage,
-      words: props.words,
-      translation: props.translation
-    })
-    
     generatedStory.value = ''
     error.value = ''
     storyParams.value = {
@@ -468,10 +439,8 @@ watchEffect(() => {
     }
     
     // Fetch related words when modal opens
-    console.log('About to call fetchRelatedWords...')
     fetchRelatedWords()
   } else {
-    console.log('Modal closed, resetting related words')
     relatedWords.value = []
     selectedRelatedWords.value = []
     loadingRelatedWords.value = false

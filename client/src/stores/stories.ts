@@ -43,8 +43,6 @@ export const useStoriesStore = defineStore('stories', () => {
       error.value = null;
       const token = await authStore.getIdToken();
       
-      console.log('Fetching stories from API...')
-      
       const response = await fetch(`${API_BASE}/api/stories`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -55,7 +53,6 @@ export const useStoriesStore = defineStore('stories', () => {
       if (!response.ok) throw new Error('Failed to fetch stories');
       
       const fetchedStories = await response.json();
-      console.log('Stories fetched from API:', fetchedStories.length, 'stories')
       stories.value = fetchedStories;
     } catch (err: any) {
       error.value = err.message;
@@ -90,9 +87,7 @@ export const useStoriesStore = defineStore('stories', () => {
       }
       
       const newStory = await response.json();
-      console.log('New story created:', newStory)
       stories.value.unshift(newStory);
-      console.log('Stories after adding new story:', stories.value.length, 'stories')
       return newStory;
     } catch (err: any) {
       error.value = err.message;

@@ -235,16 +235,13 @@ const loadWords = async () => {
       }
     } else {
       const data = await response.json();
-      console.log('Words API response:', data);
-      words.value = data;
+      words.value = data
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to load words'
+      console.error('Error loading words:', err)
+    } finally {
+      loading.value = false
     }
-  } catch (err) {
-    console.error('Error loading words:', err);
-    error.value = 'Failed to load your words. Please try again.';
-    notificationStore.error('Failed to load words');
-  } finally {
-    loading.value = false;
-  }
 };
 
 const toggleExpand = (wordKey: string) => {

@@ -14,15 +14,12 @@ const notificationStore = useNotificationStore();
 
 // Theme toggle computed properties
 const themeToggleTitle = computed(() => {
-  console.log('App.vue - current theme in computed:', themeStore.currentTheme);
   return themeStore.currentTheme === 'light' ? 'Light Mode' : 'Dark Mode';
 });
 
 const toggleTheme = () => {
-  console.log('Current theme before toggle:', themeStore.currentTheme);
-  themeStore.toggleTheme();
-  console.log('Current theme after toggle:', themeStore.currentTheme);
-};
+  themeStore.toggleTheme()
+}
 </script>
 
 <template>

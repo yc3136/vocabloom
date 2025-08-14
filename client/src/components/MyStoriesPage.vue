@@ -195,13 +195,8 @@ const paginatedStories = computed(() => {
 
 // Methods
 const loadStories = async () => {
-  console.log('loadStories called, auth status:', authStore.isAuthenticated)
   if (authStore.isAuthenticated) {
-    console.log('Fetching stories...')
     await storiesStore.fetchStories()
-    console.log('Stories fetched, count:', stories.value?.length || 0)
-  } else {
-    console.log('User not authenticated, skipping story fetch')
   }
 }
 
@@ -249,55 +244,56 @@ const getLanguageDisplay = (languageCode: string) => {
     'de': 'German',
     'it': 'Italian',
     'pt': 'Portuguese',
+    'ru': 'Russian',
     'ja': 'Japanese',
     'ko': 'Korean',
     'zh': 'Chinese',
-    'ru': 'Russian',
     'ar': 'Arabic',
     'hi': 'Hindi',
-    'nl': 'Dutch',
-    'sv': 'Swedish',
-    'no': 'Norwegian',
-    'da': 'Danish',
-    'fi': 'Finnish',
-    'pl': 'Polish',
     'tr': 'Turkish',
-    'el': 'Greek',
+    'nl': 'Dutch',
+    'pl': 'Polish',
+    'sv': 'Swedish',
+    'da': 'Danish',
+    'no': 'Norwegian',
+    'fi': 'Finnish',
     'he': 'Hebrew'
   }
   
-  // First try to map the code to a full name
-  const mappedLanguage = languageCodeMap[languageCode.toLowerCase()]
-  if (mappedLanguage) {
-    const language = SUPPORTED_LANGUAGES.find(lang => lang.value === mappedLanguage)
-    return language ? language.label : mappedLanguage
-  }
-  
-  // If no mapping found, try to find it directly in SUPPORTED_LANGUAGES
-  const language = SUPPORTED_LANGUAGES.find(lang => lang.value === languageCode)
-  return language ? language.label : languageCode
+  return languageCodeMap[languageCode] || languageCode
 }
 
 const getAgeDisplay = (ageRange: string) => {
-  const ageMap: Record<string, string> = {
+  const ageMap: { [key: string]: string } = {
     'toddler': '2-3',
     'preschool': '4-5',
     'elementary': '6-10',
     'middle_school': '11-13'
   }
+  
   return ageMap[ageRange] || ageRange
 }
 
 // Lifecycle
 onMounted(() => {
-  console.log('MyStoriesPage mounted, loading stories...')
   loadStories()
 })
 
-// Watch for changes in stories
-watch(stories, (newStories) => {
-  console.log('Stories changed:', newStories?.length || 0, 'stories')
-}, { immediate: true })
+// Watch for authentication changes
+watch(() => authStore.isAuthenticated, (isAuthenticated) => {
+  if (isAuthenticated) {
+    loadStories()
+  } else {
+    storiesStore.clearStories()
+  }
+})
+
+// Watch for stories changes to reset pagination
+watch(() => stories.value, (newStories) => {
+  if (currentPage.value > 1 && (!newStories || newStories.length === 0)) {
+    currentPage.value = 1
+  }
+})
 </script>
 
 <style scoped>
@@ -749,4 +745,5 @@ watch(stories, (newStories) => {
     white-space: nowrap;
   }
 }
+</style> 
 </style> 

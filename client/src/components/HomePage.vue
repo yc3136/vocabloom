@@ -161,7 +161,6 @@ function openStoryModal() {
     return
   }
   
-  console.log('Opening story modal with language:', selectedLanguage.value)
   showStoryModal.value = true
 }
 
@@ -171,7 +170,6 @@ function closeStoryModal() {
 
 function handleStorySave(story: any) {
   // Story saved successfully
-  console.log('Story saved:', story)
 }
 
 function openImageModal() {
@@ -190,15 +188,9 @@ function openImageModal() {
     return
   }
   
-  // Debug quota check
-  console.log('Quota check - quotas:', quotaStore.quotas)
-  console.log('Quota check - hasQuota image:', quotaStore.hasQuota('image'))
-  console.log('Quota check - getQuota image:', quotaStore.getQuota('image'))
-  
   // Check quota before opening modal
   if (!quotaStore.hasQuota('image')) {
     const quota = quotaStore.getQuota('image')
-    console.log('Quota exceeded - quota:', quota)
     if (quota) {
       notificationStore.warning(`Daily image generation limit reached! You have used ${quota.used}/${quota.limit} images today. Please try again tomorrow.`)
     } else {
@@ -207,7 +199,6 @@ function openImageModal() {
     return
   }
   
-  console.log('Opening image modal with language:', selectedLanguage.value)
   showImageModal.value = true
 }
 
@@ -250,17 +241,14 @@ async function createFlashcard() {
 
 // Load user preferences and set default language
 onMounted(async () => {
-  console.log('HomePage mounted, initial selectedLanguage:', selectedLanguage.value)
   if (authStore.isAuthenticated) {
     await preferencesStore.loadPreferences()
     await quotaStore.loadQuotas()
     // Set the selected language to user's preferred language if available
     if (preferencesStore.preferredLanguage) {
       selectedLanguage.value = preferencesStore.preferredLanguage
-      console.log('Set selectedLanguage from preferences:', selectedLanguage.value)
     }
   }
-  console.log('Final selectedLanguage after mount:', selectedLanguage.value)
 })
 
 // Watch for authentication changes to load preferences
@@ -279,7 +267,6 @@ watch(() => authStore.isAuthenticated, async (isAuthenticated) => {
 
 // Watch for changes in selected language and update preferences if user is authenticated
 watch(selectedLanguage, async (newLanguage) => {
-  console.log('Language changed to:', newLanguage)
   if (authStore.isAuthenticated && preferencesStore.preferences.preferred_languages) {
     try {
       // Update the first preferred language

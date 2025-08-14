@@ -67,48 +67,51 @@ export const usePreferencesStore = defineStore('preferences', () => {
     }
   };
 
-  // Save user preferences to the backend
-  const savePreferences = async (newPreferences: UserPreferences) => {
+  // Save user preferences
+  const savePreferences = async (prefs: UserPreferences) => {
     if (!authStore.isAuthenticated) {
-      throw new Error('Authentication required');
+      throw new Error('User must be authenticated to save preferences')
     }
 
+    loading.value = true
+    error.value = null
+    
     try {
-      loading.value = true;
-      error.value = null;
-      const token = await authStore.getIdToken();
-      
+      const token = await authStore.getIdToken()
       const requestBody = {
-        preferences: newPreferences
-      };
+        preferred_languages: prefs.preferred_languages,
+        child_age: prefs.child_age,
+        child_name: prefs.child_name
+      }
       
-      console.log('Sending preferences request:', requestBody);
-      
-      const response = await fetch(`${API_BASE}/api/auth/preferences`, {
-        method: 'PUT',
+      const response = await fetch(`${API_BASE}/api/preferences`, {
+        method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(requestBody)
-      });
-
+      })
+      
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('Preferences update error:', errorData);
-        throw new Error(errorData.detail || `Failed to save preferences: ${response.status}`);
+        throw new Error('Failed to save preferences')
       }
-
-      // Update local preferences
-      preferences.value = { ...preferences.value, ...newPreferences };
-    } catch (err: any) {
-      error.value = err.message;
-      console.error('Error saving preferences:', err);
-      throw err;
+      
+      const savedPreferences = await response.json()
+      preferences.value = savedPreferences
+      // Assuming notificationStore is available globally or imported elsewhere
+      // const notificationStore = useNotificationStore(); 
+      // notificationStore.success('Preferences saved successfully!')
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to save preferences'
+      // Assuming notificationStore is available globally or imported elsewhere
+      // const notificationStore = useNotificationStore();
+      // notificationStore.error('Failed to save preferences')
+      throw err
     } finally {
-      loading.value = false;
+      loading.value = false
     }
-  };
+  }
 
   // Update preferred languages
   const updatePreferredLanguages = async (languages: string[]) => {

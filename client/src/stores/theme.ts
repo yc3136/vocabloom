@@ -16,13 +16,10 @@ export const useThemeStore = defineStore('theme', () => {
 
   // Toggle between light and dark themes
   const toggleTheme = () => {
-    console.log('Theme store - current theme before toggle:', currentTheme.value);
-    const newTheme: Theme = currentTheme.value === 'light' ? 'dark' : 'light';
-    console.log('Theme store - new theme:', newTheme);
-    currentTheme.value = newTheme;
-    applyTheme(newTheme);
-    console.log('Theme store - current theme after toggle:', currentTheme.value);
-  };
+    const newTheme = currentTheme.value === 'light' ? 'dark' : 'light'
+    currentTheme.value = newTheme
+    localStorage.setItem('theme', newTheme)
+  }
 
   // Set specific theme
   const setTheme = (theme: Theme) => {
