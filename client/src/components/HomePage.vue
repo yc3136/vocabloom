@@ -265,24 +265,20 @@ watch(() => authStore.isAuthenticated, async (isAuthenticated) => {
   }
 })
 
-// Watch for changes in selected language and update preferences if user is authenticated
-watch(selectedLanguage, async (newLanguage) => {
-  if (authStore.isAuthenticated && preferencesStore.preferences.preferred_languages) {
-    try {
-      // Update the first preferred language
-      const currentLanguages = [...(preferencesStore.preferences.preferred_languages || [])]
-      if (currentLanguages.length > 0) {
-        currentLanguages[0] = newLanguage
-      } else {
-        currentLanguages.push(newLanguage)
-      }
-      await preferencesStore.updatePreferredLanguages(currentLanguages)
-    } catch (error) {
-      console.error('Failed to update preferred languages:', error)
-      // Don't show error to user as this is not critical
-    }
+// Watch for changes in user's preferred language and update the selected language
+watch(() => preferencesStore.preferredLanguage, (newPreferredLanguage) => {
+  if (newPreferredLanguage && authStore.isAuthenticated) {
+    selectedLanguage.value = newPreferredLanguage
   }
 })
+
+// Watch for changes in preferences object and update selected language
+watch(() => preferencesStore.preferences, (newPreferences) => {
+  if (newPreferences?.preferred_languages?.[0] && authStore.isAuthenticated) {
+    const newPreferredLanguage = newPreferences.preferred_languages[0]
+    selectedLanguage.value = newPreferredLanguage
+  }
+}, { deep: true })
 </script>
 
 <template>

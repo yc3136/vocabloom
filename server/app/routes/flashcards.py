@@ -7,7 +7,7 @@ from ..schemas import Flashcard, FlashcardCreate, FlashcardUpdate, FlashcardPrev
 from ..auth import get_current_user
 from ..crud import (
     get_flashcards, get_flashcard, create_flashcard, 
-    update_flashcard, delete_flashcard
+    update_flashcard, delete_flashcard, check_flashcard_exists
 )
 
 router = APIRouter(prefix="/flashcards", tags=["flashcards"])
@@ -32,6 +32,9 @@ async def create_user_flashcard(
     db: Session = Depends(get_db)
 ):
     """Create a new flashcard for the current user"""
+    existing = check_flashcard_exists(db, flashcard.original_word, flashcard.target_language, current_user.id)
+    if existing:
+        return create_flashcard(db, flashcard, current_user.id) # This will update the existing one
     return create_flashcard(db, flashcard, current_user.id)
 
 

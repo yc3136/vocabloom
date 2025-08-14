@@ -68,7 +68,33 @@ def get_flashcard(db: Session, flashcard_id: int, user_id: str):
     ).first()
 
 
+def check_flashcard_exists(db: Session, original_word: str, target_language: str, user_id: str):
+    """Check if a flashcard with the same word and language already exists"""
+    return db.query(models.Flashcard).filter(
+        models.Flashcard.user_id == user_id,
+        models.Flashcard.original_word == original_word,
+        models.Flashcard.target_language == target_language
+    ).first()
+
 def create_flashcard(db: Session, flashcard: schemas.FlashcardCreate, user_id: str):
+    # Check for existing flashcard with same word and language
+    existing_flashcard = db.query(models.Flashcard).filter(
+        models.Flashcard.user_id == user_id,
+        models.Flashcard.original_word == flashcard.original_word,
+        models.Flashcard.target_language == flashcard.target_language
+    ).first()
+    
+    if existing_flashcard:
+        # Update the existing flashcard instead of creating a duplicate
+        update_data = flashcard.dict()
+        for field, value in update_data.items():
+            setattr(existing_flashcard, field, value)
+        
+        db.commit()
+        db.refresh(existing_flashcard)
+        return existing_flashcard
+    
+    # Create new flashcard if no duplicate exists
     db_flashcard = models.Flashcard(
         **flashcard.dict(),
         user_id=user_id

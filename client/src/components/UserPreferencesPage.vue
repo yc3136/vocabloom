@@ -329,8 +329,12 @@ const saveLearningPreferences = async () => {
 
     notificationStore.success('Learning preferences saved successfully!');
     
-    // Reload user data to get updated preferences
-    await loadUserData();
+    // Update form values from the preferences store
+    if (preferencesStore.preferences) {
+      preferencesForm.value.childName = preferencesStore.preferences.child_name || '';
+      preferencesForm.value.childAge = preferencesStore.preferences.child_age || null;
+      preferencesForm.value.primaryLanguage = preferencesStore.preferences.preferred_languages?.[0] || 'Chinese';
+    }
   } catch (error) {
     console.error('Error saving learning preferences:', error);
     notificationStore.error('Failed to save learning preferences');

@@ -73,8 +73,23 @@ async def translate(
     try:
         # Get user preferences for age-appropriate caching
         user_preferences = None
-        if current_user and current_user.preferences:
-            user_preferences = current_user.preferences
+        if current_user:
+            try:
+                user_preferences = {
+                    'child_name': getattr(current_user, 'child_name', None),
+                    'child_age': getattr(current_user, 'child_age', None),
+                    'preferred_languages': getattr(current_user, 'preferred_languages', []) or [],
+                    'content_privacy_default': getattr(current_user, 'content_privacy_default', 'private') or 'private'
+                }
+            except AttributeError as e:
+                print(f"Translation error: {e}")
+                # Fallback to empty preferences if attributes don't exist
+                user_preferences = {
+                    'child_name': None,
+                    'child_age': None,
+                    'preferred_languages': [],
+                    'content_privacy_default': 'private'
+                }
         
         # Check cache first (works for all users)
         prompt_hash = hash_prompt(request.term, request.language, user_preferences)

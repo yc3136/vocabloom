@@ -38,7 +38,7 @@ export const usePreferencesStore = defineStore('preferences', () => {
       error.value = null;
       const token = await authStore.getIdToken();
       
-      const response = await fetch(`${API_BASE}/api/auth/me`, {
+      const response = await fetch(`${API_BASE}/api/preferences`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -49,8 +49,8 @@ export const usePreferencesStore = defineStore('preferences', () => {
         throw new Error('Failed to load preferences');
       }
 
-      const userData = await response.json();
-      preferences.value = userData.preferences || {};
+      const preferencesData = await response.json();
+      preferences.value = preferencesData;
       
       // Apply theme if it exists in preferences
       if (preferences.value.theme) {

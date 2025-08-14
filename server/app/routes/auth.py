@@ -91,7 +91,12 @@ async def get_user_preferences(
     db: Session = Depends(get_db)
 ):
     """Get user preferences"""
-    return current_user.preferences or {}
+    return {
+        "child_name": current_user.child_name,
+        "child_age": current_user.child_age,
+        "preferred_languages": current_user.preferred_languages or [],
+        "content_privacy_default": current_user.content_privacy_default or "private"
+    }
 
 
 @router.put("/preferences", response_model=UserSchema)

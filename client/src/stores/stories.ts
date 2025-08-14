@@ -43,7 +43,7 @@ export const useStoriesStore = defineStore('stories', () => {
       error.value = null;
       const token = await authStore.getIdToken();
       
-      const response = await fetch(`${API_BASE}/api/stories`, {
+      const response = await fetch(`${API_BASE}/api/stories/`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -71,7 +71,7 @@ export const useStoriesStore = defineStore('stories', () => {
       error.value = null;
       const token = await authStore.getIdToken();
       
-      const response = await fetch(`${API_BASE}/api/stories`, {
+      const response = await fetch(`${API_BASE}/api/stories/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

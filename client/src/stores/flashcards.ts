@@ -89,12 +89,18 @@ export const useFlashcardStore = defineStore('flashcards', () => {
       }
       
       const newFlashcard = await response.json();
-      flashcards.value.unshift(newFlashcard);
-      // Show success notification with link to flashcards
-      notificationStore.success(
-        `Flashcard created successfully! <a href="/flashcards" style="color: white; text-decoration: underline;">View in My Flashcards →</a>`,
-        { allowHtml: true, duration: 6000 }
-      )
+      const existingIndex = flashcards.value.findIndex(f =>
+        f.original_word === newFlashcard.original_word &&
+        f.target_language === newFlashcard.target_language
+      );
+
+      if (existingIndex !== -1) {
+        flashcards.value[existingIndex] = newFlashcard;
+        notificationStore.success(`Flashcard updated successfully! <a href="/flashcards" style="color: white; text-decoration: underline;">View in My Flashcards →</a>`, { allowHtml: true, duration: 6000 });
+      } else {
+        flashcards.value.unshift(newFlashcard);
+        notificationStore.success(`Flashcard created successfully! <a href="/flashcards" style="color: white; text-decoration: underline;">View in My Flashcards →</a>`, { allowHtml: true, duration: 6000 });
+      }
       return newFlashcard;
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to create flashcard';

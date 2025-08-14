@@ -44,25 +44,21 @@ async def save_preferences(
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
         
-        # Update the JSONB preferences field
-        current_prefs = user.preferences or {}
-        current_prefs.update({
-            "preferred_languages": preferences.preferred_languages,
-            "child_age": preferences.child_age,
-            "child_name": preferences.child_name,
-            "content_privacy_default": preferences.content_privacy_default
-        })
-        user.preferences = current_prefs
+        # Update individual preference columns
+        user.child_name = preferences.child_name
+        user.child_age = preferences.child_age
+        user.preferred_languages = preferences.preferred_languages or []
+        user.content_privacy_default = preferences.content_privacy_default or "private"
         
         db.commit()
         db.refresh(user)
         
         # Return the updated preferences
         return {
-            "preferred_languages": current_prefs.get("preferred_languages", []),
-            "child_age": current_prefs.get("child_age"),
-            "child_name": current_prefs.get("child_name"),
-            "content_privacy_default": current_prefs.get("content_privacy_default", "private")
+            "preferred_languages": user.preferred_languages or [],
+            "child_age": user.child_age,
+            "child_name": user.child_name,
+            "content_privacy_default": user.content_privacy_default or "private"
         }
     except Exception as e:
         db.rollback()
