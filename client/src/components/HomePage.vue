@@ -12,7 +12,7 @@ import StoryGenerationModal from './StoryGenerationModal.vue'
 import ImageGenerationModal from './ImageGenerationModal.vue'
 
 const term = ref('')
-const selectedLanguage = ref(DEFAULT_LANGUAGE)
+const selectedLanguage = ref<string | null>(null)
 const translation = ref('')
 const explanation = ref('')
 const examples = ref<string[]>([])
@@ -88,15 +88,15 @@ async function lookup() {
     // Get user's child age from preferences for age-appropriate examples
     const childAge = preferencesStore.preferences?.child_age || null;
     
-    const res = await fetch(`${API_BASE}/api/translate`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ 
-        term: term.value,
-        language: selectedLanguage.value,
-        child_age: childAge
-      })
-    })
+            const res = await fetch(`${API_BASE}/api/translate`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ 
+            term: term.value,
+            language: selectedLanguage.value || DEFAULT_LANGUAGE,
+            child_age: childAge
+          })
+        })
     
     if (!res.ok) {
       throw new Error(`HTTP error! status: ${res.status}`)
@@ -113,7 +113,7 @@ async function lookup() {
       try {
         await translationStore.saveTranslation({
           original_term: term.value,
-          target_language: selectedLanguage.value,
+          target_language: selectedLanguage.value || DEFAULT_LANGUAGE,
           translation: translation.value,
           explanation: explanation.value
         })
@@ -220,7 +220,7 @@ async function createFlashcard() {
     const flashcardData = {
       original_word: term.value,
       translated_word: translation.value,
-      target_language: selectedLanguage.value,
+      target_language: selectedLanguage.value || DEFAULT_LANGUAGE,
       example_sentences: examples.value,
       colors: { primary: '#6690ff', secondary: '#64748b' }
     }
@@ -247,7 +247,11 @@ onMounted(async () => {
     // Set the selected language to user's preferred language if available
     if (preferencesStore.preferredLanguage) {
       selectedLanguage.value = preferencesStore.preferredLanguage
+    } else {
+      selectedLanguage.value = DEFAULT_LANGUAGE
     }
+  } else {
+    selectedLanguage.value = DEFAULT_LANGUAGE
   }
 })
 
@@ -259,9 +263,12 @@ watch(() => authStore.isAuthenticated, async (isAuthenticated) => {
     // Set the selected language to user's preferred language if available
     if (preferencesStore.preferredLanguage) {
       selectedLanguage.value = preferencesStore.preferredLanguage
+    } else {
+      selectedLanguage.value = DEFAULT_LANGUAGE
     }
   } else {
     quotaStore.clearQuotas()
+    selectedLanguage.value = DEFAULT_LANGUAGE
   }
 })
 
@@ -294,8 +301,10 @@ watch(() => preferencesStore.preferences, (newPreferences) => {
       <select 
         v-model="selectedLanguage" 
         class="language-select"
+        :disabled="preferencesStore.loading"
       >
-        <option v-for="lang in languages" :key="lang.value" :value="lang.value">
+        <option v-if="preferencesStore.loading" value="" disabled>Loading...</option>
+        <option v-else v-for="lang in languages" :key="lang.value" :value="lang.value">
           {{ lang.label }}
         </option>
       </select>
@@ -363,7 +372,7 @@ watch(() => preferencesStore.preferences, (newPreferences) => {
       :show="showStoryModal" 
       :words="storyWords" 
       :translation="translation"
-      :targetLanguage="selectedLanguage"
+      :targetLanguage="selectedLanguage || DEFAULT_LANGUAGE"
       @close="closeStoryModal" 
       @save="handleStorySave" 
     />
@@ -374,7 +383,7 @@ watch(() => preferencesStore.preferences, (newPreferences) => {
       :show="showImageModal" 
       :originalWord="term"
       :translatedWord="translation"
-      :targetLanguage="selectedLanguage"
+      :targetLanguage="selectedLanguage || DEFAULT_LANGUAGE"
       @close="closeImageModal" 
     />
   </div>

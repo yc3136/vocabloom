@@ -144,6 +144,7 @@
               type="text" 
               placeholder="Enter child's name"
               class="form-input"
+              :disabled="preferencesStore.loading"
             />
           </div>
           <div class="info-item">
@@ -155,6 +156,7 @@
               max="18"
               placeholder="Age"
               class="form-input"
+              :disabled="preferencesStore.loading"
             />
           </div>
           <div class="info-item">
@@ -162,8 +164,10 @@
             <select 
               v-model="preferencesForm.primaryLanguage" 
               class="language-select"
+              :disabled="preferencesStore.loading"
             >
-              <option v-for="lang in languages" :key="lang.value" :value="lang.value">
+              <option v-if="preferencesStore.loading" value="" disabled>Loading...</option>
+              <option v-else v-for="lang in languages" :key="lang.value" :value="lang.value">
                 {{ lang.label }}
               </option>
             </select>
@@ -231,7 +235,7 @@ const securityForm = ref({
 const preferencesForm = ref({
   childName: '',
   childAge: null as number | null,
-  primaryLanguage: 'Chinese' as string
+  primaryLanguage: '' as string
 });
 
 // Use the shared language constants
@@ -305,7 +309,7 @@ const loadUserData = async () => {
     if (preferencesStore.preferences) {
       preferencesForm.value.childName = preferencesStore.preferences.child_name || '';
       preferencesForm.value.childAge = preferencesStore.preferences.child_age || null;
-      preferencesForm.value.primaryLanguage = preferencesStore.preferences.preferred_languages?.[0] || 'Chinese';
+      preferencesForm.value.primaryLanguage = preferencesStore.preferences.preferred_languages?.[0] || '';
     }
   } catch (error) {
     console.error('Error loading user data:', error);
@@ -333,7 +337,7 @@ const saveLearningPreferences = async () => {
     if (preferencesStore.preferences) {
       preferencesForm.value.childName = preferencesStore.preferences.child_name || '';
       preferencesForm.value.childAge = preferencesStore.preferences.child_age || null;
-      preferencesForm.value.primaryLanguage = preferencesStore.preferences.preferred_languages?.[0] || 'Chinese';
+      preferencesForm.value.primaryLanguage = preferencesStore.preferences.preferred_languages?.[0] || '';
     }
   } catch (error) {
     console.error('Error saving learning preferences:', error);

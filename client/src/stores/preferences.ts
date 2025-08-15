@@ -18,8 +18,14 @@ export const usePreferencesStore = defineStore('preferences', () => {
 
   const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
 
+  // Computed property to check if preferences are loaded
+  const isLoaded = computed(() => !loading.value && Object.keys(preferences.value).length > 0);
+
   // Computed property for the primary preferred language
   const preferredLanguage = computed(() => {
+    if (loading.value) {
+      return null; // Return null while loading to prevent flash
+    }
     if (preferences.value.preferred_languages && preferences.value.preferred_languages.length > 0) {
       return preferences.value.preferred_languages[0];
     }
@@ -131,6 +137,7 @@ export const usePreferencesStore = defineStore('preferences', () => {
     preferences,
     preferredLanguage,
     loading,
+    isLoaded,
     error,
     loadPreferences,
     savePreferences,
