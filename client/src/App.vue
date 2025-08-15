@@ -126,6 +126,7 @@ const toggleTheme = () => {
   align-items: center;
   justify-content: space-between;
   height: 64px;
+  position: relative;
 }
 
 .logo-link {
@@ -145,12 +146,18 @@ const toggleTheme = () => {
   display: flex;
   align-items: center;
   height: 64px;
+  min-width: 120px;
+  z-index: 20;
 }
 
 .nav-links {
   display: flex;
   gap: 32px;
   align-items: center;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
 }
 
 .nav-link {
@@ -176,6 +183,8 @@ const toggleTheme = () => {
   justify-content: flex-end;
   height: 64px;
   gap: 12px;
+  min-width: 200px;
+  z-index: 20;
 }
 
 .theme-toggle-btn {
@@ -212,24 +221,70 @@ const toggleTheme = () => {
   height: 100%;
 }
 
+/* Handle narrow desktop windows */
+@media (max-width: 1200px) {
+  .header-content {
+    padding: 0 16px;
+  }
+  
+  .logo {
+    min-width: 100px;
+  }
+  
+  .auth-section {
+    min-width: 180px;
+  }
+}
+
+/* Handle very narrow desktop windows */
+@media (max-width: 900px) {
+  .header-content {
+    padding: 0 12px;
+  }
+  
+  .logo {
+    min-width: 80px;
+  }
+  
+  .auth-section {
+    min-width: 160px;
+  }
+  
+  .nav-links {
+    gap: 24px;
+  }
+}
+
 @media (max-width: 768px) {
   .header-content {
     padding: 0 16px;
     flex-wrap: wrap;
     height: auto;
     padding: 12px 16px;
+    position: static;
   }
   
   .logo {
     height: 48px;
+    min-width: auto;
+    z-index: auto;
   }
   
   .nav-links {
+    position: static;
+    left: auto;
+    transform: none;
     order: 3;
     width: 100%;
     justify-content: center;
     margin-top: 12px;
     gap: 24px;
+    z-index: auto;
+  }
+  
+  .auth-section {
+    min-width: auto;
+    z-index: auto;
   }
   
   .auth-buttons {
@@ -250,6 +305,8 @@ const toggleTheme = () => {
   .auth-section {
     height: auto;
     gap: 8px;
+    min-width: auto;
+    z-index: auto;
   }
   
   .theme-toggle-btn {
