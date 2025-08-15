@@ -91,11 +91,12 @@ async def get_user_preferences(
     db: Session = Depends(get_db)
 ):
     """Get user preferences"""
+    user_prefs = current_user.preferences or {}
     return {
-        "child_name": current_user.child_name,
-        "child_age": current_user.child_age,
-        "preferred_languages": current_user.preferred_languages or [],
-        "content_privacy_default": current_user.content_privacy_default or "private"
+        "child_name": user_prefs.get("child_name"),
+        "child_age": user_prefs.get("child_age"),
+        "preferred_languages": user_prefs.get("preferred_languages", []) or [],
+        "content_privacy_default": user_prefs.get("content_privacy_default", "private") or "private"
     }
 
 

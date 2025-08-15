@@ -75,13 +75,15 @@ async def translate(
         user_preferences = None
         if current_user:
             try:
+                # Get preferences from JSONB field
+                user_prefs = current_user.preferences or {}
                 user_preferences = {
-                    'child_name': getattr(current_user, 'child_name', None),
-                    'child_age': getattr(current_user, 'child_age', None),
-                    'preferred_languages': getattr(current_user, 'preferred_languages', []) or [],
-                    'content_privacy_default': getattr(current_user, 'content_privacy_default', 'private') or 'private'
+                    'child_name': user_prefs.get('child_name'),
+                    'child_age': user_prefs.get('child_age'),
+                    'preferred_languages': user_prefs.get('preferred_languages', []) or [],
+                    'content_privacy_default': user_prefs.get('content_privacy_default', 'private') or 'private'
                 }
-            except AttributeError as e:
+            except Exception as e:
                 print(f"Translation error: {e}")
                 # Fallback to empty preferences if attributes don't exist
                 user_preferences = {
